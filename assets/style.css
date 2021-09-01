@@ -1,0 +1,52 @@
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   SVG
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart {
+  font: 10px sans-serif;
+  background: #010025;
+  shape-rendering: crispEdges;
+}
+svg.minichart text {
+  fill: white
+}
+
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   Candles
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart .plot .wick {
+  stroke-width: 1px;
+}
+svg.minichart .plot .up.body {
+  fill: var(--bs-success);
+  stroke: var(--bs-success);
+}
+svg.minichart .plot .up.wick {
+  stroke: var(--bs-success);
+}
+svg.minichart .plot .down.body {
+  fill: var(--bs-danger);
+  stroke: var(--bs-danger);
+}
+svg.minichart .plot .down.wick {
+  stroke: var(--bs-danger);
+}
+
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   Grid
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart .gridlines line, svg.minichart .gridlines path {
+  stroke: #444;
+}
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   Price line
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart .price-line .supstance path {
+  stroke: #0000ff;
+  stroke-dasharray: 10 6;
+  visibility: hidden;
+}
+svg.minichart .price-line .axisannotation path {
+  fill: #0000ff;
+  stroke: #0000ff;
+  shape-rendering: auto;
+}
