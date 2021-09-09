@@ -20,7 +20,7 @@ class RootStore {
 
   public throttleDelay = getPersistentStorageValue<RootStore, number>('throttleDelay', 1000);
 
-  public gridColumns = getPersistentStorageValue<RootStore, number>('gridColumns', 12);
+  public gridColumns = getPersistentStorageValue<RootStore, number>('gridColumns', 4);
 
   public chartType = getPersistentStorageValue<RootStore, ChartType>('chartType', 'candlestick');
 

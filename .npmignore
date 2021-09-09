@@ -1,4 +1,4 @@
 src
 assets
 webpack.config.js
-.eslint.js
+.eslintrc.js
