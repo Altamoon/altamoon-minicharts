@@ -4,6 +4,8 @@
 
 The online tool itself can be found at [finom.github.io/minichart-grid](https://finom.github.io/minichart-grid).
 
+![image](https://user-images.githubusercontent.com/1082083/132679564-020508c0-cd3f-4513-9bb5-d89549cd42f9.png)
+
 ## API
 
 The simplest way is to embed it via global variable `minichartGrid`.
