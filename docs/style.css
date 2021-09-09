@@ -1,13 +1,15 @@
+
+
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   SVG
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 svg.minichart {
   font: 10px sans-serif;
-  background: #010025;
+  background: var(--biduul-chart-background, #202020);
   shape-rendering: crispEdges;
 }
 svg.minichart text {
-  fill: white
+  fill: var(--biduul-chart-text-fill, white)
 }
 
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -29,24 +31,4 @@ svg.minichart .plot .down.body {
 }
 svg.minichart .plot .down.wick {
   stroke: var(--bs-danger);
-}
-
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-/*   Grid
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.minichart .gridlines line, svg.minichart .gridlines path {
-  stroke: #444;
-}
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-/*   Price line
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.minichart .price-line .supstance path {
-  stroke: #0000ff;
-  stroke-dasharray: 10 6;
-  visibility: hidden;
-}
-svg.minichart .price-line .axisannotation path {
-  fill: #0000ff;
-  stroke: #0000ff;
-  shape-rendering: auto;
 }

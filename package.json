@@ -1,15 +1,18 @@
 {
-  "name": "biduul-phlegmatic",
-  "version": "0.1.1",
-  "description": "Biduul plugin that imitates human behavior to close Binance future positions",
-  "main": "dist/bundle.js",
+  "name": "minichart-grid",
+  "version": "0.0.0",
+  "description": "An embeddable online tool that allows to track all the Binance futures markets on one page",
+  "main": "docs/minichartGrid.js",
+  "style": "docs/style.css",
   "scripts": {
     "lint-pure": "cross-env NODE_ENV=development eslint ./src --ext .ts,.tsx",
     "lint": "npm run lint-pure -- --cache --fix",
     "test": "npm run lint-pure && npx tsc --noemit",
     "build": "webpack --mode=production",
-    "dev": "webpack serve --mode=development --hot --port=8083",
-    "upgrade": "npx npm-check-updates -u && npm i"
+    "start": "webpack serve --mode=development --hot --port=8083",
+    "upgrade": "npx npm-check-updates -u && npm i",
+    "patch": "npm t && npm version patch && npm run build && git commit -am 'chore: Build' && npm publish && git push && git push --tags",
+    "minor": "npm t && npm version minor && npm run build && git commit -am 'chore: Build' && npm publish && git push && git push --tags"
   },
   "author": "",
   "license": "AGPL",
@@ -53,6 +56,7 @@
     "biduul-binance-api": "^0.0.56",
     "buffer": "^6.0.3",
     "d3": "^7.0.1",
+    "d3-transition": "^3.0.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

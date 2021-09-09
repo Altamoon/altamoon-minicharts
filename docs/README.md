@@ -1,0 +1,1 @@
+**This is not documentation. This folder is used to serve the library [via Github Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) and publish it to NPM from the same place**

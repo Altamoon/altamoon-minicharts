@@ -4,9 +4,12 @@ import * as api from 'biduul-binance-api';
 import {
   D3Selection, DrawData, ResizeData, Scales,
 } from './types';
+import { ChartType } from '../types';
 
 export default class Plot {
   #resizeData: ResizeData;
+
+  #chartType: ChartType = 'candlestick';
 
   #lastCandle?: api.FuturesChartCandle;
 
@@ -56,9 +59,19 @@ export default class Plot {
   };
 
   public draw = ({
-    candles, resizeData, zoomTransform,
+    candles: givenCandles, resizeData, zoomTransform, chartType,
   }: DrawData): void => {
-    if (!candles.length) return;
+    if (!givenCandles.length) return;
+
+    let candles: api.FuturesChartCandle[];
+    if (chartType === 'heikin_ashi') {
+      candles = Plot.candlesToHeikinAshi(givenCandles);
+    } else if (chartType === 'heikin_ashi_actual_price') {
+      candles = Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
+    } else {
+      candles = givenCandles;
+    }
+
     const lastCandle = candles[candles.length - 1];
     // update all candles (except first) if zoom or last candle was changed
     if (
@@ -67,6 +80,7 @@ export default class Plot {
       || lastCandle?.interval !== this.#lastCandle?.interval
       || lastCandle?.symbol !== this.#lastCandle?.symbol
       || this.#zoomTransform !== zoomTransform
+      || this.#chartType !== chartType
     ) {
       const firstCandles = candles.slice(0, -1);
       const upCandles = firstCandles.filter((x) => x.direction === 'UP');
@@ -89,6 +103,7 @@ export default class Plot {
 
     this.#lastCandle = lastCandle;
     this.#zoomTransform = zoomTransform;
+    this.#chartType = chartType;
   };
 
   #getBodies = (candles: api.FuturesChartCandle[], direction: 'UP' | 'DOWN'): string => {
@@ -162,11 +177,9 @@ export default class Plot {
     return this.#wrapper ? d3.zoomTransform(this.#wrapper.node() as Element).k : 1;
   }
 
-  /**
-   * Returns an array of smoothed candles.
-   * (Based on heikin ashi candles, but keeps the real high & low)
-
-  private static smoozCandles = (
+  // This is a copy-pasted smoozCandles function from Biduul
+  // see https://github.com/Letiliel/biduul/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
+  private static candlesToHeikinAshiWithActualPrice = (
     candles: api.FuturesChartCandle[],
     prevSmooz: api.FuturesChartCandle[] = [], // If updating
     startIndex = 0, // If updating
@@ -222,5 +235,32 @@ export default class Plot {
 
     return newCandles;
   };
-  */
+
+  private static candlesToHeikinAshi = (candles: api.FuturesChartCandle[]) => {
+    const newCandles: api.FuturesChartCandle[] = [];
+    for (let i = 0; i < candles.length; i += 1) {
+      const {
+        open, close, high, low,
+      } = candles[i];
+      const previous = newCandles[i - 1] as api.FuturesChartCandle | undefined;
+
+      const newClose = (+open + +close + +high + +low) / 4;
+      const newOpen = previous
+        ? (+previous.open + +previous.close) / 2
+        : (+open + +close) / 2;
+      const newHigh = Math.max(high, newOpen, newClose);
+      const newLow = Math.min(low, newOpen, newClose);
+
+      newCandles[i] = {
+        ...candles[i],
+        close: newClose,
+        open: newOpen,
+        high: newHigh,
+        low: newLow,
+        direction: +newOpen <= +newClose ? 'UP' : 'DOWN',
+      };
+    }
+
+    return newCandles;
+  };
 }

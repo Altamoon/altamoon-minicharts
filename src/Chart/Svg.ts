@@ -25,4 +25,6 @@ export default class Svg {
     this.#groupSelection
       ?.attr('transform', `translate(${margin.left},${margin.top})`);
   };
+
+  public node = (): SVGSVGElement | null => this.#svg?.node() ?? null;
 }

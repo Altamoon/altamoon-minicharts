@@ -11,6 +11,7 @@ import ClipPath from './ClipPath';
 import Axes from './Axes';
 import GridLines from './GridLines';
 import Lines from './Lines';
+import { ChartType } from '../types';
 
 export default class Chart {
   #svg: Svg;
@@ -51,6 +52,8 @@ export default class Chart {
 
   #candles: api.FuturesChartCandle[] = [];
 
+  #chartType: ChartType = 'candlestick';
+
   constructor(container: HTMLDivElement) {
     const x = d3.scaleTime().range([0, 0]);
     const y = d3.scaleLinear().range([0, 0]);
@@ -63,9 +66,7 @@ export default class Chart {
     this.#plot = new Plot({ scales, resizeData: this.#calcDimensions() });
     this.#axes = new Axes({ scales: this.#scales });
     this.#gridLines = new GridLines({ scales });
-    this.#lines = new Lines({
-      axis: this.#axes.getAxis(),
-    });
+    this.#lines = new Lines({ axis: this.#axes.getAxis() });
 
     this.#initialRender();
 
@@ -95,9 +96,18 @@ export default class Chart {
   public update = (data: {
     candles?: api.FuturesChartCandle[];
     symbolInfo?: api.FuturesExchangeInfoSymbol | null;
+    chartType?: ChartType;
   }): void => {
     if (typeof data.candles !== 'undefined') {
+      const isNewInterval = this.#candles[0]?.interval !== data.candles[0]?.interval;
       this.#candles = data.candles;
+
+      this.#draw();
+
+      if (isNewInterval) {
+        this.#resize();
+        this.#lines.update();
+      }
     }
 
     if (typeof data.symbolInfo !== 'undefined') {
@@ -105,6 +115,10 @@ export default class Chart {
       this.#axes.update({ pricePrecision });
       this.#lines.update({ pricePrecision });
       this.#pricePrecision = pricePrecision;
+    }
+
+    if (typeof data.chartType !== 'undefined') {
+      this.#chartType = data.chartType;
     }
 
     this.#draw();
@@ -133,7 +147,10 @@ export default class Chart {
   #draw = (): void => {
     const resizeData: ResizeData = this.#calcDimensions();
     const drawData: DrawData = {
-      resizeData, candles: this.#candles, zoomTransform: this.#zoomTransform,
+      resizeData,
+      candles: this.#candles,
+      zoomTransform: this.#zoomTransform,
+      chartType: this.#chartType,
     };
 
     this.#calcXDomain();
@@ -164,6 +181,7 @@ export default class Chart {
 
     if (this.#candles.length) {
       this.#draw();
+      this.#translateBy(0);
     }
   };
 

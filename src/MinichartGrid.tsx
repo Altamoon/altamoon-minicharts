@@ -12,14 +12,20 @@ const Charts = styled.div`
   border-right: 1px solid rgba(100,100,100,0.5);
 `;
 
-const MinichartGrid = (): ReactElement => {
+interface Props {
+  onSymbolSelect?: (symbol: string) => void;
+}
+
+const MinichartGrid = ({
+  onSymbolSelect,
+}: Props): ReactElement => {
   const futuresExchangeSymbols = useValue(ROOT, 'futuresExchangeSymbols');
   return (
     <div>
       <Settings />
       <Charts>
         {futuresExchangeSymbols.map(({ symbol }) => (
-          <Minichart key={symbol} symbol={symbol} />
+          <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />
         ))}
       </Charts>
     </div>

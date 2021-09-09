@@ -98,7 +98,7 @@ export default class PriceLines {
   ): void {
     this.#parent = convertType<D3Selection<SVGElement>>(d3.select(parent));
 
-    this.eventsArea = this.#parent.select('#plotMouseEventsArea');
+    this.eventsArea = this.#parent.select('#minichartMouseEventsArea');
 
     this.#wrapper = this.#parent.append('g');
 

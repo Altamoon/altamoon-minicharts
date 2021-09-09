@@ -3,11 +3,11 @@
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 svg.minichart {
   font: 10px sans-serif;
-  background: #010025;
+  background: var(--biduul-chart-background, #202020);
   shape-rendering: crispEdges;
 }
 svg.minichart text {
-  fill: white
+  fill: var(--biduul-chart-text-fill, #fff);
 }
 
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -17,36 +17,23 @@ svg.minichart .plot .wick {
   stroke-width: 1px;
 }
 svg.minichart .plot .up.body {
-  fill: var(--bs-success);
-  stroke: var(--bs-success);
+  fill: var(--biduul-chart-plot-up-body-fill, var(--bs-green));
+  stroke: var(--biduul-chart-plot-up-body-stroke, var(--bs-green));
 }
 svg.minichart .plot .up.wick {
-  stroke: var(--bs-success);
+  stroke: var(--biduul-chart-plot-up-wick-stroke, var(--bs-green));
 }
 svg.minichart .plot .down.body {
-  fill: var(--bs-danger);
-  stroke: var(--bs-danger);
+  fill: var(--biduul-chart-plot-down-body-fill, var(--bs-red));
+  stroke: var(--biduul-chart-plot-down-body-stroke, var(--bs-red));
 }
 svg.minichart .plot .down.wick {
-  stroke: var(--bs-danger);
+  stroke: var(--biduul-chart-plot-down-wick-stroke, var(--bs-red));
 }
 
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   Grid
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 svg.minichart .gridlines line, svg.minichart .gridlines path {
-  stroke: #444;
-}
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-/*   Price line
-/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.minichart .price-line .supstance path {
-  stroke: #0000ff;
-  stroke-dasharray: 10 6;
-  visibility: hidden;
-}
-svg.minichart .price-line .axisannotation path {
-  fill: #0000ff;
-  stroke: #0000ff;
-  shape-rendering: auto;
+  stroke: var(--biduul-chart-gridlines-stroke, rgba(100, 100, 100, 0.2));
 }

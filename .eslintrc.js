@@ -5,7 +5,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
   ],
-  ignorePatterns: ['**/dist/*.js'],
+  ignorePatterns: ['**/docs/*.js'],
   rules: {
     'react/require-default-props': 0,
     'no-restricted-syntax': 0,

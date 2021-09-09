@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
-const CopyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -30,7 +30,7 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: "assets", to: "" },
+        { from: 'assets', to: '' },
       ],
     }),
   ],

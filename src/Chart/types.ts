@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import * as api from 'biduul-binance-api';
+import { ChartType } from '../types';
 
 export type D3Selection<T extends d3.BaseType, C extends d3.BaseType = null>
   = d3.Selection<T, unknown, C, unknown>;
@@ -44,4 +45,5 @@ export interface DrawData {
   candles: api.FuturesChartCandle[];
   zoomTransform: Pick<d3.ZoomTransform, 'x' | 'y' | 'k'>;
   resizeData: ResizeData;
+  chartType: ChartType;
 }
