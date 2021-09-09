@@ -51,6 +51,6 @@ svg.minichart .gridlines line, svg.minichart .gridlines path {
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   Lines
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.minichart .line-label text {
+svg.minichart .price-line-right-label text {
   fill: #fff;
 }
