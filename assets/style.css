@@ -13,10 +13,10 @@ svg.minichart text {
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   Axis
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.chart-svg .axis text {
+svg.minichart .axis text {
   fill: var(--biduul-chart-text-fill);
 }
-svg.chart-svg .axis path, svg.chart-svg .axis line {
+svg.minichart .axis path, svg.minichart .axis line {
   stroke: var(--biduul-chart-axis-line-stroke);
 }
 
