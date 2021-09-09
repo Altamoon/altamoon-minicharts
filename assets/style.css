@@ -47,3 +47,10 @@ svg.minichart .plot .down.wick {
 svg.minichart .gridlines line, svg.minichart .gridlines path {
   stroke: var(--biduul-chart-gridlines-stroke, rgba(100, 100, 100, 0.2));
 }
+
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   Lines
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart .line-label text {
+  fill: #fff;
+}
