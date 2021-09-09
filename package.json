@@ -15,7 +15,7 @@
     "minor": "npm t && npm version minor && npm run build && git commit -am 'chore: Build' && npm publish && git push && git push --tags"
   },
   "author": "",
-  "license": "AGPL",
+  "license": "AGPL-3.0-or-later",
   "babel": {
     "presets": [
       "@babel/preset-env",
