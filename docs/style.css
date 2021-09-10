@@ -13,7 +13,6 @@ svg.minichart text {
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   Axis
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-
 svg.minichart .axis path, svg.minichart .axis line {
   stroke: var(--biduul-chart-axis-line-stroke, rgba(100, 100, 100, 0.2));
 }
