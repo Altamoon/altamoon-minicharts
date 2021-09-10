@@ -32,6 +32,7 @@ module.exports = {
       patterns: [
         { from: 'assets', to: '' },
         { from: 'src/style.css', to: '' },
+        { from: 'src/minichartGrid.d.ts', to: '' },
       ],
     }),
   ],
