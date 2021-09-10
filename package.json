@@ -11,8 +11,8 @@
     "build": "webpack --mode=production",
     "start": "webpack serve --mode=development --hot --port=8070",
     "upgrade": "npx npm-check-updates -u && npm i",
-    "patch": "npm t && npm version patch && npm run build && git commit -am 'chore: Build' --allow-empty && npm publish && git push && git push --tags",
-    "minor": "npm t && npm version minor && npm run build && git commit -am 'chore: Build' --allow-empty && npm publish && git push && git push --tags"
+    "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
+    "minor": "npm t && npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
   "author": "",
   "license": "AGPL-3.0-or-later",
