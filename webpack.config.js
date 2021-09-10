@@ -31,6 +31,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'assets', to: '' },
+        { from: 'src/style.css', to: '' },
       ],
     }),
   ],

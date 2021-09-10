@@ -99,7 +99,14 @@ export default class Chart {
     chartType?: ChartType;
   }): void => {
     if (typeof data.candles !== 'undefined') {
+      const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
       const isNewInterval = this.#candles[0]?.interval !== data.candles[0]?.interval;
+
+      const isNewCandle = !isNewSymbol
+        && !isNewInterval
+        && this.#candles.length
+        && this.#candles.length !== data.candles.length;
+
       this.#candles = data.candles;
 
       this.#draw();
@@ -107,6 +114,8 @@ export default class Chart {
       if (isNewInterval) {
         this.#resize();
         this.#lines.update();
+      } else if (isNewCandle) {
+        this.#translateBy(0);
       }
     }
 
@@ -217,8 +226,8 @@ export default class Chart {
   };
 
   #calcYDomain = (): void => {
-    const { y, x } = this.#scales;
-    const xDomain = x.domain();
+    const { y, scaledX } = this.#scales;
+    const xDomain = scaledX.domain();
     const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
           && candle.time <= xDomain[1].getTime());
 

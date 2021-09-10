@@ -24,7 +24,7 @@ const MinichartGrid = ({
     <div>
       <Settings />
       <Charts>
-        {futuresExchangeSymbols.map(({ symbol }) => (
+        {futuresExchangeSymbols.slice(0, 10).map(({ symbol }) => (
           <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />
         ))}
       </Charts>

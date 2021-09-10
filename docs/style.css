@@ -13,11 +13,9 @@ svg.minichart text {
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*   Axis
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-svg.minichart .axis text {
-  fill: var(--biduul-chart-text-fill);
-}
+
 svg.minichart .axis path, svg.minichart .axis line {
-  stroke: var(--biduul-chart-axis-line-stroke);
+  stroke: var(--biduul-chart-axis-line-stroke, rgba(100, 100, 100, 0.2));
 }
 
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -54,3 +52,5 @@ svg.minichart .gridlines line, svg.minichart .gridlines path {
 svg.minichart .price-line-wrapper text {
   fill: #fff;
 }
+
+

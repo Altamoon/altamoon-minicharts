@@ -29,9 +29,9 @@ export default class Axes {
   public appendTo = (parent: Element, resizeData: ResizeData): void => {
     const container = d3.select(parent);
 
-    this.#gX = container.append('g').attr('class', 'x axis bottom');
+    this.#gX = container.append('g').attr('class', 'x axis bottom').attr('fill', 'currentColor');
 
-    this.#gYRight = container.append('g').attr('class', 'y axis right');
+    this.#gYRight = container.append('g').attr('class', 'y axis right').attr('fill', 'currentColor');
     this.#resizeContainers(resizeData);
   };
 
