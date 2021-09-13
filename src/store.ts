@@ -52,7 +52,7 @@ class RootStore {
     try {
       const { symbols } = await api.futuresExchangeInfo();
 
-      this.futuresExchangeSymbols = symbols.slice(0, 10);
+      this.futuresExchangeSymbols = symbols;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
