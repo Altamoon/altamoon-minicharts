@@ -22,10 +22,13 @@ const IntervalItem = styled.div`
 `;
 
 const MIN_CANDLES_LENGTH = 50;
-const MAX_CANDLES_LENGTH = 1000;
+const MAX_CANDLES_LENGTH = 1500;
 
 const MIN_GRID_COLUMNS = 1;
 const MAX_GRID_COLUMNS = 24;
+
+const MIN_HEIGHT = 100;
+const MAX_HEIGHT = 1000;
 
 const THROTTLE_DELAY_VALUES = {
   '1 second': 1_000,
@@ -35,9 +38,9 @@ const THROTTLE_DELAY_VALUES = {
   '30 seconds': 30_000,
 };
 
-const intervals: api.CandlestickChartInterval[] = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'];
 const Settings = (): ReactElement => {
   const [interval, setChartInterval] = useChange(ROOT, 'interval');
+  const [chartHeight, setChartHeight] = useChange(ROOT, 'chartHeight');
   const [candlesLength, setCandlesLength] = useChange(ROOT, 'candlesLength');
   const [gridColumns, setGridColumns] = useChange(ROOT, 'gridColumns');
   const [throttleDelay, setThrottleDelay] = useChange(ROOT, 'throttleDelay');
@@ -46,9 +49,9 @@ const Settings = (): ReactElement => {
   return (
     <>
       <Row>
-        <Col xs={12} lg={6}>
+        <Col xs={12} lg={4}>
           <InputRange
-            label="# of candles per chart"
+            label="# of rendered candles per chart"
             min={MIN_CANDLES_LENGTH}
             max={MAX_CANDLES_LENGTH}
             id="minichart_grid_candles_per_chart"
@@ -56,7 +59,7 @@ const Settings = (): ReactElement => {
             onChange={setCandlesLength}
           />
         </Col>
-        <Col xs={12} lg={6}>
+        <Col xs={12} lg={4}>
           <InputRange
             label="# of grid columns"
             min={MIN_GRID_COLUMNS}
@@ -66,11 +69,21 @@ const Settings = (): ReactElement => {
             onChange={setGridColumns}
           />
         </Col>
+        <Col xs={12} lg={4}>
+          <InputRange
+            label="Chart height"
+            min={MIN_HEIGHT}
+            max={MAX_HEIGHT}
+            id="minichart_grid_height"
+            value={chartHeight}
+            onChange={setChartHeight}
+          />
+        </Col>
       </Row>
       <Row>
         <Col xs={12} lg={4}>
           <Intervals className="nav nav-pills">
-            {intervals.map((intervalsItem, index) => (
+            {api.futuresIntervals.map((intervalsItem, index) => (
               <IntervalItem
                 role="button"
                 tabIndex={index}

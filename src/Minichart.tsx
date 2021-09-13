@@ -5,6 +5,7 @@ import { useValue } from 'use-change';
 import styled from 'styled-components';
 import { CANDLES, ROOT } from './store';
 import Chart from './Chart';
+import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
 
 interface Props {
   symbol: string;
@@ -15,22 +16,20 @@ const ChartInfo = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  width: calc(100% - 55px);
   padding: 0.25rem 0.5rem;
   pointer-events: none;
 `;
 
-const SymbolName = styled.div<{ hasHandler: boolean; }>`
+const SymbolName = styled.div`
   color: #fff;
   display: inline;
-  ${({ hasHandler }) => hasHandler && `
-    cursor: pointer;
-    pointer-events: auto;
+  cursor: pointer;
+  pointer-events: auto;
 
-    &:hover {
-      text-decoration: underline;
-    }
-  `}
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Container = styled.div`
@@ -40,12 +39,10 @@ const Container = styled.div`
   position: relative;
 `;
 
-const ChartContainer = styled.div`
-  height: 200px;
-`;
-
-const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement => {
+const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
+  const interval = useValue(ROOT, 'interval');
+  const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
   const candlesLength = useValue(ROOT, 'candlesLength');
   const chartType = useValue(ROOT, 'chartType');
@@ -53,6 +50,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const symbolInfo = futuresExchangeSymbols.find((s) => s.symbol === symbol);
+  const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
 
   useEffect(() => {
     chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
@@ -64,22 +62,49 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement => {
   useEffect(() => {
     if (ref.current && !chartInstance) {
       const instance = new Chart(ref.current);
-      instance.update({ candles, chartType });
+      instance.update({ candles: (candles || []).slice(-candlesLength), chartType });
 
       setChartInstance(instance);
     }
   });
 
+  const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
+
   return (
     <Container style={{ width: `${100 / gridColumns}%` }}>
       <ChartInfo>
-        <SymbolName onClick={() => onSymbolSelect?.(symbol)} hasHandler={!!onSymbolSelect}>
+        <SymbolName onClick={() => onSymbolNameClick?.(symbol)}>
           {symbolInfo?.baseAsset}
           /
           {symbolInfo?.quoteAsset}
         </SymbolName>
+        <sub className="float-end  mt-2">
+          {candles?.length && candles[0].interval !== interval ? `Loading ${interval}...`
+            : additionalInfoCandlesLengths.map(([period, candleLength]) => {
+              const pastClose = candles?.slice(-candleLength)[0]?.close;
+              const currClose = candles?.[candles.length - 1]?.close;
+
+              const percent = +(((currClose - pastClose) / pastClose) * 100).toFixed(2) || 0;
+              const className = percent > 0 ? 'text-success' : 'text-danger';
+
+              return (
+
+                <span key={period} className="ms-2">
+                  {period}
+                  :
+                  {' '}
+                  <span className={`ml-1 ${percent ? className : ''}`}>
+                    {percent > 0 ? '+' : ''}
+                    {percent}
+                    %
+                  </span>
+                </span>
+
+              );
+            })}
+        </sub>
       </ChartInfo>
-      <ChartContainer ref={(node) => { ref.current = node; }} />
+      <div style={{ height: `${chartHeight}px` }} ref={(node) => { ref.current = node; }} />
     </Container>
   );
 };

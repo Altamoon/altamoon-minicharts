@@ -14,6 +14,8 @@ class RootStore {
 
   public futuresExchangeSymbols: api.FuturesExchangeInfoSymbol[] = [];
 
+  public chartHeight = getPersistentStorageValue<RootStore, number>('chartHeight', 200);
+
   public interval = getPersistentStorageValue<RootStore, api.CandlestickChartInterval>('interval', '1m');
 
   public candlesLength = getPersistentStorageValue<RootStore, number>('candlesLength', 200);
@@ -34,7 +36,7 @@ class RootStore {
 
   constructor() {
     const keysToListen: (keyof RootStore)[] = [
-      'interval', 'candlesLength', 'throttleDelay', 'gridColumns', 'chartType',
+      'interval', 'candlesLength', 'throttleDelay', 'gridColumns', 'chartType', 'chartHeight',
     ];
 
     keysToListen.forEach((key) => {
@@ -50,7 +52,7 @@ class RootStore {
     try {
       const { symbols } = await api.futuresExchangeInfo();
 
-      this.futuresExchangeSymbols = symbols;
+      this.futuresExchangeSymbols = symbols.slice(0, 10);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -83,7 +85,7 @@ class RootStore {
     const { interval, futuresExchangeSymbols } = this;
 
     for (const { symbol } of futuresExchangeSymbols) {
-      void api.futuresCandles({ symbol, interval, limit: 1000 }).then((candles) => {
+      void api.futuresCandles({ symbol, interval, limit: 1500 }).then((candles) => {
         allCandlesData[symbol] = candles;
         this.#throttledListeners[symbol]?.(candles);
       }).catch((e) => {
@@ -117,4 +119,10 @@ class RootStore {
 export const ROOT = (store: RootStore): RootStore => store;
 export const CANDLES = (store: RootStore): typeof store.allCandles => store.allCandles;
 
-export default new RootStore();
+const store = new RootStore();
+if (process.env.NODE_ENV === 'development') {
+  // make store to be accessed ass a global variable
+  (window as unknown as { store: RootStore; }).store = store;
+}
+
+export default store;

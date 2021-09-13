@@ -39,7 +39,7 @@ export default class Axes {
     this.#gX?.call(this.#x.ticks(Math.round(width / 50)));
 
     this.#gYRight?.call(
-      this.#yRight.tickValues(d3.scaleLinear().domain(scales.y.domain()).ticks(height / 80)),
+      this.#yRight.tickValues(d3.scaleLinear().domain(scales.y.domain()).ticks(height / 40)),
     );
   }
 
