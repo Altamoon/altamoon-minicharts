@@ -39,7 +39,7 @@ export default class Chart {
   #hasInitialScroll = false;
 
   #margin: StyleMargin = {
-    top: 0, right: 55, bottom: 30, left: 15,
+    top: 0, right: 55, bottom: 30, left: -1,
   };
 
   #padding: Omit<StyleMargin, 'left'> = {
@@ -104,8 +104,9 @@ export default class Chart {
 
       const isNewCandle = !isNewSymbol
         && !isNewInterval
-        && this.#candles.length
-        && this.#candles.length !== data.candles.length;
+        && !!this.#candles.length
+        && this.#candles[this.#candles.length - 1]?.time
+          !== data.candles[data.candles.length - 1]?.time;
 
       this.#candles = data.candles;
 
