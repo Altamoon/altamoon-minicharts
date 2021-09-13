@@ -2,7 +2,7 @@
 
 > An embeddable online tool that allows to track all the Binance futures markets on one page
 
-The online tool itself can be found at [finom.github.io/minichart-grid](https://finom.github.io/minichart-grid).
+The online tool itself can be found at [letiliel.github.io/minichart-grid](https://letiliel.github.io/minichart-grid).
 
 ![image](https://user-images.githubusercontent.com/1082083/132679564-020508c0-cd3f-4513-9bb5-d89549cd42f9.png)
 
@@ -15,12 +15,12 @@ The simplest way is to embed it via global variable `minichartGrid`.
 <html>
 <head>
     <!-- The tool originally uses a dark bootstrap theme, but you can replace it by the regulatstrap CSS -->
-    <link rel="stylesheet" href="https://finom.github.io/minichart-grid/bootstrap-bootswatch-darkly.min.css">
-    <link rel="stylesheet" href="https://finom.github.io/minichart-grid/style.css">
+    <link rel="stylesheet" href="https://letiliel.github.io/minichart-grid/bootstrap-bootswatch-darkly.min.css">
+    <link rel="stylesheet" href="https://letiliel.github.io/minichart-grid/style.css">
 </head>
 <body>
     <div id="root" class="m-4"></div>
-    <script src="https://finom.github.io/minichart-grid/minichartGrid.js"></script>
+    <script src="https://letiliel.github.io/minichart-grid/minichartGrid.js"></script>
     <script> minichartGrid('#root'); </script> 
 </body>
 </html>
