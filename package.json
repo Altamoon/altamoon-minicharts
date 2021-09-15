@@ -14,7 +14,18 @@
     "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
     "minor": "npm t && npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
-  "author": "",
+  "author": {
+    "name": "Letiliel",
+    "email": "dev@xod.me",
+    "url": "https://github.com/Letiliel"
+  },
+  "contributors": [
+    {
+      "name": "Andrey Gubanov",
+      "email": "andrey@gubanov.eu",
+      "url": "https://opensource.gubanov.eu/"
+    }
+  ],
   "license": "AGPL-3.0-or-later",
   "babel": {
     "presets": [
