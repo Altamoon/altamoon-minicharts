@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as api from 'biduul-binance-api';
-import { last } from 'lodash';
+import { debounce, last } from 'lodash';
 
 import {
   Scales, StyleMargin, ResizeData, D3Selection, DrawData,
@@ -151,7 +151,7 @@ export default class Chart {
     this.#clipPath.appendTo(svgContainer, resizeData);
     this.#lines.appendTo(svgContainer, resizeData);
 
-    new ResizeObserver(() => this.#resize()).observe(this.#container);
+    new ResizeObserver(debounce(() => this.#resize(), 500)).observe(this.#container);
   };
 
   #draw = (): void => {
