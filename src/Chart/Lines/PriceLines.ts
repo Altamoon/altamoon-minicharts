@@ -170,7 +170,7 @@ export default class PriceLines {
   public invertY = (px: number): number => convertType<{ invert:(px: number) => number }>(
     this.#axis.yRight.scale()).invert(px);
 
-  public getItems = (): PriceLinesDatum[] => this.#items;
+  public getItems(): PriceLinesDatum[] { return this.#items; }
 
   #draw = (): void => {
     if (!this.#wrapper) return;
@@ -194,6 +194,19 @@ export default class PriceLines {
           if (lineStyle === 'dotted') return '2 4';
           return null;
         });
+
+      if (this.#isTitleVisible) {
+        update.select('.price-line-title-object .text').each(function each({ title }) {
+          const element = this as HTMLElement;
+          if (typeof title === 'function') {
+            title(element);
+          } else {
+            element.innerHTML = String(title);
+          }
+        });
+        update.select('.price-line-title-object .price-line-title-inner')
+          .style('background-color', (d) => (this.#isBackgroundFill && d.color ? d.color : '#010025'));
+      }
 
       this.#setPriceTextAttributes({
         textSelection,
@@ -406,22 +419,13 @@ export default class PriceLines {
           >(wrapper);
           updateHorizontalLineHandler(updateWrapper, 'right', this.#axis.yRight);
           updateVerticalLineHandler(updateWrapper, this.#axis.x);
-          if (this.#isTitleVisible) {
-            updateWrapper.select('.price-line-title-object .text').text(({ title }) => title ?? '');
-            updateWrapper.select('.price-line-title-object .price-line-title-inner')
-              .style('background-color', (d) => (this.#isBackgroundFill && d.color ? d.color : '#010025'));
-          }
 
           return wrapper;
         },
         (update) => {
           updateHorizontalLineHandler(update, 'right', this.#axis.yRight);
           updateVerticalLineHandler(update, this.#axis.x);
-          if (this.#isTitleVisible) {
-            update.select('.price-line-title-object .text').text(({ title }) => title ?? '');
-            update.select('.price-line-title-object .price-line-title-inner')
-              .style('background-color', (d) => (this.#isBackgroundFill && d.color ? d.color : '#010025'));
-          }
+
           return update;
         },
         (exit) => exit.remove(),

@@ -27,10 +27,10 @@ export interface ChartAxis {
   yRight: d3.Axis<d3.NumberValue>;
 }
 
-export interface PriceLinesDatum {
+export interface PriceLinesDatum<T = unknown> {
   xValue?: Date;
   yValue?: number;
-  title?: string;
+  title?: string | ((element: HTMLElement) => void);
   color?: string;
   id?: string | number;
   isVisible?: boolean;
@@ -39,6 +39,7 @@ export interface PriceLinesDatum {
   isClosable?: boolean; // non-dynamic so far
   isTitleVisible?: boolean; // non-dynamic so far
   lineStyle?: 'solid' | 'dashed' | 'dotted';
+  customData?: T;
 }
 
 export interface DrawData {

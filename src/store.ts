@@ -26,7 +26,11 @@ class RootStore {
 
   public chartType = getPersistentStorageValue<RootStore, ChartType>('chartType', 'candlestick');
 
+  public symbolAlerts = getPersistentStorageValue<RootStore, Record<string, number[]>>('symbolAlerts', {});
+
   public get allCandles(): Record<string, api.FuturesChartCandle[]> { return this.#allCandles; }
+
+  public realTimePrices: Record<string, number> = {};
 
   #allCandles: Record<string, api.FuturesChartCandle[]> = {};
 
@@ -36,7 +40,7 @@ class RootStore {
 
   constructor() {
     const keysToListen: (keyof RootStore)[] = [
-      'interval', 'candlesLength', 'throttleDelay', 'gridColumns', 'chartType', 'chartHeight',
+      'interval', 'candlesLength', 'throttleDelay', 'gridColumns', 'chartType', 'chartHeight', 'symbolAlerts',
     ];
 
     keysToListen.forEach((key) => {
@@ -110,6 +114,8 @@ class RootStore {
       }
 
       allCandlesData[candle.symbol] = [...data];
+
+      this.realTimePrices[candle.symbol] = candle.close;
 
       this.#throttledListeners[candle.symbol]?.(allCandlesData[candle.symbol]);
     });

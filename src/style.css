@@ -52,4 +52,32 @@ svg.minichart .price-line-wrapper text {
   fill: #fff;
 }
 
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/*   Alert lines
+/* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+svg.minichart .triggered-alert-indicator {
+  animation-duration: 1s;
+  animation-name: minichart-triggered-alert-indicator;
+  animation-iteration-count: infinite;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: top;
+  margin-top: 1px;
+  margin-right: 2px;
+  background-color: var(--bs-yellow);
+}
+
+@keyframes minichart-triggered-alert-indicator {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
 

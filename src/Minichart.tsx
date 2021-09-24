@@ -1,7 +1,7 @@
 import React, {
   memo, ReactElement, useEffect, useRef, useState,
 } from 'react';
-import { useValue } from 'use-change';
+import useChange, { useValue } from 'use-change';
 import styled from 'styled-components';
 import { CANDLES, ROOT } from './store';
 import Chart from './Chart';
@@ -41,6 +41,7 @@ const Container = styled.div`
 
 const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
+  const realTimePrices = useValue(ROOT, 'realTimePrices');
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
@@ -51,6 +52,8 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const symbolInfo = futuresExchangeSymbols.find((s) => s.symbol === symbol);
   const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
+  const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
+  const alerts = symbolAlerts[symbol];
 
   useEffect(() => {
     chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
@@ -61,8 +64,20 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (ref.current && !chartInstance) {
-      const instance = new Chart(ref.current);
-      instance.update({ candles: (candles || []).slice(-candlesLength), chartType });
+      const instance = new Chart(ref.current, {
+        realTimePrices,
+        symbol,
+        onUpdateAlerts: (d: number[]) => setSymbolAlerts((v) => ({
+          ...v,
+          [symbol]: d,
+        })),
+      });
+
+      instance.update({
+        candles: (candles || []).slice(-candlesLength),
+        chartType,
+        alerts,
+      });
 
       setChartInstance(instance);
     }
@@ -99,7 +114,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
                     %
                   </span>
                 </span>
-
               );
             })}
         </sub>

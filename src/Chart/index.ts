@@ -13,6 +13,11 @@ import GridLines from './GridLines';
 import Lines from './Lines';
 import { ChartType } from '../types';
 
+interface Params {
+  onUpdateAlerts: (d: number[]) => void;
+  realTimePrices: Record<string, number>;
+  symbol: string;
+}
 export default class Chart {
   #svg: Svg;
 
@@ -54,7 +59,10 @@ export default class Chart {
 
   #chartType: ChartType = 'candlestick';
 
-  constructor(container: HTMLDivElement) {
+  constructor(
+    container: HTMLDivElement,
+    { realTimePrices, symbol, onUpdateAlerts }: Params,
+  ) {
     const x = d3.scaleTime().range([0, 0]);
     const y = d3.scaleLinear().range([0, 0]);
     const scales: Scales = { x, y, scaledX: x };
@@ -66,7 +74,12 @@ export default class Chart {
     this.#plot = new Plot({ scales, resizeData: this.#calcDimensions() });
     this.#axes = new Axes({ scales: this.#scales });
     this.#gridLines = new GridLines({ scales });
-    this.#lines = new Lines({ axis: this.#axes.getAxis() });
+    this.#lines = new Lines({
+      axis: this.#axes.getAxis(),
+      realTimePrices,
+      symbol,
+      onUpdateAlerts,
+    });
 
     this.#initialRender();
 
@@ -97,6 +110,7 @@ export default class Chart {
     candles?: api.FuturesChartCandle[];
     symbolInfo?: api.FuturesExchangeInfoSymbol | null;
     chartType?: ChartType;
+    alerts?: number[];
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -129,6 +143,10 @@ export default class Chart {
 
     if (typeof data.chartType !== 'undefined') {
       this.#chartType = data.chartType;
+    }
+
+    if (typeof data.alerts !== 'undefined') {
+      this.#lines.update({ alerts: data.alerts });
     }
 
     this.#draw();
@@ -168,8 +186,9 @@ export default class Chart {
     this.#axes.draw(resizeData);
     this.#plot.draw(drawData);
     this.#gridLines.draw(resizeData);
+
     this.#lines.update({
-      currentPrice: +(this.#candles[this.#candles.length - 1]?.close ?? 0),
+      lastPrice: +(this.#candles[this.#candles.length - 1]?.close ?? 0),
     });
 
     if (!this.#hasInitialScroll && this.#candles.length) {

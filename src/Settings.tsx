@@ -134,7 +134,8 @@ const Settings = (): ReactElement => {
       </Row>
       <p>
         <sub>
-          * Use Shift button + Mousewheel to zoom specific chart
+          * Use Shift button + Mousewheel to zoom specific chart.
+          Use Right click to create an alert.
         </sub>
       </p>
     </>
