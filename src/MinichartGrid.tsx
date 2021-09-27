@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { createPortal } from 'react-dom';
 import { hot } from 'react-hot-loader/root';
 import { useValue } from 'use-change';
 import styled from 'styled-components';
@@ -13,16 +14,22 @@ const Charts = styled.div`
 `;
 
 interface Props {
+  settingsContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
 
 const MinichartGrid = ({
+  settingsContainer,
   onSymbolSelect,
 }: Props): ReactElement => {
   const futuresExchangeSymbols = useValue(ROOT, 'futuresExchangeSymbols');
+
   return (
     <div>
-      <Settings />
+      {settingsContainer ? createPortal(
+        <Settings />,
+        settingsContainer,
+      ) : <Settings />}
       <Charts>
         {futuresExchangeSymbols.map(({ symbol }) => (
           <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />

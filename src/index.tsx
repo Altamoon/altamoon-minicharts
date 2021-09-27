@@ -7,12 +7,13 @@ import MinichartGrid from './MinichartGrid';
 import store from './store';
 
 interface Options {
+  settingsContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
 
 export default function minichartGrid(
   givenElement: string | HTMLElement | HTMLElement[],
-  { onSymbolSelect }: Options = {},
+  { settingsContainer, onSymbolSelect }: Options = {},
 ): void {
   const element = $.one(givenElement);
 
@@ -20,7 +21,7 @@ export default function minichartGrid(
 
   render((
     <Provider value={store}>
-      <MinichartGrid onSymbolSelect={onSymbolSelect} />
+      <MinichartGrid settingsContainer={settingsContainer} onSymbolSelect={onSymbolSelect} />
     </Provider>
   ), element);
 }
