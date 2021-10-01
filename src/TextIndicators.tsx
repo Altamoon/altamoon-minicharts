@@ -16,8 +16,8 @@ interface Props {
 const TextIndicators = ({ symbol }: Props): ReactElement => {
   const volume = useValue(VOLUMES, symbol);
   const priceChangePercent = useValue(PRICE_CHANGE, symbol);
-  return (
 
+  return (
     <>
       <span>
         <OpaqueLabel>Volume (24h):</OpaqueLabel>
@@ -29,7 +29,7 @@ const TextIndicators = ({ symbol }: Props): ReactElement => {
       <span>
         <OpaqueLabel>% change (24h):</OpaqueLabel>
         {' '}
-                  &nbsp;
+        &nbsp;
         <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
           {+priceChangePercent > 0 ? '+' : ''}
           {priceChangePercent || 0}
@@ -37,8 +37,37 @@ const TextIndicators = ({ symbol }: Props): ReactElement => {
         </span>
       </span>
     </>
-
   );
 };
 
 export default TextIndicators;
+
+/*
+import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
+
+const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
+
+additionalInfoCandlesLengths.map(([period, candleLength]) => {
+  const pastClose = candles?.slice(-candleLength)[0]?.close;
+  const currClose = candles?.[candles.length - 1]?.close;
+
+  const percent = +(((currClose - pastClose) / pastClose) * 100).toFixed(2) || 0;
+  const className = percent > 0 ? 'text-success' : 'text-danger';
+
+  return (
+
+    <span key={period} className="ms-2">
+      <OpaqueLabel>
+        {period}
+        :
+      </OpaqueLabel>
+      {' '}
+      <span className={`ml-1 ${percent ? className : ''}`}>
+        {percent > 0 ? '+' : ''}
+        {percent}
+        %
+      </span>
+    </span>
+  );
+})}
+*/

@@ -3,9 +3,11 @@ import React, {
 } from 'react';
 import useChange, { useValue } from 'use-change';
 import styled from 'styled-components';
+
 import { CANDLES, ROOT } from './store';
 import Chart from './Chart';
 import TextIndicators from './TextIndicators';
+import useOnScreen from './lib/useOnScreen';
 
 interface Props {
   symbol: string;
@@ -49,13 +51,15 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const chartType = useValue(ROOT, 'chartType');
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const ref = useRef<HTMLDivElement | null>(null);
+  const isVisible = useOnScreen(ref);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
   const alerts = symbolAlerts[symbol];
+  const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
 
   useEffect(() => {
-    chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
-  }, [candles, candlesLength, chartInstance]);
+    if (isVisible) chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
+  }, [candles, candlesLength, chartInstance, isVisible]);
   useEffect(() => { if (symbolInfo) chartInstance?.update({ symbolInfo }); });
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
 
@@ -81,36 +85,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
     }
   });
 
-  const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
-  /*
-import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
-
-const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
-
-additionalInfoCandlesLengths.map(([period, candleLength]) => {
-  const pastClose = candles?.slice(-candleLength)[0]?.close;
-  const currClose = candles?.[candles.length - 1]?.close;
-
-  const percent = +(((currClose - pastClose) / pastClose) * 100).toFixed(2) || 0;
-  const className = percent > 0 ? 'text-success' : 'text-danger';
-
-  return (
-
-    <span key={period} className="ms-2">
-      <OpaqueLabel>
-        {period}
-        :
-      </OpaqueLabel>
-      {' '}
-      <span className={`ml-1 ${percent ? className : ''}`}>
-        {percent > 0 ? '+' : ''}
-        {percent}
-        %
-      </span>
-    </span>
-  );
-})}
-  */
   return (
     <Container style={{ width: `${100 / gridColumns}%` }}>
       <ChartInfo>
