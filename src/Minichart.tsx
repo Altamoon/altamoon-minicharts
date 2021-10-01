@@ -3,11 +3,9 @@ import React, {
 } from 'react';
 import useChange, { useValue } from 'use-change';
 import styled from 'styled-components';
-import {
-  CANDLES, PRICE_CHANGE, ROOT, VOLUMES,
-} from './store';
+import { CANDLES, ROOT } from './store';
 import Chart from './Chart';
-import formatMoneyNumber from './lib/formatMoneyNumber';
+import TextIndicators from './TextIndicators';
 
 interface Props {
   symbol: string;
@@ -34,10 +32,6 @@ const SymbolName = styled.div`
   }
 `;
 
-const OpaqueLabel = styled.span`
-  opacity: 0.5;
-`;
-
 const Container = styled.div`
   border-top: 1px solid rgba(100,100,100,0.5);
   border-left: 1px solid rgba(100,100,100,0.5);
@@ -47,8 +41,6 @@ const Container = styled.div`
 
 const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
-  const volume = useValue(VOLUMES, symbol);
-  const priceChangePercent = useValue(PRICE_CHANGE, symbol);
   const realTimePrices = useValue(ROOT, 'realTimePrices');
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
@@ -128,27 +120,9 @@ additionalInfoCandlesLengths.map(([period, candleLength]) => {
           {symbolInfo?.quoteAsset}
         </SymbolName>
         <div className="float-end text-end" style={{ fontSize: '.75em' }}>
-          {candles?.length && candles[0].interval !== interval ? `Loading ${interval}...`
+          {!candles?.length || candles[0].interval !== interval ? `Loading ${interval}...`
             : (
-              <>
-                <span>
-                  <OpaqueLabel>Volume (24h):</OpaqueLabel>
-                  {' '}
-                  &nbsp;
-                  {formatMoneyNumber(+volume || 0)}
-                </span>
-                <br />
-                <span>
-                  <OpaqueLabel>% change (24h):</OpaqueLabel>
-                  {' '}
-                  &nbsp;
-                  <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
-                    {+priceChangePercent > 0 ? '+' : ''}
-                    {priceChangePercent || 0}
-                    %
-                  </span>
-                </span>
-              </>
+              <TextIndicators symbol={symbol} />
             )}
         </div>
       </ChartInfo>
