@@ -48,7 +48,7 @@ export default class Chart {
   };
 
   #padding: Omit<StyleMargin, 'left'> = {
-    top: 50, right: 30, bottom: 20,
+    top: 65, right: 30, bottom: 20,
   };
 
   #container: HTMLDivElement;

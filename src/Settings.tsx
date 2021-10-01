@@ -5,7 +5,7 @@ import useChange from 'use-change';
 import { Row, Col } from 'reactstrap';
 
 import { ROOT } from './store';
-import { ChartType } from './types';
+import { ChartType, SortBy } from './types';
 import isType from './lib/isType';
 import InputRange from './lib/InputRange';
 
@@ -13,6 +13,11 @@ const Intervals = styled.div`
   padding-bottom: 1rem;
   flex-wrap: nowrap!important;
   overflow: auto;  
+`;
+
+const SortLabel = styled.label`
+  cursor: pointer;
+  &:hover { color: #fff; }
 `;
 
 const IntervalItem = styled.div`
@@ -45,6 +50,8 @@ const Settings = (): ReactElement => {
   const [gridColumns, setGridColumns] = useChange(ROOT, 'gridColumns');
   const [throttleDelay, setThrottleDelay] = useChange(ROOT, 'throttleDelay');
   const [chartType, setChartType] = useChange(ROOT, 'chartType');
+  const [sortBy, setSortBy] = useChange(ROOT, 'sortBy');
+  const [sortDirection, setSortDirection] = useChange(ROOT, 'sortDirection');
 
   return (
     <>
@@ -82,22 +89,29 @@ const Settings = (): ReactElement => {
       </Row>
       <Row>
         <Col xs={12} lg={4}>
-          <Intervals className="nav nav-pills">
-            {api.futuresIntervals.map((intervalsItem, index) => (
-              <IntervalItem
-                role="button"
-                tabIndex={index}
-                className="nav-item cursor-pointer"
-                key={intervalsItem}
-                onClick={() => { setChartInterval(intervalsItem); }}
-                onKeyDown={() => { setChartInterval(intervalsItem); }}
-              >
-                <span className={`nav-link ${interval === intervalsItem ? 'active' : ''}`}>
-                  {intervalsItem}
-                </span>
-              </IntervalItem>
-            ))}
-          </Intervals>
+          <div className="input-group mb-3">
+            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+            <SortLabel
+              className="input-group-text"
+              htmlFor="minichart_grid_sort"
+              onClick={() => setSortDirection((v) => (v === 1 ? -1 : 1))}
+            >
+              Sort
+              {' '}
+              {sortDirection === 1 ? '▲' : '▼'}
+            </SortLabel>
+            <select
+              className="form-select bg-white"
+              id="minichart_grid_sort"
+              value={sortBy}
+              onChange={({ target }) => setSortBy(target.value as SortBy)}
+            >
+              <option value={isType<SortBy>('none')}>Default</option>
+              <option value={isType<SortBy>('alphabetically')}>Alphabetically</option>
+              <option value={isType<SortBy>('volume')}>Volume (24h)</option>
+              <option value={isType<SortBy>('volume_change')}>% change (24h)</option>
+            </select>
+          </div>
         </Col>
         <Col xs={12} lg={4}>
           <div className="input-group mb-3">
@@ -130,6 +144,26 @@ const Settings = (): ReactElement => {
               <option value={isType<ChartType>('heikin_ashi_actual_price')}>Heikin-Ashi (actual price)</option>
             </select>
           </div>
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={12}>
+          <Intervals className="nav nav-pills">
+            {api.futuresIntervals.map((intervalsItem, index) => (
+              <IntervalItem
+                role="button"
+                tabIndex={index}
+                className="nav-item cursor-pointer"
+                key={intervalsItem}
+                onClick={() => { setChartInterval(intervalsItem); }}
+                onKeyDown={() => { setChartInterval(intervalsItem); }}
+              >
+                <span className={`nav-link ${interval === intervalsItem ? 'active' : ''}`}>
+                  {intervalsItem}
+                </span>
+              </IntervalItem>
+            ))}
+          </Intervals>
         </Col>
       </Row>
       <p>

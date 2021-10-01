@@ -3,9 +3,11 @@ import React, {
 } from 'react';
 import useChange, { useValue } from 'use-change';
 import styled from 'styled-components';
-import { CANDLES, ROOT } from './store';
+import {
+  CANDLES, PRICE_CHANGE, ROOT, VOLUMES,
+} from './store';
 import Chart from './Chart';
-import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
+import formatMoneyNumber from './lib/formatMoneyNumber';
 
 interface Props {
   symbol: string;
@@ -32,6 +34,10 @@ const SymbolName = styled.div`
   }
 `;
 
+const OpaqueLabel = styled.span`
+  opacity: 0.5;
+`;
+
 const Container = styled.div`
   border-top: 1px solid rgba(100,100,100,0.5);
   border-left: 1px solid rgba(100,100,100,0.5);
@@ -41,17 +47,17 @@ const Container = styled.div`
 
 const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
+  const volume = useValue(VOLUMES, symbol);
+  const priceChangePercent = useValue(PRICE_CHANGE, symbol);
   const realTimePrices = useValue(ROOT, 'realTimePrices');
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
   const candlesLength = useValue(ROOT, 'candlesLength');
   const chartType = useValue(ROOT, 'chartType');
-  const futuresExchangeSymbols = useValue(ROOT, 'futuresExchangeSymbols');
+  const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const ref = useRef<HTMLDivElement | null>(null);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
-  const symbolInfo = futuresExchangeSymbols.find((s) => s.symbol === symbol);
-  const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
   const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
   const alerts = symbolAlerts[symbol];
 
@@ -84,7 +90,35 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   });
 
   const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
+  /*
+import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
 
+const additionalInfoCandlesLengths = Object.entries(intervalExtendedInfoCandleLength[interval]);
+
+additionalInfoCandlesLengths.map(([period, candleLength]) => {
+  const pastClose = candles?.slice(-candleLength)[0]?.close;
+  const currClose = candles?.[candles.length - 1]?.close;
+
+  const percent = +(((currClose - pastClose) / pastClose) * 100).toFixed(2) || 0;
+  const className = percent > 0 ? 'text-success' : 'text-danger';
+
+  return (
+
+    <span key={period} className="ms-2">
+      <OpaqueLabel>
+        {period}
+        :
+      </OpaqueLabel>
+      {' '}
+      <span className={`ml-1 ${percent ? className : ''}`}>
+        {percent > 0 ? '+' : ''}
+        {percent}
+        %
+      </span>
+    </span>
+  );
+})}
+  */
   return (
     <Container style={{ width: `${100 / gridColumns}%` }}>
       <ChartInfo>
@@ -93,30 +127,30 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
           /
           {symbolInfo?.quoteAsset}
         </SymbolName>
-        <sub className="float-end  mt-2">
+        <div className="float-end text-end" style={{ fontSize: '.75em' }}>
           {candles?.length && candles[0].interval !== interval ? `Loading ${interval}...`
-            : additionalInfoCandlesLengths.map(([period, candleLength]) => {
-              const pastClose = candles?.slice(-candleLength)[0]?.close;
-              const currClose = candles?.[candles.length - 1]?.close;
-
-              const percent = +(((currClose - pastClose) / pastClose) * 100).toFixed(2) || 0;
-              const className = percent > 0 ? 'text-success' : 'text-danger';
-
-              return (
-
-                <span key={period} className="ms-2">
-                  {period}
-                  :
+            : (
+              <>
+                <span>
+                  <OpaqueLabel>Volume (24h):</OpaqueLabel>
                   {' '}
-                  <span className={`ml-1 ${percent ? className : ''}`}>
-                    {percent > 0 ? '+' : ''}
-                    {percent}
+                  &nbsp;
+                  {formatMoneyNumber(+volume || 0)}
+                </span>
+                <br />
+                <span>
+                  <OpaqueLabel>% change (24h):</OpaqueLabel>
+                  {' '}
+                  &nbsp;
+                  <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
+                    {+priceChangePercent > 0 ? '+' : ''}
+                    {priceChangePercent || 0}
                     %
                   </span>
                 </span>
-              );
-            })}
-        </sub>
+              </>
+            )}
+        </div>
       </ChartInfo>
       <div style={{ height: `${chartHeight}px` }} ref={(node) => { ref.current = node; }} />
     </Container>

@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -35,6 +36,7 @@ module.exports = {
         { from: 'src/minichartGrid.d.ts', to: '' },
       ],
     }),
+    new webpack.EnvironmentPlugin(['NODE_ENV', 'SKIP_RUNTIME_TESTS']),
   ],
   devServer: {
     hot: true,
