@@ -8,7 +8,7 @@
     "lint-pure": "cross-env NODE_ENV=development eslint ./src --ext .ts,.tsx",
     "lint": "npm run lint-pure -- --cache --fix",
     "test": "npm run lint-pure && npx tsc --noemit",
-    "build": "SKIP_RUNTIME_TESTS=true webpack --mode=production",
+    "build": "SKIP_RUNTIME_TESTS=true NODE_ENV=production webpack --mode=production",
     "start": "SKIP_RUNTIME_TESTS=true NODE_ENV=development webpack serve --mode=development --hot --port=8070",
     "upgrade": "npx npm-check-updates -u -x eslint-config-airbnb-typescript && npm i",
     "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
