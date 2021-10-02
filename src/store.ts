@@ -75,7 +75,7 @@ class RootStore {
     try {
       const { symbols } = await api.futuresExchangeInfo();
 
-      const futuresExchangeSymbols = symbols.slice(0, 10);
+      const futuresExchangeSymbols = symbols; // .slice(0, 10);
 
       this.futuresExchangeSymbolsMap = keyBy(futuresExchangeSymbols, 'symbol');
       this.symbols = futuresExchangeSymbols.map(({ symbol }) => symbol);
