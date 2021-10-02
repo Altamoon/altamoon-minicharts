@@ -1,7 +1,7 @@
 import React, {
   memo, ReactElement, useEffect, useRef, useState,
 } from 'react';
-import useChange, { useValue } from 'use-change';
+import { useGet, useSet, useValue } from 'use-change';
 import styled from 'styled-components';
 
 import { CANDLES, ROOT } from './store';
@@ -53,8 +53,8 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const ref = useRef<HTMLDivElement | null>(null);
   const isVisible = useOnScreen(ref);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
-  const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
-  const alerts = symbolAlerts[symbol];
+  const setSymbolAlerts = useSet(ROOT, 'symbolAlerts');
+  const getSymbolAlerts = useGet(ROOT, 'symbolAlerts');
   const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       instance.update({
         candles: (candles || []).slice(-candlesLength),
         chartType,
-        alerts,
+        alerts: getSymbolAlerts()[symbol],
       });
 
       setChartInstance(instance);
