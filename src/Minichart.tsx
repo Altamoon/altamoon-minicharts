@@ -92,6 +92,8 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
           {symbolInfo?.baseAsset}
           /
           {symbolInfo?.quoteAsset}
+          {' '}
+          <span style={{ color: isVisible ? 'yellow' : 'grey' }}>{isVisible ? 'Visible' : 'Invisible'}</span>
         </SymbolName>
         <div className="float-end text-end" style={{ fontSize: '.75em' }}>
           {!candles?.length || candles[0].interval !== interval ? `Loading ${interval}...`

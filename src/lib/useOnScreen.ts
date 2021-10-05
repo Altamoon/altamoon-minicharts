@@ -6,7 +6,7 @@ export default function useOnScreen(ref: MutableRefObject<Element | null>): bool
   const [isIntersecting, setIntersecting] = useState(false);
 
   const observer = useMemo(() => new IntersectionObserver(
-    ([entry]) => setIntersecting(entry.isIntersecting),
+    ([entry]) => { setIntersecting(entry.isIntersecting); },
   ), []);
 
   useEffect(() => {
