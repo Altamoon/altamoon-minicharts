@@ -27,7 +27,7 @@ const IntervalItem = styled.div`
 `;
 
 const MIN_CANDLES_LENGTH = 50;
-const MAX_CANDLES_LENGTH = 1500;
+const MAX_CANDLES_LENGTH = 500;
 
 const MIN_GRID_COLUMNS = 1;
 const MAX_GRID_COLUMNS = 24;
