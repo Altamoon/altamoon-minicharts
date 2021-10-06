@@ -1,13 +1,13 @@
 import React, {
-  memo, ReactElement, useEffect, useRef, useState,
+  memo, ReactElement, useCallback, useEffect, useRef, useState,
 } from 'react';
 import { useGet, useSet, useValue } from 'use-change';
 import styled from 'styled-components';
+import { useInView } from 'react-intersection-observer';
 
 import { CANDLES, ROOT } from './store';
 import Chart from './Chart';
 import TextIndicators from './TextIndicators';
-import useOnScreen from './lib/useOnScreen';
 
 interface Props {
   symbol: string;
@@ -51,15 +51,23 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const chartType = useValue(ROOT, 'chartType');
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const ref = useRef<HTMLDivElement | null>(null);
-  const isVisible = useOnScreen(ref);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const setSymbolAlerts = useSet(ROOT, 'symbolAlerts');
   const getSymbolAlerts = useGet(ROOT, 'symbolAlerts');
   const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
+  const [inViewRef, inView] = useInView();
+
+  const setRefs = useCallback(
+    (node: HTMLDivElement) => {
+      ref.current = node;
+      inViewRef(node);
+    },
+    [inViewRef],
+  );
 
   useEffect(() => {
-    if (isVisible) chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
-  }, [candles, candlesLength, chartInstance, isVisible]);
+    if (inView) chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
+  }, [candles, candlesLength, chartInstance, inView]);
   useEffect(() => { if (symbolInfo) chartInstance?.update({ symbolInfo }); });
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
 
@@ -93,7 +101,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
           /
           {symbolInfo?.quoteAsset}
           {' '}
-          <span style={{ color: isVisible ? 'yellow' : 'grey' }}>{isVisible ? 'Visible' : 'Invisible'}</span>
+          <span style={{ color: inView ? 'yellow' : 'grey' }}>{inView ? 'Visible' : 'Invisible'}</span>
         </SymbolName>
         <div className="float-end text-end" style={{ fontSize: '.75em' }}>
           {!candles?.length || candles[0].interval !== interval ? `Loading ${interval}...`
@@ -102,7 +110,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
             )}
         </div>
       </ChartInfo>
-      <div style={{ height: `${chartHeight}px` }} ref={(node) => { ref.current = node; }} />
+      <div style={{ height: `${chartHeight}px` }} ref={setRefs} />
     </Container>
   );
 };
