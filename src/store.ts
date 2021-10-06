@@ -143,7 +143,9 @@ class RootStore {
     const { interval, symbols } = this;
 
     for (const symbol of symbols) {
-      void api.futuresCandles({ symbol, interval, limit: 500 }).then((candles) => {
+      void api.futuresCandles({
+        symbol, interval, limit: 500, lastCandleFromCache: true,
+      }).then((candles) => {
         allCandlesData[symbol] = candles;
         this.#throttledListeners[symbol]?.(candles);
       }).catch((e) => {
