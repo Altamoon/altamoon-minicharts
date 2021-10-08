@@ -20,16 +20,14 @@ const TextIndicators = ({ symbol }: Props): ReactElement => {
   return (
     <>
       <span>
-        <OpaqueLabel>Volume (24h):</OpaqueLabel>
+        <OpaqueLabel>Vol 24h</OpaqueLabel>
         {' '}
-                  &nbsp;
         {formatMoneyNumber(+volume || 0)}
       </span>
       <br />
       <span>
-        <OpaqueLabel>% change (24h):</OpaqueLabel>
+        <OpaqueLabel>% 24h</OpaqueLabel>
         {' '}
-        &nbsp;
         <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
           {+priceChangePercent > 0 ? '+' : ''}
           {priceChangePercent || 0}
