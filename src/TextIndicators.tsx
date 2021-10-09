@@ -1,12 +1,20 @@
 import React, { ReactElement } from 'react';
 import { useValue } from 'use-change';
 import styled from 'styled-components';
+import { InfoCircle } from 'react-bootstrap-icons';
 
 import { PRICE_CHANGE, VOLUMES } from './store';
 import formatMoneyNumber from './lib/formatMoneyNumber';
+import tooltipRef from './lib/tooltipRef';
 
-const OpaqueLabel = styled.span`
-  opacity: 0.5;
+const InfoContainer = styled.span`
+  display: inline-block;
+  vertical-align: top;
+  margin-top: -1px;
+  pointer-events: auto;
+  opacity: 0.4;
+  cursor: help;
+  &:hover { opacity: 1; }
 `;
 
 interface Props {
@@ -20,19 +28,23 @@ const TextIndicators = ({ symbol }: Props): ReactElement => {
   return (
     <>
       <span>
-        <OpaqueLabel>Vol 24h</OpaqueLabel>
-        {' '}
         {formatMoneyNumber(+volume || 0)}
+        {' '}
+        <InfoContainer ref={tooltipRef()} title="Volume (24h)">
+          <InfoCircle />
+        </InfoContainer>
       </span>
       <br />
       <span>
-        <OpaqueLabel>% 24h</OpaqueLabel>
-        {' '}
         <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
           {+priceChangePercent > 0 ? '+' : ''}
           {priceChangePercent || 0}
           %
         </span>
+        {' '}
+        <InfoContainer ref={tooltipRef()} title="% change (24h)">
+          <InfoCircle />
+        </InfoContainer>
       </span>
     </>
   );
