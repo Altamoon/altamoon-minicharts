@@ -24,6 +24,7 @@ const MinichartGrid = ({
 }: Props): ReactElement => {
   const futuresExchangeSymbolsMap = useValue(ROOT, 'futuresExchangeSymbolsMap');
   const symbols = useValue(ROOT, 'symbols');
+  const maxChartsLength = useValue(ROOT, 'maxChartsLength');
 
   return (
     <div>
@@ -32,9 +33,11 @@ const MinichartGrid = ({
         settingsContainer,
       ) : <Settings />}
       <Charts>
-        {symbols.map((symbol) => futuresExchangeSymbolsMap[symbol]).map(({ symbol }) => (
-          <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />
-        ))}
+        {symbols
+          .slice(0, maxChartsLength ?? symbols.length)
+          .map((symbol) => futuresExchangeSymbolsMap[symbol]).map(({ symbol }) => (
+            <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />
+          ))}
       </Charts>
     </div>
   );

@@ -22,6 +22,8 @@ class RootStore {
 
   public candlesLength = getPersistentStorageValue<RootStore, number>('candlesLength', 200);
 
+  public maxChartsLength = getPersistentStorageValue<RootStore, number | null>('maxChartsLength', null);
+
   public throttleDelay = getPersistentStorageValue<RootStore, number>('throttleDelay', 1000);
 
   public gridColumns = getPersistentStorageValue<RootStore, number>('gridColumns', 4);
@@ -56,7 +58,16 @@ class RootStore {
 
   constructor() {
     const keysToListen: (keyof RootStore)[] = [
-      'interval', 'candlesLength', 'throttleDelay', 'gridColumns', 'chartType', 'chartHeight', 'symbolAlerts', 'sortBy', 'sortDirection',
+      'interval',
+      'candlesLength',
+      'maxChartsLength',
+      'throttleDelay',
+      'gridColumns',
+      'chartType',
+      'chartHeight',
+      'symbolAlerts',
+      'sortBy',
+      'sortDirection',
     ];
 
     keysToListen.forEach((key) => {

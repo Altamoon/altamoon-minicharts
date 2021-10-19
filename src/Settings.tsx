@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import styled from 'styled-components';
 import * as api from 'biduul-binance-api';
-import useChange from 'use-change';
+import useChange, { useValue } from 'use-change';
 import { Row, Col } from 'reactstrap';
 
 import { ROOT } from './store';
@@ -52,11 +52,13 @@ const Settings = (): ReactElement => {
   const [chartType, setChartType] = useChange(ROOT, 'chartType');
   const [sortBy, setSortBy] = useChange(ROOT, 'sortBy');
   const [sortDirection, setSortDirection] = useChange(ROOT, 'sortDirection');
+  const symbols = useValue(ROOT, 'symbols');
+  const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
 
   return (
     <>
       <Row>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={6} lg={3}>
           <InputRange
             label="# of rendered candles per chart"
             min={MIN_CANDLES_LENGTH}
@@ -66,7 +68,7 @@ const Settings = (): ReactElement => {
             onChange={setCandlesLength}
           />
         </Col>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={6} lg={3}>
           <InputRange
             label="# of grid columns"
             min={MIN_GRID_COLUMNS}
@@ -76,7 +78,17 @@ const Settings = (): ReactElement => {
             onChange={setGridColumns}
           />
         </Col>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={6} lg={3}>
+          <InputRange
+            label="# of charts"
+            min={1}
+            max={symbols.length}
+            id="minichart_max_charts"
+            value={maxChartsLength ?? symbols.length}
+            onChange={setMaxChartsLength}
+          />
+        </Col>
+        <Col xs={12} md={6} lg={3}>
           <InputRange
             label="Chart height"
             min={MIN_HEIGHT}
@@ -88,7 +100,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={4}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <SortLabel
@@ -113,7 +125,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={4}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_grid_throttleDelay">Throttle</label>
@@ -129,7 +141,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} lg={4}>
+        <Col xs={12} md={4}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_grid_chartType">Type</label>
