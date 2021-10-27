@@ -1,15 +1,17 @@
 import * as d3 from 'd3';
 import moment from 'moment';
 import { listenChange } from 'use-change';
+import * as api from 'biduul-binance-api';
 
 import { ChartAxis, PriceLinesDatum, ResizeData } from '../types';
 import PriceLines from './PriceLines';
-import { alertUpUri, alertDownUri } from './alertSounds';
+import { AlertLogItem } from '../../types';
 
 interface Params {
   axis: ChartAxis;
   symbol: string;
-  realTimePrices: Record<string, number>;
+  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
+  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
   onUpdateAlerts: (d: number[]) => void;
 }
 
@@ -23,32 +25,31 @@ interface AlertLinesDatum extends PriceLinesDatum {
 
 moment.relativeTimeThreshold('ss', 0);
 
-const upSound = new Audio(alertUpUri);
-const downSound = new Audio(alertDownUri);
-
 // https://icons.getbootstrap.com/icons/bell-fill/
 const bellIconStr = `<svg style="transform: scale(0.7) translate(0, -3px);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
   <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
 </svg>`;
 
 export default class AlertPriceLines extends PriceLines {
-  private static readonly color = '#828282';
-
   private static createAlertLine = (yValue: number): AlertLinesDatum => ({
     yValue,
     title: bellIconStr,
     isDraggable: true,
     customData: {},
-    color: this.color,
+    color: '#828282',
     id: yValue,
   });
 
   #realTimePrice: number | null = null;
 
+  #triggerAlert: Params['triggerAlert'];
+
   #handleUpdate: Params['onUpdateAlerts'];
 
+  #symbol: string;
+
   constructor({
-    axis, symbol, realTimePrices, onUpdateAlerts,
+    axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
   }: Params) {
     super({
       axis,
@@ -64,7 +65,11 @@ export default class AlertPriceLines extends PriceLines {
       },
     });
 
+    this.#triggerAlert = triggerAlert;
+
     this.#handleUpdate = onUpdateAlerts;
+
+    this.#symbol = symbol;
 
     setInterval(() => {
       const items = this.#getTriggeredItems();
@@ -97,12 +102,28 @@ export default class AlertPriceLines extends PriceLines {
       }
     }, 1000);
 
-    listenChange(realTimePrices, symbol, this.#checkAlerts);
+    listenChange(realTimeCandles, symbol, this.#checkAlerts);
   }
 
-  #checkAlerts = (realTimePrice: number): void => {
+  #checkAlerts = (realTimeCandles: api.FuturesChartCandle[]): void => {
+    const realTimePrice = realTimeCandles[realTimeCandles.length - 1]?.close ?? 0;
     const previousPrice = this.#realTimePrice;
     const items = this.getItems();
+    const triggerAlert = (datum: AlertLinesDatum, type: AlertLogItem['type']) => {
+      if (datum.customData.triggerTime) return;
+
+      // update alert item on the chart
+      this.updateItem(this.getItems().indexOf(datum), {
+        isDraggable: false,
+        customData: { triggerTime: Date.now() },
+      });
+
+      // save updated list of alerts
+      this.#triggerUpdate();
+
+      // play sound and create log entry
+      this.#triggerAlert(type, this.#symbol);
+    };
 
     if (realTimePrice && previousPrice) {
       const up = items.find(
@@ -112,9 +133,9 @@ export default class AlertPriceLines extends PriceLines {
         ({ yValue }) => yValue && realTimePrice <= yValue && previousPrice > yValue,
       );
       if (up) {
-        this.#triggerAlert(up, 'up');
+        triggerAlert(up, 'PRICE_UP');
       } else if (down) {
-        this.#triggerAlert(down, 'down');
+        triggerAlert(down, 'PRICE_DOWN');
       }
     }
 
@@ -154,21 +175,6 @@ export default class AlertPriceLines extends PriceLines {
     const coords = d3.pointer(evt);
 
     this.addItem(AlertPriceLines.createAlertLine(this.invertY(coords[1])));
-  };
-
-  #triggerAlert = (datum: AlertLinesDatum, direction: 'up' | 'down'): void => {
-    if (datum.customData.triggerTime) return;
-
-    const sound = direction === 'up' ? upSound : downSound;
-
-    void sound.play();
-
-    this.updateItem(this.getItems().indexOf(datum), {
-      isDraggable: false,
-      customData: { triggerTime: Date.now() },
-    });
-
-    this.#triggerUpdate();
   };
 
   #getActualItems = (): AlertLinesDatum[] => this.getItems()

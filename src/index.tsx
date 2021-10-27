@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import $ from 'balajs';
 import { Provider } from 'use-change';
 
-import MinichartGrid from './MinichartGrid';
+import MinichartGrid from './Grid';
 import store from './store';
 
 interface Options {

@@ -11,11 +11,12 @@ import ClipPath from './ClipPath';
 import Axes from './Axes';
 import GridLines from './GridLines';
 import Lines from './Lines';
-import { ChartType } from '../types';
+import { AlertLogItem, ChartType } from '../types';
 
 interface Params {
+  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
   onUpdateAlerts: (d: number[]) => void;
-  realTimePrices: Record<string, number>;
+  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
   symbol: string;
 }
 export default class Chart {
@@ -61,7 +62,9 @@ export default class Chart {
 
   constructor(
     container: HTMLDivElement,
-    { realTimePrices, symbol, onUpdateAlerts }: Params,
+    {
+      realTimeCandles, symbol, triggerAlert, onUpdateAlerts,
+    }: Params,
   ) {
     const x = d3.scaleTime().range([0, 0]);
     const y = d3.scaleLinear().range([0, 0]);
@@ -76,8 +79,9 @@ export default class Chart {
     this.#gridLines = new GridLines({ scales });
     this.#lines = new Lines({
       axis: this.#axes.getAxis(),
-      realTimePrices,
+      realTimeCandles,
       symbol,
+      triggerAlert,
       onUpdateAlerts,
     });
 

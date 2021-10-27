@@ -2,7 +2,13 @@ import * as api from 'biduul-binance-api';
 import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 
-import { ChartType, SortDirection, SortBy } from './types';
+import {
+  ChartType, SortDirection, SortBy, AlertLogItem,
+} from './types';
+import { alertUpUri, alertDownUri } from './alertSounds';
+
+const upSound = new Audio(alertUpUri);
+const downSound = new Audio(alertDownUri);
 
 function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
   const storageValue = localStorage.getItem(`minichart_grid_${key}`);
@@ -32,9 +38,13 @@ class RootStore {
 
   public symbolAlerts = getPersistentStorageValue<RootStore, Record<string, number[]>>('symbolAlerts', {});
 
+  public alertLog = getPersistentStorageValue<RootStore, AlertLogItem[]>('alertLog', []);
+
   public sortBy = getPersistentStorageValue<RootStore, SortBy>('sortBy', 'none');
 
   public sortDirection = getPersistentStorageValue<RootStore, SortDirection>('sortDirection', -1);
+
+  public alertLogLastSeenISO = getPersistentStorageValue<RootStore, null | string>('alertLogLastSeenISO', null);
 
   // allCandles is readonly from outside
   public get allCandles(): Record<string, api.FuturesChartCandle[]> { return this.#allCandles; }
@@ -50,7 +60,7 @@ class RootStore {
 
   #priceChangePercents: Record<string, string> = {};
 
-  public realTimePrices: Record<string, number> = {};
+  public realTimeCandles: Record<string, api.FuturesChartCandle[]> = {};
 
   #allSymbolsUnsubscribe?: () => void;
 
@@ -66,8 +76,10 @@ class RootStore {
       'chartType',
       'chartHeight',
       'symbolAlerts',
+      'alertLog',
       'sortBy',
       'sortDirection',
+      'alertLogLastSeenISO',
     ];
 
     keysToListen.forEach((key) => {
@@ -81,6 +93,33 @@ class RootStore {
     listenChange(this, 'sortBy', this.#sortSymbols);
     listenChange(this, 'sortDirection', this.#sortSymbols);
   }
+
+  public triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
+    const candles = this.realTimeCandles[symbol] ?? [];
+    const { close: price, volume } = candles[candles.length - 1] ?? { close: 0, volume: 0 };
+
+    const logItem: AlertLogItem = {
+      type,
+      symbol,
+      price,
+      volume,
+      timeISO: new Date().toISOString(),
+    };
+    const MAX_LOG_SIZE = 100;
+    this.alertLog = [logItem, ...this.alertLog].slice(0, MAX_LOG_SIZE);
+
+    switch (type) {
+      case 'PRICE_UP':
+        void upSound.play();
+        break;
+      case 'PRICE_DOWN':
+        void downSound.play();
+        break;
+      case 'VOLUME_ANOMALY':
+        break;
+      default:
+    }
+  };
 
   #init = async () => {
     try {
@@ -99,6 +138,7 @@ class RootStore {
 
     listenChange(this, 'interval', () => this.#createSubscription());
     listenChange(this, 'throttleDelay', () => this.#createThrottledListeners());
+
     this.#createThrottledListeners();
     this.#createSubscription();
     this.#volumeSubscribe();
@@ -182,7 +222,7 @@ class RootStore {
 
       allCandlesData[candle.symbol] = [...data];
 
-      this.realTimePrices[candle.symbol] = candle.close;
+      this.realTimeCandles[candle.symbol] = allCandlesData[candle.symbol];
 
       this.#throttledListeners[candle.symbol]?.(allCandlesData[candle.symbol]);
     });

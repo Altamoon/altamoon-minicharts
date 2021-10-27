@@ -4,10 +4,10 @@ import * as api from 'biduul-binance-api';
 import useChange, { useValue } from 'use-change';
 import { Row, Col } from 'reactstrap';
 
-import { ROOT } from './store';
-import { ChartType, SortBy } from './types';
-import isType from './lib/isType';
-import InputRange from './lib/InputRange';
+import { ROOT } from '../store';
+import { ChartType, SortBy } from '../types';
+import isType from '../lib/isType';
+import InputRange from '../lib/InputRange';
 
 const Intervals = styled.div`
   padding-bottom: 1rem;

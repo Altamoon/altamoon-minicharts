@@ -1,12 +1,14 @@
 import React, {
   memo, ReactElement, useCallback, useEffect, useRef, useState,
 } from 'react';
-import { useGet, useSet, useValue } from 'use-change';
+import {
+  useGet, useSet, useSilent, useValue,
+} from 'use-change';
 import styled from 'styled-components';
 import { useInView } from 'react-intersection-observer';
 
-import { CANDLES, ROOT } from './store';
-import Chart from './Chart';
+import { CANDLES, ROOT } from '../store';
+import Chart from '../Chart';
 import TextIndicators from './TextIndicators';
 
 interface Props {
@@ -43,7 +45,7 @@ const Container = styled.div`
 
 const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
-  const realTimePrices = useValue(ROOT, 'realTimePrices');
+  const realTimeCandles = useValue(ROOT, 'realTimeCandles');
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
@@ -54,6 +56,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const setSymbolAlerts = useSet(ROOT, 'symbolAlerts');
   const getSymbolAlerts = useGet(ROOT, 'symbolAlerts');
+  const triggerAlert = useSilent(ROOT, 'triggerAlert');
   const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
   const [inViewRef, inView] = useInView();
 
@@ -75,7 +78,8 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   useEffect(() => {
     if (ref.current && !chartInstance) {
       const instance = new Chart(ref.current, {
-        realTimePrices,
+        triggerAlert,
+        realTimeCandles,
         symbol,
         onUpdateAlerts: (d: number[]) => setSymbolAlerts((v) => ({
           ...v,
@@ -94,7 +98,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   });
 
   return (
-    <Container style={{ width: `${100 / gridColumns}%` }}>
+    <Container style={{ width: `${100 / gridColumns}%` }} data-minichart-symbol={symbol}>
       <ChartInfo>
         <SymbolName onClick={() => onSymbolNameClick?.(symbol)}>
           {symbolInfo?.baseAsset}

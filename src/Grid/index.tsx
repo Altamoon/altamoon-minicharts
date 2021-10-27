@@ -6,7 +6,8 @@ import styled from 'styled-components';
 
 import Minichart from './Minichart';
 import Settings from './Settings';
-import { ROOT } from './store';
+import AlertLog from './AlertLog';
+import { ROOT } from '../store';
 
 const Charts = styled.div`
   border-bottom: 1px solid rgba(100,100,100,0.5);
@@ -28,6 +29,7 @@ const MinichartGrid = ({
 
   return (
     <div>
+      <AlertLog />
       {settingsContainer ? createPortal(
         <Settings />,
         settingsContainer,

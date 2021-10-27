@@ -1,13 +1,17 @@
 import { isEmpty } from 'lodash';
+import * as api from 'biduul-binance-api';
+
 import { ResizeData } from '../types';
 import PriceLines from './PriceLines';
 import CrosshairPriceLines from './CrosshairPriceLines';
 import AlertPriceLines from './AlertPriceLines';
+import { AlertLogItem } from '../../types';
 
 interface Params {
   axis: { x: d3.Axis<d3.NumberValue>; yRight: d3.Axis<d3.NumberValue>; };
-  realTimePrices: Record<string, number>;
+  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
   symbol: string;
+  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
   onUpdateAlerts: (d: number[]) => void;
 }
 
@@ -19,7 +23,7 @@ export default class Lines {
   #alertPriceLines: AlertPriceLines;
 
   constructor({
-    axis, symbol, realTimePrices, onUpdateAlerts,
+    axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
   }: Params) {
     this.#currentPriceLines = new PriceLines({
       axis,
@@ -32,8 +36,9 @@ export default class Lines {
 
     this.#alertPriceLines = new AlertPriceLines({
       axis,
-      realTimePrices,
+      realTimeCandles,
       symbol,
+      triggerAlert,
       onUpdateAlerts,
     });
   }
