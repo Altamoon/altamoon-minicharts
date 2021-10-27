@@ -28,7 +28,7 @@ const MinichartGrid = ({
   const maxChartsLength = useValue(ROOT, 'maxChartsLength');
 
   return (
-    <div>
+    <>
       <AlertLog />
       {settingsContainer ? createPortal(
         <Settings />,
@@ -41,7 +41,7 @@ const MinichartGrid = ({
             <Minichart key={symbol} symbol={symbol} onSymbolSelect={onSymbolSelect} />
           ))}
       </Charts>
-    </div>
+    </>
   );
 };
 

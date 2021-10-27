@@ -69,7 +69,7 @@ const AlertLog = (): ReactElement => {
     const chartWrapper = document.querySelector<HTMLElement>(`[data-minichart-symbol="${symbol}"]`);
     const minichart = chartWrapper?.querySelector<SVGElement>('.minichart');
     if (chartWrapper && minichart) {
-      chartWrapper.scrollIntoView({ behavior: 'smooth' });
+      chartWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
       minichart.style.transition = 'background-color 0.5s';
       minichart.style.backgroundColor = '#f39c1285';
 
