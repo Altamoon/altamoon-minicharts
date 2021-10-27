@@ -85,13 +85,13 @@ const AlertLog = (): ReactElement => {
       <BellWrapper>
         {unreadLogItemsLength ? (
           <>
-            <BellFill size={32} role="button" onClick={() => onToggleAlertLogItems()} />
+            <BellFill size={28} role="button" onClick={() => onToggleAlertLogItems()} />
             <Badge role="button" className="badge rounded-pill bg-danger" onClick={() => onToggleAlertLogItems()}>
               {unreadLogItemsLength}
             </Badge>
           </>
         ) : (
-          <Bell role="button" size={32} onClick={() => onToggleAlertLogItems()} />
+          <Bell role="button" size={28} onClick={() => onToggleAlertLogItems()} />
         )}
       </BellWrapper>
       <DropdownMenu tag={AlertList} className={isDropdownOpen ? 'show' : undefined}>
