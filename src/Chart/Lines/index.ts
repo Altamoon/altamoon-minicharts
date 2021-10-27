@@ -48,9 +48,7 @@ export default class Lines {
     }
 
     if (typeof data.lastPrice !== 'undefined') {
-      this.#currentPriceLines.updateItem('lastPrice', {
-        yValue: data.lastPrice,
-      });
+      this.#currentPriceLines.updatePrice(data.lastPrice);
     }
 
     if (typeof data.alerts !== 'undefined') {
