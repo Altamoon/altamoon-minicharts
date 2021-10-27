@@ -138,7 +138,9 @@ export default class PriceLines {
       this.#items = data.items;
     }
 
-    this.#draw();
+    if (typeof data.pricePrecision !== 'undefined' || typeof data.items !== 'undefined') {
+      this.#draw();
+    }
   }
 
   public empty = (): void => this.update({ items: [] });
@@ -174,6 +176,7 @@ export default class PriceLines {
 
   #draw = (): void => {
     if (!this.#wrapper) return;
+
     const updateHorizontalLineHandler = (
       update: d3.Selection<d3.BaseType, PriceLinesDatum, SVGGElement, unknown>,
       orient: Orient,

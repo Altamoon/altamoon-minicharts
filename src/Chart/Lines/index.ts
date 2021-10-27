@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash';
 import * as api from 'biduul-binance-api';
 
 import { ResizeData } from '../types';
-import PriceLines from './PriceLines';
+import CurrentPriceLines from './CurrentPriceLines';
 import CrosshairPriceLines from './CrosshairPriceLines';
 import AlertPriceLines from './AlertPriceLines';
 import { AlertLogItem } from '../../types';
@@ -16,7 +16,7 @@ interface Params {
 }
 
 export default class Lines {
-  #currentPriceLines: PriceLines;
+  #currentPriceLines: CurrentPriceLines;
 
   #crosshairPriceLines: CrosshairPriceLines;
 
@@ -25,12 +25,7 @@ export default class Lines {
   constructor({
     axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
   }: Params) {
-    this.#currentPriceLines = new PriceLines({
-      axis,
-      items: [{ id: 'lastPrice' }],
-      color: 'var(--biduul-chart-last-price-line-color, var(--bs-info))',
-      pointerEventsNone: true,
-    });
+    this.#currentPriceLines = new CurrentPriceLines({ axis });
 
     this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
 

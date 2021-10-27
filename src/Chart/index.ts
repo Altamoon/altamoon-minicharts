@@ -140,8 +140,11 @@ export default class Chart {
 
     if (typeof data.symbolInfo !== 'undefined') {
       const pricePrecision = data.symbolInfo?.pricePrecision ?? 0;
-      this.#axes.update({ pricePrecision });
-      this.#lines.update({ pricePrecision });
+      if (this.#pricePrecision !== pricePrecision) {
+        this.#axes.update({ pricePrecision });
+        this.#lines.update({ pricePrecision });
+      }
+
       this.#pricePrecision = pricePrecision;
     }
 
@@ -152,7 +155,6 @@ export default class Chart {
     if (typeof data.alerts !== 'undefined') {
       this.#lines.update({ alerts: data.alerts });
     }
-
     this.#draw();
   };
 
