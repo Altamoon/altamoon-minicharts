@@ -1,8 +1,9 @@
 interface Options {
   settingsContainer?: HTMLElement;
+  alertLogContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
 export default function minichartGrid(
   givenElement: string | HTMLElement | HTMLElement[],
-  { onSymbolSelect, settingsContainer }?: Options
+  { onSymbolSelect, settingsContainer, alertLogContainer }?: Options
 ): void;

@@ -16,11 +16,13 @@ const Charts = styled.div`
 
 interface Props {
   settingsContainer?: HTMLElement;
+  alertLogContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
 
 const MinichartGrid = ({
   settingsContainer,
+  alertLogContainer,
   onSymbolSelect,
 }: Props): ReactElement => {
   const futuresExchangeSymbolsMap = useValue(ROOT, 'futuresExchangeSymbolsMap');
@@ -29,7 +31,10 @@ const MinichartGrid = ({
 
   return (
     <>
-      <AlertLog />
+      {alertLogContainer ? createPortal(
+        <AlertLog />,
+        alertLogContainer,
+      ) : <AlertLog />}
       {settingsContainer ? createPortal(
         <Settings />,
         settingsContainer,

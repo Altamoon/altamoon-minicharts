@@ -8,12 +8,13 @@ import store from './store';
 
 interface Options {
   settingsContainer?: HTMLElement;
+  alertLogContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
 
 export default function minichartGrid(
   givenElement: string | HTMLElement | HTMLElement[],
-  { settingsContainer, onSymbolSelect }: Options = {},
+  { settingsContainer, alertLogContainer, onSymbolSelect }: Options = {},
 ): void {
   const element = $.one(givenElement);
 
@@ -21,7 +22,11 @@ export default function minichartGrid(
 
   render((
     <Provider value={store}>
-      <MinichartGrid settingsContainer={settingsContainer} onSymbolSelect={onSymbolSelect} />
+      <MinichartGrid
+        settingsContainer={settingsContainer}
+        alertLogContainer={alertLogContainer}
+        onSymbolSelect={onSymbolSelect}
+      />
     </Provider>
   ), element);
 }
