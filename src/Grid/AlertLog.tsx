@@ -1,9 +1,12 @@
-import React, { ReactElement, useCallback, useState } from 'react';
+import React, {
+  ReactElement, useCallback, useRef, useState,
+} from 'react';
 import { Bell, BellFill } from 'react-bootstrap-icons';
 import styled from 'styled-components';
 import useChange from 'use-change';
 import Moment from 'react-moment';
 import { DropdownMenu, Button } from 'reactstrap';
+import useOnClickOutside from 'use-onclickoutside';
 
 import { ROOT } from '../store';
 
@@ -43,6 +46,7 @@ const dateMaxISO = (
 ) => (new Date(a).getTime() > new Date(b).getTime() ? a : b);
 
 const AlertLog = (): ReactElement => {
+  const ref = useRef<HTMLDivElement>(null);
   const [alertLog, setAlertLog] = useChange(ROOT, 'alertLog');
   const [alertLogLastSeenISO, setAlertLogLastSeenISO] = useChange(ROOT, 'alertLogLastSeenISO');
   const [currentalertLogLastSeenISO, setCurrentalertLogLastSeenISO] = useState(
@@ -79,9 +83,10 @@ const AlertLog = (): ReactElement => {
       }, 500);
     }
   }, []);
+  useOnClickOutside(ref, () => setIsDropdownOpen(false));
 
   return (
-    <AlertLogWrapper className="alert-log-wrapper">
+    <AlertLogWrapper className="alert-log-wrapper" ref={ref}>
       <BellWrapper>
         {unreadLogItemsLength ? (
           <>
