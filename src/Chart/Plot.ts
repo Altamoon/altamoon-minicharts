@@ -7,7 +7,7 @@ import {
 import { ChartType } from '../types';
 
 export default class Plot {
-  #resizeData: ResizeData;
+  #resizeData?: ResizeData;
 
   #chartType: ChartType = 'candlestick';
 
@@ -35,9 +35,8 @@ export default class Plot {
 
   #wrapper?: D3Selection<SVGGElement>;
 
-  constructor({ scales, resizeData }: { scales: Scales; resizeData: ResizeData; }) {
+  constructor({ scales }: { scales: Scales; }) {
     this.#scales = scales;
-    this.#resizeData = resizeData;
   }
 
   public appendTo = (parent: Element): void => {
@@ -75,7 +74,7 @@ export default class Plot {
     const lastCandle = candles[candles.length - 1];
     // update all candles (except first) if zoom or last candle was changed
     if (
-      resizeData.width !== this.#resizeData.width
+      resizeData.width !== this.#resizeData?.width
       || lastCandle?.time !== this.#lastCandle?.time
       || lastCandle?.interval !== this.#lastCandle?.interval
       || lastCandle?.symbol !== this.#lastCandle?.symbol
@@ -104,6 +103,7 @@ export default class Plot {
     this.#lastCandle = lastCandle;
     this.#zoomTransform = zoomTransform;
     this.#chartType = chartType;
+    this.#resizeData = resizeData;
   };
 
   #getBodies = (candles: api.FuturesChartCandle[], direction: 'UP' | 'DOWN'): string => {

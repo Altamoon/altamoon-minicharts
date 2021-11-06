@@ -74,7 +74,7 @@ export default class Chart {
     this.#container = container;
     this.#svg = new Svg();
     this.#clipPath = new ClipPath();
-    this.#plot = new Plot({ scales, resizeData: this.#calcDimensions() });
+    this.#plot = new Plot({ scales });
     this.#axes = new Axes({ scales: this.#scales });
     this.#gridLines = new GridLines({ scales });
     this.#lines = new Lines({
@@ -231,8 +231,12 @@ export default class Chart {
   };
 
   #calcDimensions = (): ResizeData => {
-    this.#width = this.#container.offsetWidth - this.#margin.left - this.#margin.right;
-    this.#height = this.#container.offsetHeight - this.#margin.top - this.#margin.bottom;
+    this.#width = Math.max(
+      10, this.#container.offsetWidth - this.#margin.left - this.#margin.right,
+    );
+    this.#height = Math.max(
+      10, this.#container.offsetHeight - this.#margin.top - this.#margin.bottom,
+    );
 
     return {
       width: this.#width,
