@@ -3,8 +3,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
+const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -24,7 +25,7 @@ module.exports = {
   output: {
     library: 'minichartGrid',
     libraryTarget: 'umd',
-    filename: 'minichartGrid.js',
+    filename: 'minichartGrid.min.js',
     libraryExport: 'default',
     path: path.resolve(__dirname, 'docs'),
   },
@@ -37,6 +38,10 @@ module.exports = {
       ],
     }),
     new webpack.EnvironmentPlugin(['NODE_ENV', 'SKIP_RUNTIME_TESTS']),
+    new UnminifiedWebpackPlugin({
+      exclude: /.*.css/,
+      // include: /.*minichartGrid\.min\.js/,
+    }),
   ],
   devServer: {
     hot: true,
