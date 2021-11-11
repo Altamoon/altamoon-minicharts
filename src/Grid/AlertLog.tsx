@@ -102,7 +102,7 @@ const AlertLog = (): ReactElement => {
       <DropdownMenu tag={AlertList} className={isDropdownOpen ? 'show' : undefined}>
         {!alertLog.length && <li><em className="dropdown-item-text text-nowrap">No triggered alerts yet</em></li>}
         {alertLog.map(({
-          type, symbol, price, timeISO,
+          type, symbol, price, timeISO, volume,
         }) => {
           const [, secondaryAsset, primaryAsset] = /(\S+)(USDT|BUSD)/.exec(symbol) ?? [symbol, symbol, ''];
           return (
@@ -113,15 +113,26 @@ const AlertLog = (): ReactElement => {
               onKeyDown={() => onClickItem(symbol)}
             >
               <span className={getIsActiveLogItem(timeISO) ? 'dropdown-item active' : 'dropdown-item-text text-nowrap'}>
-                {type === 'PRICE_UP' ? <span className="text-success">↑</span> : null}
-                {type === 'PRICE_DOWN' ? <span className="text-danger">↓</span> : null}
-                {type === 'VOLUME_ANOMALY' ? <span className="text-warning">•</span> : null}
+                {type === 'PRICE_UP' && <span className="text-success">↑</span>}
+                {type === 'PRICE_DOWN' && <span className="text-danger">↓</span>}
+                {type === 'VOLUME_ANOMALY' && <span className="text-warning">•</span>}
                 {' '}
                 {secondaryAsset}
                 {' '}
-                at price
-                {' '}
-                {price}
+                {(type === 'PRICE_UP' || type === 'PRICE_DOWN') && (
+                  <>
+                    at price
+                    {' '}
+                    {price}
+                  </>
+                )}
+                {type === 'VOLUME_ANOMALY' && (
+                  <>
+                    volume anomaly
+                    {' '}
+                    {volume}
+                  </>
+                )}
                 {' '}
                 {primaryAsset}
                 {' '}

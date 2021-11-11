@@ -5,15 +5,18 @@ import { listenChange } from 'use-change';
 import {
   ChartType, SortDirection, SortBy, AlertLogItem,
 } from './types';
-import { alertUpUri, alertDownUri } from './alertSounds';
+import { alertUpUri, alertDownUri, alertVolumeUri } from './alertSounds';
 
 const upSound = new Audio(alertUpUri);
 const downSound = new Audio(alertDownUri);
+const volumeSound = new Audio(alertVolumeUri);
 
 function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
   const storageValue = localStorage.getItem(`minichart_grid_${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
+
+type AnomalyKey = `${api.CandlestickChartInterval}_${number}`;
 
 class RootStore {
   public candles: api.FuturesChartCandle[] = [];
@@ -66,6 +69,8 @@ class RootStore {
 
   #throttledListeners: Record<string, (candles: api.FuturesChartCandle[]) => void> = {};
 
+  #volumeAnomalies: Record<string, AnomalyKey> = {};
+
   constructor() {
     const keysToListen: (keyof RootStore)[] = [
       'interval',
@@ -116,6 +121,7 @@ class RootStore {
         void downSound.play();
         break;
       case 'VOLUME_ANOMALY':
+        void volumeSound.play();
         break;
       default:
     }
@@ -210,7 +216,8 @@ class RootStore {
     );
 
     return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
-      const data = allCandlesData[candle.symbol];
+      const { symbol } = candle;
+      const data = allCandlesData[symbol];
 
       if (!data) return;
 
@@ -220,11 +227,28 @@ class RootStore {
         data.push(candle);
       }
 
-      allCandlesData[candle.symbol] = [...data];
+      const candlesData = [...data];
 
-      this.realTimeCandles[candle.symbol] = allCandlesData[candle.symbol];
+      allCandlesData[symbol] = candlesData;
 
-      this.#throttledListeners[candle.symbol]?.(allCandlesData[candle.symbol]);
+      this.realTimeCandles[symbol] = candlesData;
+
+      this.#throttledListeners[symbol]?.(candlesData);
+
+      const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
+      if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
+        const anomakyKey: AnomalyKey = `${candle.interval}_${candle.time}`;
+
+        const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
+
+        const isAnomaly = !currentCandleIsAnomaly && candlesData.slice(0, -1)
+          .every(({ volume }) => +volume * anomalyRatio < +candle.volume);
+        if (isAnomaly) {
+          this.#volumeAnomalies[symbol] = anomakyKey;
+
+          this.triggerAlert('VOLUME_ANOMALY', symbol);
+        }
+      }
     });
   };
 
