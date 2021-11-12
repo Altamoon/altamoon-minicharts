@@ -238,10 +238,10 @@ class RootStore {
       const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
       if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
         const anomakyKey: AnomalyKey = `${candle.interval}_${candle.time}`;
+        const lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
 
         const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
-
-        const isAnomaly = !currentCandleIsAnomaly && candlesData.slice(0, -1)
+        const isAnomaly = !currentCandleIsAnomaly && candlesData.slice(-lastCandlesSize, -1)
           .every(({ volume }) => +volume * anomalyRatio < +candle.volume);
         if (isAnomaly) {
           this.#volumeAnomalies[symbol] = anomakyKey;
