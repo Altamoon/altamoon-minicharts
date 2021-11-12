@@ -241,8 +241,10 @@ class RootStore {
         const lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
 
         const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
-        const isAnomaly = !currentCandleIsAnomaly && candlesData.slice(-lastCandlesSize, -1)
-          .every(({ volume }) => +volume * anomalyRatio < +candle.volume);
+        const candlesToConsider = candlesData.slice(-lastCandlesSize, -1);
+        const avg = candlesToConsider.reduce((p, c) => p + +c.volume, 0) / candlesToConsider.length;
+        const isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +candle.volume;
+
         if (isAnomaly) {
           this.#volumeAnomalies[symbol] = anomakyKey;
 
