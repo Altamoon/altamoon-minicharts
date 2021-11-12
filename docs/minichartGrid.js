@@ -93993,10 +93993,11 @@ var RootStore = /*#__PURE__*/function () {
             var anomakyKey = "".concat(candle.interval, "_").concat(candle.time);
             var lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
             var currentCandleIsAnomaly = _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] === anomakyKey;
-            var isAnomaly = !currentCandleIsAnomaly && candlesData.slice(-lastCandlesSize, -1).every(function (_ref8) {
-              var volume = _ref8.volume;
-              return +volume * anomalyRatio < +candle.volume;
-            });
+            var candlesToConsider = candlesData.slice(-lastCandlesSize, -1);
+            var avg = candlesToConsider.reduce(function (p, c) {
+              return p + +c.volume;
+            }, 0) / candlesToConsider.length;
+            var isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +candle.volume;
 
             if (isAnomaly) {
               _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] = anomakyKey;
@@ -94012,12 +94013,12 @@ var RootStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         api.futuresTickerStream(function (ticker) {
-          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
-            var quoteVolume = _ref9.quoteVolume;
+          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
+            var quoteVolume = _ref8.quoteVolume;
             return quoteVolume;
           }));
-          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref10) {
-            var priceChangePercent = _ref10.priceChangePercent;
+          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
+            var priceChangePercent = _ref9.priceChangePercent;
             return priceChangePercent;
           }));
 
