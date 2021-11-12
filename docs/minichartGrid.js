@@ -93991,8 +93991,9 @@ var RootStore = /*#__PURE__*/function () {
 
           if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
             var anomakyKey = "".concat(candle.interval, "_").concat(candle.time);
+            var lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
             var currentCandleIsAnomaly = _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] === anomakyKey;
-            var isAnomaly = !currentCandleIsAnomaly && candlesData.slice(0, -1).every(function (_ref8) {
+            var isAnomaly = !currentCandleIsAnomaly && candlesData.slice(-lastCandlesSize, -1).every(function (_ref8) {
               var volume = _ref8.volume;
               return +volume * anomalyRatio < +candle.volume;
             });
