@@ -1,6 +1,6 @@
 {
   "name": "minichart-grid",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "description": "An embeddable online tool that allows to track all the Binance futures markets on one page",
   "main": "docs/minichartGrid.js",
   "style": "docs/style.css",
