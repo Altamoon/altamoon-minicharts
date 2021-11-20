@@ -1,8 +1,8 @@
 {
-  "name": "minichart-grid",
+  "name": "altamoon-minicharts",
   "version": "0.3.13",
   "description": "An embeddable online tool that allows to track all the Binance futures markets on one page",
-  "main": "docs/minichartGrid.js",
+  "main": "docs/altamoonMinicharts.js",
   "style": "docs/style.css",
   "scripts": {
     "lint-pure": "cross-env NODE_ENV=development eslint ./src --ext .ts,.tsx",
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Letiliel/minichart-grid.git"
+    "url": "https://github.com/Altamoon/altamoon-minicharts.git"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",

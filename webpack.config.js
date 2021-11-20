@@ -23,9 +23,9 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
   },
   output: {
-    library: 'minichartGrid',
+    library: 'altamoonMinicharts',
     libraryTarget: 'umd',
-    filename: 'minichartGrid.min.js',
+    filename: 'altamoonMinicharts.min.js',
     libraryExport: 'default',
     path: path.resolve(__dirname, 'docs'),
   },
@@ -34,13 +34,12 @@ module.exports = {
       patterns: [
         { from: 'assets', to: '' },
         { from: 'src/style.css', to: '' },
-        { from: 'src/minichartGrid.d.ts', to: '' },
+        { from: 'src/altamoonMinicharts.d.ts', to: '' },
       ],
     }),
     new webpack.EnvironmentPlugin(['NODE_ENV', 'SKIP_RUNTIME_TESTS']),
     new UnminifiedWebpackPlugin({
       exclude: /.*.css/,
-      // include: /.*minichartGrid\.min\.js/,
     }),
   ],
   devServer: {

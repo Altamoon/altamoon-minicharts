@@ -12,7 +12,7 @@ interface Options {
   onSymbolSelect?: (symbol: string) => void;
 }
 
-export default function minichartGrid(
+export default function altamoonMinicharts(
   givenElement: string | HTMLElement | HTMLElement[],
   { settingsContainer, alertLogContainer, onSymbolSelect }: Options = {},
 ): void {

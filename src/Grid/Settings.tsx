@@ -63,7 +63,7 @@ const Settings = (): ReactElement => {
             label="# of rendered candles per chart"
             min={MIN_CANDLES_LENGTH}
             max={MAX_CANDLES_LENGTH}
-            id="minichart_grid_candles_per_chart"
+            id="minichart_candles_per_chart"
             value={candlesLength}
             onChange={setCandlesLength}
           />
@@ -73,7 +73,7 @@ const Settings = (): ReactElement => {
             label="# of grid columns"
             min={MIN_GRID_COLUMNS}
             max={MAX_GRID_COLUMNS}
-            id="minichart_grid_columns"
+            id="minichart_columns"
             value={gridColumns}
             onChange={setGridColumns}
           />
@@ -93,7 +93,7 @@ const Settings = (): ReactElement => {
             label="Chart height"
             min={MIN_HEIGHT}
             max={MAX_HEIGHT}
-            id="minichart_grid_height"
+            id="minichart_height"
             value={chartHeight}
             onChange={setChartHeight}
           />
@@ -105,7 +105,7 @@ const Settings = (): ReactElement => {
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <SortLabel
               className="input-group-text"
-              htmlFor="minichart_grid_sort"
+              htmlFor="minichart_sort"
               onClick={() => setSortDirection((v) => (v === 1 ? -1 : 1))}
             >
               Sort
@@ -114,7 +114,7 @@ const Settings = (): ReactElement => {
             </SortLabel>
             <select
               className="form-select bg-white"
-              id="minichart_grid_sort"
+              id="minichart_sort"
               value={sortBy}
               onChange={({ target }) => setSortBy(target.value as SortBy)}
             >
@@ -128,10 +128,10 @@ const Settings = (): ReactElement => {
         <Col xs={12} md={4}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_grid_throttleDelay">Throttle</label>
+            <label className="input-group-text" htmlFor="minichart_throttleDelay">Throttle</label>
             <select
               className="form-select bg-white"
-              id="minichart_grid_throttleDelay"
+              id="minichart_throttleDelay"
               value={throttleDelay}
               onChange={({ target }) => setThrottleDelay(+target.value)}
             >
@@ -144,10 +144,10 @@ const Settings = (): ReactElement => {
         <Col xs={12} md={4}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_grid_chartType">Type</label>
+            <label className="input-group-text" htmlFor="minichart_chartType">Type</label>
             <select
               className="form-select bg-white"
-              id="minichart_grid_chartType"
+              id="minichart_chartType"
               value={chartType}
               onChange={({ target }) => setChartType(target.value as ChartType)}
             >

@@ -11,8 +11,10 @@ const upSound = new Audio(alertUpUri);
 const downSound = new Audio(alertDownUri);
 const volumeSound = new Audio(alertVolumeUri);
 
+const STORAGE_PREFIX = 'altamoonMinicharts_';
+
 function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
-  const storageValue = localStorage.getItem(`minichart_grid_${key}`);
+  const storageValue = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
 
@@ -89,7 +91,7 @@ class RootStore {
 
     keysToListen.forEach((key) => {
       listenChange(this, key, (value: unknown) => {
-        localStorage.setItem(`minichart_grid_${key}`, JSON.stringify(value));
+        localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(value));
       });
     });
 
