@@ -224,7 +224,7 @@ export default class Chart {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type TodoAny = any;
     d3.select(this.#container).select('svg').call(
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      // eslint-disable-next-line
       this.#zoom.translateBy as TodoAny,
       value,
     );

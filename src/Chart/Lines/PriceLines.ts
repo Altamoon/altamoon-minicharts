@@ -292,6 +292,7 @@ export default class PriceLines {
               .attr('fill', 'transparent');
 
             horizontalWrapperItem.call(
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               d3.drag<Element, PriceLinesDatum>()
                 .on('start', that.#onDragStart)
                 .on('drag', that.#onDrag)
@@ -377,7 +378,7 @@ export default class PriceLines {
             .attr('transform', `translate(${(this.#resizeData?.width ?? 0)}, 0)`);
 
           rightLabelGroup.append('path')
-            .attr('d', this.#getPriceTextBackgroundPath({
+            .attr('d', PriceLines.getPriceTextBackgroundPath({
               axis: this.#axis.yRight,
               orient: 'right',
             }))
@@ -406,7 +407,7 @@ export default class PriceLines {
               .attr('class', 'price-line-bottom-group')
               .attr('transform', `translate(0, ${this.#resizeData?.height ?? 0})`);
             bottomLabelGroup.append('path')
-              .attr('d', this.#getPriceTextBackgroundPath({
+              .attr('d', PriceLines.getPriceTextBackgroundPath({
                 axis: this.#axis.x,
                 orient: 'bottom',
               }))
@@ -435,7 +436,7 @@ export default class PriceLines {
       );
   };
 
-  #getPriceTextBackgroundPath = ({
+  private static getPriceTextBackgroundPath = ({
     axis, orient,
   }: { axis: d3.Axis<d3.NumberValue>, orient: Orient }): string => {
     const height = 14;
