@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 import { ChartType } from '../types';
 
 export type D3Selection<T extends d3.BaseType, C extends d3.BaseType = null>

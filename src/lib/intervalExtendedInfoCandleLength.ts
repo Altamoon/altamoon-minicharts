@@ -1,4 +1,4 @@
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 
 const h = 60;
 const d = h * 24;

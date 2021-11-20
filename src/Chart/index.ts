@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 import { debounce, last } from 'lodash';
 
 import {

@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import moment from 'moment';
 import { listenChange } from 'use-change';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 
 import { ChartAxis, PriceLinesDatum, ResizeData } from '../types';
 import PriceLines from './PriceLines';

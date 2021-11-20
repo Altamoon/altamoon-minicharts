@@ -93611,7 +93611,7 @@ function _classPrivateFieldGet(receiver, privateMap) {
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
 var regenerator = __webpack_require__(7757);
 var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
-// EXTERNAL MODULE: ./node_modules/biduul-binance-api/api/index.js
+// EXTERNAL MODULE: ./node_modules/altamoon-binance-api/api/index.js
 var api = __webpack_require__(3990);
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(6486);
@@ -101423,7 +101423,7 @@ var Plot = /*#__PURE__*/function () {
     get: function get() {
       return _classPrivateFieldGet(this, _wrapper) ? transform(_classPrivateFieldGet(this, _wrapper).node()).k : 1;
     } // This is a copy-pasted smoozCandles function from Biduul
-    // see https://github.com/Letiliel/biduul/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
+    // see https://github.com/Altamoon/altamoon/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
 
   }]);
 

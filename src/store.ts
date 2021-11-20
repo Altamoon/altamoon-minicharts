@@ -1,4 +1,4 @@
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 

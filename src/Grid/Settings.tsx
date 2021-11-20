@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import styled from 'styled-components';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 import useChange, { useValue } from 'use-change';
 import { Row, Col } from 'reactstrap';
 

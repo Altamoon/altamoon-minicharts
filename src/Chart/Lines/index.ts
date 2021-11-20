@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 
 import { ResizeData } from '../types';
 import CurrentPriceLines from './CurrentPriceLines';

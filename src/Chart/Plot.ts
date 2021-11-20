@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import * as api from 'biduul-binance-api';
+import * as api from 'altamoon-binance-api';
 
 import {
   D3Selection, DrawData, ResizeData, Scales,
@@ -178,7 +178,7 @@ export default class Plot {
   }
 
   // This is a copy-pasted smoozCandles function from Biduul
-  // see https://github.com/Letiliel/biduul/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
+  // see https://github.com/Altamoon/altamoon/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
   private static candlesToHeikinAshiWithActualPrice = (
     candles: api.FuturesChartCandle[],
     prevSmooz: api.FuturesChartCandle[] = [], // If updating
