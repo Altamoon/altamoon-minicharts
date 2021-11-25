@@ -62933,6 +62933,8 @@ var PriceLines = /*#__PURE__*/function () {
     PriceLines_classPrivateFieldInitSpec(this, _draw, {
       writable: true,
       value: function value() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        var that = _this;
         if (!_classPrivateFieldGet(_this, PriceLines_wrapper)) return;
 
         var updateHorizontalLineHandler = function updateHorizontalLineHandler(update, orient, axis) {
@@ -62948,6 +62950,10 @@ var PriceLines = /*#__PURE__*/function () {
           }).style('visibility', function (_ref5) {
             var isVisible = _ref5.isVisible;
             return typeof isVisible === 'undefined' || isVisible ? '' : 'hidden';
+          }).style('pointer-events', function (d) {
+            var _d$pointerEventsNone;
+
+            return ((_d$pointerEventsNone = d.pointerEventsNone) !== null && _d$pointerEventsNone !== void 0 ? _d$pointerEventsNone : _classPrivateFieldGet(_this, _pointerEventsNone)) ? 'none' : 'auto';
           });
           update.select('.price-line-horizontal-group .price-line-line').attr('stroke-dasharray', function (d) {
             var _d$lineStyle;
@@ -62956,6 +62962,12 @@ var PriceLines = /*#__PURE__*/function () {
             if (lineStyle === 'dashed') return '10 7';
             if (lineStyle === 'dotted') return '2 4';
             return null;
+          });
+          update.style('cursor', function (d) {
+            return d.isDraggable ? 'ns-resize' : 'auto';
+          });
+          update.select('.price-line-title-inner').style('display', function (d) {
+            return _classPrivateFieldGet(_this, _isTitleVisible) === false || _classPrivateFieldGet(_this, _isTitleVisible) === 'hover' && !d.isHovered || d.isTitleVisible === false || d.isTitleVisible === 'hover' && !d.isHovered ? 'none' : 'inline-block';
           });
 
           if (_classPrivateFieldGet(_this, _isTitleVisible)) {
@@ -63016,11 +63028,31 @@ var PriceLines = /*#__PURE__*/function () {
           return update;
         };
 
-        _classPrivateFieldGet(_this, PriceLines_wrapper).selectAll('.price-line-wrapper').data(_classPrivateFieldGet(_this, _items)).join(function (enter) {
+        _classPrivateFieldGet(_this, PriceLines_wrapper).selectAll('.price-line-wrapper').data(_classPrivateFieldGet(_this, _items), function (datum) {
+          return datum.id;
+        }).join(function (enter) {
           var _classPrivateFieldGet9, _classPrivateFieldGet10, _classPrivateFieldGet17, _classPrivateFieldGet18;
 
           // --- horizontal line ---
-          var wrapper = enter.append('g').attr('class', 'price-line-wrapper');
+          var wrapper = enter.append('g').attr('class', 'price-line-wrapper').on('mouseover', function mouseover(_evt, datum) {
+            var titleElement = this.querySelector('.price-line-title-inner');
+
+            if ((_classPrivateFieldGet(that, _isTitleVisible) === 'hover' || datum.isTitleVisible === 'hover') && titleElement) {
+              // titleElement.style.display = 'inline-block';
+              that.updateItem(datum.id, {
+                isHovered: true
+              });
+            }
+          }).on('mouseleave', function mouseleave(_evt, datum) {
+            var titleElement = this.querySelector('.price-line-title-inner');
+
+            if ((_classPrivateFieldGet(that, _isTitleVisible) === 'hover' || datum.isTitleVisible === 'hover') && titleElement) {
+              titleElement.style.display = 'none';
+              that.updateItem(datum.id, {
+                isHovered: false
+              });
+            }
+          });
 
           if (_classPrivateFieldGet(_this, _pointerEventsNone)) {
             wrapper.style('pointer-events', 'none');
@@ -63032,9 +63064,7 @@ var PriceLines = /*#__PURE__*/function () {
           var horizontalWrapper = wrapper.append('g').attr('class', 'price-line-horizontal-group'); // --- line ---
 
           horizontalWrapper.append('line').attr('x1', 0).attr('y1', 0).attr('x2', (_classPrivateFieldGet9 = (_classPrivateFieldGet10 = _classPrivateFieldGet(_this, PriceLines_resizeData)) === null || _classPrivateFieldGet10 === void 0 ? void 0 : _classPrivateFieldGet10.width) !== null && _classPrivateFieldGet9 !== void 0 ? _classPrivateFieldGet9 : 0).attr('y2', 0).attr('stroke', 'currentColor').attr('class', 'price-line-line'); // --- dragging ---
-          // eslint-disable-next-line @typescript-eslint/no-this-alias
 
-          var that = _this;
           horizontalWrapper.select(function selector(d) {
             var _classPrivateFieldGet11, _classPrivateFieldGet12;
 
@@ -63059,8 +63089,7 @@ var PriceLines = /*#__PURE__*/function () {
 
             var titleGroup = horizontalWrapper.append('foreignObject').attr('class', 'price-line-title-object').attr('transform', "translate(".concat(((_classPrivateFieldGet13 = (_classPrivateFieldGet14 = _classPrivateFieldGet(_this, PriceLines_resizeData)) === null || _classPrivateFieldGet14 === void 0 ? void 0 : _classPrivateFieldGet14.width) !== null && _classPrivateFieldGet13 !== void 0 ? _classPrivateFieldGet13 : 0) - 330, ", 0)")).attr('x', 0).attr('y', -12).attr('width', 400).attr('height', 24).style('text-align', 'right').style('display', function (d) {
               return d.isTitleVisible === false ? 'none' : 'auto';
-            }) // TODO support dynamic change
-            .property('_datumIndex', function (d) {
+            }).property('_datumIndex', function (d) {
               return _classPrivateFieldGet(_this, _items).indexOf(d);
             });
             var div = titleGroup.append('xhtml:div').attr('class', 'price-line-title-inner').style('border', '1px solid currentColor').style('border-radius', '4px').style('padding', '5px 10px').style('pointer-events', 'none').style('display', 'inline-block').style('height', '100%').style('margin-right', '85px');
@@ -63524,6 +63553,7 @@ function AlertPriceLines_checkPrivateRedeclaration(obj, privateCollection) { if 
 moment_default().relativeTimeThreshold('ss', 0); // https://icons.getbootstrap.com/icons/bell-fill/
 
 var bellIconStr = "<svg style=\"transform: scale(0.7) translate(0, -3px);\" xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-bell\" viewBox=\"0 0 16 16\">\n  <path d=\"M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z\"/>\n</svg>";
+var counter = 0;
 
 var _realTimePrice = /*#__PURE__*/new WeakMap();
 
@@ -63617,6 +63647,7 @@ var AlertPriceLines = /*#__PURE__*/function (_PriceLines) {
 
           _this.updateItem(_this.getItems().indexOf(datum), {
             isDraggable: false,
+            pointerEventsNone: true,
             customData: {
               triggerTime: Date.now()
             }
@@ -63746,6 +63777,7 @@ var AlertPriceLines = /*#__PURE__*/function (_PriceLines) {
               msec -= ss * 1000;
 
               _this.updateItem(index, {
+                isTitleVisible: true,
                 title: "<span class=\"triggered-alert-indicator\">".concat(bellIconStr, "</span> ").concat(hh ? "".concat(hh, "h ") : '').concat(mm ? "".concat(mm, "m ") : '').concat(ss, "s ago")
               });
             }
@@ -63776,9 +63808,11 @@ _defineProperty(AlertPriceLines, "createAlertLine", function (yValue) {
     yValue: yValue,
     title: bellIconStr,
     isDraggable: true,
+    isTitleVisible: 'hover',
     customData: {},
     color: '#828282',
-    id: yValue
+    // eslint-disable-next-line no-plusplus
+    id: "alert_".concat(new Date().toISOString(), "_").concat(counter++)
   };
 });
 
