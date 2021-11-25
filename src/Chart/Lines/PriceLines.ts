@@ -16,7 +16,7 @@ interface Params {
   showX?: boolean;
   color?: string;
   isVisible?: boolean;
-  isTitleVisible?: boolean;
+  isTitleVisible?: boolean | 'hover';
   isBackgroundFill?: boolean;
   lineStyle?: 'solid' | 'dashed' | 'dotted';
   pointerEventsNone?: boolean;
@@ -47,7 +47,7 @@ export default class PriceLines {
 
   #pricePrecision = 1;
 
-  readonly #isTitleVisible: boolean;
+  readonly #isTitleVisible?: boolean | 'hover';
 
   readonly #isBackgroundFill: boolean;
 
@@ -145,7 +145,7 @@ export default class PriceLines {
 
   public empty = (): void => this.update({ items: [] });
 
-  public updateItem = (key: number | string, data: PriceLinesDatum): void => {
+  public updateItem = (key: number | string, data: Partial<PriceLinesDatum>): void => {
     const item = typeof key === 'string' ? this.#items.find(({ id }) => id === key) : this.#items[key];
     if (!item) throw new Error(`Unable to find item "${key}"`);
     Object.assign(item, data);
@@ -175,6 +175,8 @@ export default class PriceLines {
   public getItems(): PriceLinesDatum[] { return this.#items; }
 
   #draw = (): void => {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     if (!this.#wrapper) return;
 
     const updateHorizontalLineHandler = (
@@ -188,7 +190,8 @@ export default class PriceLines {
         .select('.price-line-horizontal-group')
         .attr('transform', (d) => `translate(0, ${String(axis.scale()(d.yValue ?? 0))})`)
         .attr('color', ({ color }) => color ?? this.#color)
-        .style('visibility', ({ isVisible }) => (typeof isVisible === 'undefined' || isVisible ? '' : 'hidden'));
+        .style('visibility', ({ isVisible }) => (typeof isVisible === 'undefined' || isVisible ? '' : 'hidden'))
+        .style('pointer-events', (d) => (d.pointerEventsNone ?? this.#pointerEventsNone ? 'none' : 'auto'));
 
       update.select('.price-line-horizontal-group .price-line-line')
         .attr('stroke-dasharray', (d) => {
@@ -197,6 +200,14 @@ export default class PriceLines {
           if (lineStyle === 'dotted') return '2 4';
           return null;
         });
+
+      update.style('cursor', (d) => (d.isDraggable ? 'ns-resize' : 'auto'));
+
+      update.select('.price-line-title-inner').style('display', (d) => (this.#isTitleVisible === false
+        || (this.#isTitleVisible === 'hover' && !d.isHovered)
+        || d.isTitleVisible === false
+        || (d.isTitleVisible === 'hover' && !d.isHovered)
+        ? 'none' : 'inline-block'));
 
       if (this.#isTitleVisible) {
         update.select('.price-line-title-object .text').each(function each({ title }) {
@@ -252,11 +263,25 @@ export default class PriceLines {
 
     this.#wrapper
       .selectAll('.price-line-wrapper')
-      .data(this.#items)
+      .data(this.#items, (datum) => (datum as PriceLinesDatum).id)
       .join(
         (enter) => {
           // --- horizontal line ---
-          const wrapper = enter.append('g').attr('class', 'price-line-wrapper');
+          const wrapper = enter.append('g').attr('class', 'price-line-wrapper')
+            .on('mouseover', function mouseover(_evt, datum) {
+              const titleElement = this.querySelector<HTMLElement>('.price-line-title-inner');
+              if ((that.#isTitleVisible === 'hover' || datum.isTitleVisible === 'hover') && titleElement) {
+                // titleElement.style.display = 'inline-block';
+                that.updateItem(datum.id, { isHovered: true });
+              }
+            })
+            .on('mouseleave', function mouseleave(_evt, datum) {
+              const titleElement = this.querySelector<HTMLElement>('.price-line-title-inner');
+              if ((that.#isTitleVisible === 'hover' || datum.isTitleVisible === 'hover') && titleElement) {
+                titleElement.style.display = 'none';
+                that.updateItem(datum.id, { isHovered: false });
+              }
+            });
 
           if (this.#pointerEventsNone) {
             wrapper.style('pointer-events', 'none');
@@ -276,8 +301,6 @@ export default class PriceLines {
             .attr('class', 'price-line-line');
 
           // --- dragging ---
-          // eslint-disable-next-line @typescript-eslint/no-this-alias
-          const that = this;
           horizontalWrapper.select(function selector(d) {
             if (!d.isDraggable) return this;
 
@@ -320,7 +343,7 @@ export default class PriceLines {
               .attr('width', 400)
               .attr('height', 24)
               .style('text-align', 'right')
-              .style('display', (d) => (d.isTitleVisible === false ? 'none' : 'auto')) // TODO support dynamic change
+              .style('display', (d) => (d.isTitleVisible === false ? 'none' : 'auto'))
               .property('_datumIndex', (d) => this.#items.indexOf(d));
 
             const div = titleGroup.append('xhtml:div')

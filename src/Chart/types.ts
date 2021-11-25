@@ -32,14 +32,16 @@ export interface PriceLinesDatum<T = unknown> {
   yValue?: number;
   title?: string | ((element: HTMLElement) => void);
   color?: string;
-  id?: string | number;
+  id: string | number;
   isVisible?: boolean;
-  isDraggable?: boolean; // non-dynamic so far
+  isDraggable?: boolean;
   isCheckable?: boolean; // non-dynamic so far
   isClosable?: boolean; // non-dynamic so far
-  isTitleVisible?: boolean; // non-dynamic so far
+  isHovered?: boolean;
+  isTitleVisible?: boolean | 'hover';
   lineStyle?: 'solid' | 'dashed' | 'dotted';
   customData?: T;
+  pointerEventsNone?: boolean;
 }
 
 export interface DrawData {

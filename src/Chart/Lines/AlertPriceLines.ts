@@ -30,14 +30,18 @@ const bellIconStr = `<svg style="transform: scale(0.7) translate(0, -3px);" xmln
   <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
 </svg>`;
 
+let counter = 0;
+
 export default class AlertPriceLines extends PriceLines {
   private static createAlertLine = (yValue: number): AlertLinesDatum => ({
     yValue,
     title: bellIconStr,
     isDraggable: true,
+    isTitleVisible: 'hover',
     customData: {},
     color: '#828282',
-    id: yValue,
+    // eslint-disable-next-line no-plusplus
+    id: `alert_${new Date().toISOString()}_${counter++}`,
   });
 
   #realTimePrice: number | null = null;
@@ -95,6 +99,7 @@ export default class AlertPriceLines extends PriceLines {
             msec -= ss * 1000;
 
             this.updateItem(index, {
+              isTitleVisible: true,
               title: `<span class="triggered-alert-indicator">${bellIconStr}</span> ${hh ? `${hh}h ` : ''}${mm ? `${mm}m ` : ''}${ss}s ago`,
             });
           }
@@ -115,6 +120,7 @@ export default class AlertPriceLines extends PriceLines {
       // update alert item on the chart
       this.updateItem(this.getItems().indexOf(datum), {
         isDraggable: false,
+        pointerEventsNone: true,
         customData: { triggerTime: Date.now() },
       });
 
