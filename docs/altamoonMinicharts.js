@@ -54452,8 +54452,6 @@ var RootStore = /*#__PURE__*/function () {
 
     _defineProperty(this, "interval", getPersistentStorageValue('interval', '1m'));
 
-    _defineProperty(this, "candlesLength", getPersistentStorageValue('candlesLength', 200));
-
     _defineProperty(this, "maxChartsLength", getPersistentStorageValue('maxChartsLength', null));
 
     _defineProperty(this, "throttleDelay", getPersistentStorageValue('throttleDelay', 1000));
@@ -54461,6 +54459,8 @@ var RootStore = /*#__PURE__*/function () {
     _defineProperty(this, "gridColumns", getPersistentStorageValue('gridColumns', 4));
 
     _defineProperty(this, "chartType", getPersistentStorageValue('chartType', 'candlestick'));
+
+    _defineProperty(this, "scaleType", getPersistentStorageValue('scaleType', 'linear'));
 
     _defineProperty(this, "symbolAlerts", getPersistentStorageValue('symbolAlerts', {}));
 
@@ -54700,9 +54700,10 @@ var RootStore = /*#__PURE__*/function () {
           var _loop = function _loop() {
             var symbol = _step.value;
             void futuresCandles_futuresCandles({
+              // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
               symbol: symbol,
               interval: interval,
-              limit: 500,
+              limit: 499,
               lastCandleFromCache: true
             }).then(function (candles) {
               var _classPrivateFieldGet5, _classPrivateFieldGet6;
@@ -54787,7 +54788,7 @@ var RootStore = /*#__PURE__*/function () {
       }
     });
 
-    var keysToListen = ['interval', 'candlesLength', 'maxChartsLength', 'throttleDelay', 'gridColumns', 'chartType', 'chartHeight', 'symbolAlerts', 'alertLog', 'sortBy', 'sortDirection', 'alertLogLastSeenISO'];
+    var keysToListen = ['interval', 'maxChartsLength', 'throttleDelay', 'gridColumns', 'chartType', 'scaleType', 'chartHeight', 'symbolAlerts', 'alertLog', 'sortBy', 'sortDirection', 'alertLogLastSeenISO'];
     keysToListen.forEach(function (key) {
       (0,dist.listenChange)(_this, key, function (value) {
         localStorage.setItem("".concat(STORAGE_PREFIX).concat(key), JSON.stringify(value));
@@ -59910,6 +59911,43 @@ function linear_linear() {
   return linearish(scale);
 }
 
+;// CONCATENATED MODULE: ./node_modules/d3-scale/src/symlog.js
+
+
+
+
+function transformSymlog(c) {
+  return function(x) {
+    return Math.sign(x) * Math.log1p(Math.abs(x / c));
+  };
+}
+
+function transformSymexp(c) {
+  return function(x) {
+    return Math.sign(x) * Math.expm1(Math.abs(x)) * c;
+  };
+}
+
+function symlogish(transform) {
+  var c = 1, scale = transform(transformSymlog(c), transformSymexp(c));
+
+  scale.constant = function(_) {
+    return arguments.length ? transform(transformSymlog(c = +_), transformSymexp(c)) : c;
+  };
+
+  return linearish(scale);
+}
+
+function symlog() {
+  var scale = symlogish(transformer());
+
+  scale.copy = function() {
+    return copy(scale, symlog()).constant(scale.constant());
+  };
+
+  return initRange.apply(scale, arguments);
+}
+
 ;// CONCATENATED MODULE: ./node_modules/d3-time/src/duration.js
 const durationSecond = 1000;
 const durationMinute = durationSecond * 60;
@@ -64009,7 +64047,8 @@ var _calcYDomain = /*#__PURE__*/new WeakMap();
 var Chart = function Chart(container, _ref) {
   var _this = this;
 
-  var realTimeCandles = _ref.realTimeCandles,
+  var scaleType = _ref.scaleType,
+      realTimeCandles = _ref.realTimeCandles,
       symbol = _ref.symbol,
       triggerAlert = _ref.triggerAlert,
       onUpdateAlerts = _ref.onUpdateAlerts;
@@ -64168,6 +64207,12 @@ var Chart = function Chart(container, _ref) {
       });
     }
 
+    if (typeof data.scaleType !== 'undefined') {
+      _classPrivateFieldGet(_this, Chart_scales).y = data.scaleType === 'linear' ? linear_linear().range([_classPrivateFieldGet(_this, Chart_height), 0]) : symlog().range([_classPrivateFieldGet(_this, Chart_height), 0]);
+
+      _classPrivateFieldGet(_this, _resize).call(_this);
+    }
+
     _classPrivateFieldGet(_this, Chart_draw).call(_this);
   });
 
@@ -64320,7 +64365,14 @@ var Chart = function Chart(container, _ref) {
       }), max(candles, function (d) {
         return +d.high;
       })] : [0, 1];
-      y.domain(yDomain); // Padding
+      y.domain(yDomain);
+
+      if ('constant' in y && yDomain[0] !== 0) {
+        if (yDomain[0] < 1) y.constant(0.1);
+        if (yDomain[0] < 0.1) y.constant(0.01);
+        if (yDomain[0] < 0.01) y.constant(0.001);
+      } // Padding
+
 
       var yPaddingTop = y.invert(-_classPrivateFieldGet(_this, _padding).top) - y.invert(0);
       var yPaddingBottom = y.invert(_classPrivateFieldGet(_this, Chart_height)) - y.invert(_classPrivateFieldGet(_this, Chart_height) + _classPrivateFieldGet(_this, _padding).bottom);
@@ -64332,7 +64384,7 @@ var Chart = function Chart(container, _ref) {
 
   var x = time().range([0, 0]);
 
-  var _y = linear_linear().range([0, 0]);
+  var _y = scaleType === 'linear' ? linear_linear().range([0, 0]) : symlog().range([0, 0]);
 
   var scales = {
     x: x,
@@ -71560,8 +71612,8 @@ var Minichart = function Minichart(_ref) {
   var interval = (0,dist.useValue)(ROOT, 'interval');
   var chartHeight = (0,dist.useValue)(ROOT, 'chartHeight');
   var gridColumns = (0,dist.useValue)(ROOT, 'gridColumns');
-  var candlesLength = (0,dist.useValue)(ROOT, 'candlesLength');
   var chartType = (0,dist.useValue)(ROOT, 'chartType');
+  var scaleType = (0,dist.useValue)(ROOT, 'scaleType');
   var symbolInfo = (0,dist.useValue)(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   var ref = (0,react.useRef)(null);
 
@@ -71588,9 +71640,9 @@ var Minichart = function Minichart(_ref) {
   }, [inViewRef]);
   (0,react.useEffect)(function () {
     if (inView) chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
-      candles: (candles || []).slice(-candlesLength)
+      candles: candles || []
     });
-  }, [candles, candlesLength, chartInstance, inView]);
+  }, [candles, chartInstance, inView]);
   (0,react.useEffect)(function () {
     if (symbolInfo) chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       symbolInfo: symbolInfo
@@ -71600,11 +71652,17 @@ var Minichart = function Minichart(_ref) {
     chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       chartType: chartType
     });
-  }, [chartInstance, chartType]); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartInstance, chartType]);
+  (0,react.useEffect)(function () {
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      scaleType: scaleType
+    });
+  }, [chartInstance, scaleType]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   (0,react.useEffect)(function () {
     if (ref.current && !chartInstance) {
       var instance = new Chart(ref.current, {
+        scaleType: scaleType,
         triggerAlert: triggerAlert,
         realTimeCandles: realTimeCandles,
         symbol: symbol,
@@ -71615,7 +71673,7 @@ var Minichart = function Minichart(_ref) {
         }
       });
       instance.update({
-        candles: (candles || []).slice(-candlesLength),
+        candles: candles || [],
         chartType: chartType,
         alerts: getSymbolAlerts()[symbol]
       });
@@ -79330,8 +79388,6 @@ var Settings_templateObject, Settings_templateObject2, Settings_templateObject3;
 var Intervals = styled_components_browser_esm.div(Settings_templateObject || (Settings_templateObject = _taggedTemplateLiteral(["\n  padding-bottom: 1rem;\n  flex-wrap: nowrap!important;\n  overflow: auto;  \n"])));
 var SortLabel = styled_components_browser_esm.label(Settings_templateObject2 || (Settings_templateObject2 = _taggedTemplateLiteral(["\n  cursor: pointer;\n  &:hover { color: #fff; }\n"])));
 var IntervalItem = styled_components_browser_esm.div(Settings_templateObject3 || (Settings_templateObject3 = _taggedTemplateLiteral(["\n  & > span {\n    padding: 0.5rem 0.75rem;\n  }\n"])));
-var MIN_CANDLES_LENGTH = 50;
-var MAX_CANDLES_LENGTH = 500;
 var MIN_GRID_COLUMNS = 1;
 var MAX_GRID_COLUMNS = 24;
 var MIN_HEIGHT = 100;
@@ -79355,25 +79411,25 @@ var Settings = function Settings() {
       chartHeight = _useChange4[0],
       setChartHeight = _useChange4[1];
 
-  var _useChange5 = dist_default()(ROOT, 'candlesLength'),
+  var _useChange5 = dist_default()(ROOT, 'gridColumns'),
       _useChange6 = _slicedToArray(_useChange5, 2),
-      candlesLength = _useChange6[0],
-      setCandlesLength = _useChange6[1];
+      gridColumns = _useChange6[0],
+      setGridColumns = _useChange6[1];
 
-  var _useChange7 = dist_default()(ROOT, 'gridColumns'),
+  var _useChange7 = dist_default()(ROOT, 'throttleDelay'),
       _useChange8 = _slicedToArray(_useChange7, 2),
-      gridColumns = _useChange8[0],
-      setGridColumns = _useChange8[1];
+      throttleDelay = _useChange8[0],
+      setThrottleDelay = _useChange8[1];
 
-  var _useChange9 = dist_default()(ROOT, 'throttleDelay'),
+  var _useChange9 = dist_default()(ROOT, 'chartType'),
       _useChange10 = _slicedToArray(_useChange9, 2),
-      throttleDelay = _useChange10[0],
-      setThrottleDelay = _useChange10[1];
+      chartType = _useChange10[0],
+      setChartType = _useChange10[1];
 
-  var _useChange11 = dist_default()(ROOT, 'chartType'),
+  var _useChange11 = dist_default()(ROOT, 'scaleType'),
       _useChange12 = _slicedToArray(_useChange11, 2),
-      chartType = _useChange12[0],
-      setChartType = _useChange12[1];
+      scaleType = _useChange12[0],
+      setScaleType = _useChange12[1];
 
   var _useChange13 = dist_default()(ROOT, 'sortBy'),
       _useChange14 = _slicedToArray(_useChange13, 2),
@@ -79394,19 +79450,7 @@ var Settings = function Settings() {
 
   return /*#__PURE__*/react.createElement(react.Fragment, null, /*#__PURE__*/react.createElement(Row$1, null, /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 6,
-    lg: 3
-  }, /*#__PURE__*/react.createElement(lib_InputRange, {
-    label: "# of rendered candles per chart",
-    min: MIN_CANDLES_LENGTH,
-    max: MAX_CANDLES_LENGTH,
-    id: "minichart_candles_per_chart",
-    value: candlesLength,
-    onChange: setCandlesLength
-  })), /*#__PURE__*/react.createElement(Col$1, {
-    xs: 12,
-    md: 6,
-    lg: 3
+    md: 4
   }, /*#__PURE__*/react.createElement(lib_InputRange, {
     label: "# of grid columns",
     min: MIN_GRID_COLUMNS,
@@ -79416,8 +79460,7 @@ var Settings = function Settings() {
     onChange: setGridColumns
   })), /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 6,
-    lg: 3
+    md: 4
   }, /*#__PURE__*/react.createElement(lib_InputRange, {
     label: "# of charts",
     min: 1,
@@ -79427,8 +79470,7 @@ var Settings = function Settings() {
     onChange: setMaxChartsLength
   })), /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 6,
-    lg: 3
+    md: 4
   }, /*#__PURE__*/react.createElement(lib_InputRange, {
     label: "Chart height",
     min: MIN_HEIGHT,
@@ -79438,7 +79480,7 @@ var Settings = function Settings() {
     onChange: setChartHeight
   }))), /*#__PURE__*/react.createElement(Row$1, null, /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 4
+    md: 3
   }, /*#__PURE__*/react.createElement("div", {
     className: "input-group mb-3"
   }, /*#__PURE__*/react.createElement(SortLabel, {
@@ -79467,7 +79509,7 @@ var Settings = function Settings() {
     value: isType('volume_change')
   }, "% change (24h)")))), /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 4
+    md: 3
   }, /*#__PURE__*/react.createElement("div", {
     className: "input-group mb-3"
   }, /*#__PURE__*/react.createElement("label", {
@@ -79492,7 +79534,7 @@ var Settings = function Settings() {
     }, label);
   })))), /*#__PURE__*/react.createElement(Col$1, {
     xs: 12,
-    md: 4
+    md: 3
   }, /*#__PURE__*/react.createElement("div", {
     className: "input-group mb-3"
   }, /*#__PURE__*/react.createElement("label", {
@@ -79508,11 +79550,31 @@ var Settings = function Settings() {
     }
   }, /*#__PURE__*/react.createElement("option", {
     value: isType('candlestick')
-  }, "Candlestick"), /*#__PURE__*/react.createElement("option", {
+  }, "Open-high-low-close"), /*#__PURE__*/react.createElement("option", {
     value: isType('heikin_ashi')
   }, "Heikin-Ashi"), /*#__PURE__*/react.createElement("option", {
     value: isType('heikin_ashi_actual_price')
-  }, "Heikin-Ashi (actual price)"))))), /*#__PURE__*/react.createElement(Row$1, null, /*#__PURE__*/react.createElement(Col$1, {
+  }, "Heikin-Ashi (actual price)")))), /*#__PURE__*/react.createElement(Col$1, {
+    xs: 12,
+    md: 3
+  }, /*#__PURE__*/react.createElement("div", {
+    className: "input-group mb-3"
+  }, /*#__PURE__*/react.createElement("label", {
+    className: "input-group-text",
+    htmlFor: "minichart_scaleType"
+  }, "Scale Type"), /*#__PURE__*/react.createElement("select", {
+    className: "form-select bg-white",
+    id: "minichart_scaleType",
+    value: scaleType,
+    onChange: function onChange(_ref6) {
+      var target = _ref6.target;
+      return setScaleType(target.value);
+    }
+  }, /*#__PURE__*/react.createElement("option", {
+    value: isType('linear')
+  }, "Linear"), /*#__PURE__*/react.createElement("option", {
+    value: isType('log')
+  }, "Logarithmic"))))), /*#__PURE__*/react.createElement(Row$1, null, /*#__PURE__*/react.createElement(Col$1, {
     xs: 12
   }, /*#__PURE__*/react.createElement(Intervals, {
     className: "nav nav-pills"
