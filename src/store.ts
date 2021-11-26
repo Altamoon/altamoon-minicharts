@@ -39,7 +39,7 @@ class RootStore {
 
   public chartType = getPersistentStorageValue<RootStore, ChartType>('chartType', 'candlestick');
 
-  public scaleType = getPersistentStorageValue<RootStore, ScaleType>('scaleType', 'linear');
+  public scaleType = getPersistentStorageValue<RootStore, ScaleType>('scaleType', 'log');
 
   public symbolAlerts = getPersistentStorageValue<RootStore, Record<string, number[]>>('symbolAlerts', {});
 
