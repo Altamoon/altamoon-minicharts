@@ -11,13 +11,14 @@ import ClipPath from './ClipPath';
 import Axes from './Axes';
 import GridLines from './GridLines';
 import Lines from './Lines';
-import { AlertLogItem, ChartType } from '../types';
+import { AlertLogItem, ChartType, ScaleType } from '../types';
 
 interface Params {
   triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
   onUpdateAlerts: (d: number[]) => void;
   realTimeCandles: Record<string, api.FuturesChartCandle[]>;
   symbol: string;
+  scaleType: ScaleType;
 }
 export default class Chart {
   #svg: Svg;
@@ -63,11 +64,11 @@ export default class Chart {
   constructor(
     container: HTMLDivElement,
     {
-      realTimeCandles, symbol, triggerAlert, onUpdateAlerts,
+      scaleType, realTimeCandles, symbol, triggerAlert, onUpdateAlerts,
     }: Params,
   ) {
     const x = d3.scaleTime().range([0, 0]);
-    const y = d3.scaleLinear().range([0, 0]);
+    const y = scaleType === 'linear' ? d3.scaleLinear().range([0, 0]) : d3.scaleSymlog().range([0, 0]);
     const scales: Scales = { x, y, scaledX: x };
 
     this.#scales = scales;
@@ -115,6 +116,7 @@ export default class Chart {
     symbolInfo?: api.FuturesExchangeInfoSymbol | null;
     chartType?: ChartType;
     alerts?: number[];
+    scaleType?: ScaleType;
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -155,6 +157,15 @@ export default class Chart {
     if (typeof data.alerts !== 'undefined') {
       this.#lines.update({ alerts: data.alerts });
     }
+
+    if (typeof data.scaleType !== 'undefined') {
+      this.#scales.y = data.scaleType === 'linear'
+        ? d3.scaleLinear().range([this.#height, 0])
+        : d3.scaleSymlog().range([this.#height, 0]);
+
+      this.#resize();
+    }
+
     this.#draw();
   };
 
@@ -266,6 +277,12 @@ export default class Chart {
       : [0, 1];
 
     y.domain(yDomain);
+
+    if ('constant' in y && yDomain[0] !== 0) {
+      if (yDomain[0] < 1) y.constant(0.1);
+      if (yDomain[0] < 0.1) y.constant(0.01);
+      if (yDomain[0] < 0.01) y.constant(0.001);
+    }
 
     // Padding
     const yPaddingTop = y.invert(-this.#padding.top) - y.invert(0);

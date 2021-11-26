@@ -5,7 +5,7 @@ import useChange, { useValue } from 'use-change';
 import { Row, Col } from 'reactstrap';
 
 import { ROOT } from '../store';
-import { ChartType, SortBy } from '../types';
+import { ChartType, ScaleType, SortBy } from '../types';
 import isType from '../lib/isType';
 import InputRange from '../lib/InputRange';
 
@@ -26,9 +26,6 @@ const IntervalItem = styled.div`
   }
 `;
 
-const MIN_CANDLES_LENGTH = 50;
-const MAX_CANDLES_LENGTH = 500;
-
 const MIN_GRID_COLUMNS = 1;
 const MAX_GRID_COLUMNS = 24;
 
@@ -46,10 +43,10 @@ const THROTTLE_DELAY_VALUES = {
 const Settings = (): ReactElement => {
   const [interval, setChartInterval] = useChange(ROOT, 'interval');
   const [chartHeight, setChartHeight] = useChange(ROOT, 'chartHeight');
-  const [candlesLength, setCandlesLength] = useChange(ROOT, 'candlesLength');
   const [gridColumns, setGridColumns] = useChange(ROOT, 'gridColumns');
   const [throttleDelay, setThrottleDelay] = useChange(ROOT, 'throttleDelay');
   const [chartType, setChartType] = useChange(ROOT, 'chartType');
+  const [scaleType, setScaleType] = useChange(ROOT, 'scaleType');
   const [sortBy, setSortBy] = useChange(ROOT, 'sortBy');
   const [sortDirection, setSortDirection] = useChange(ROOT, 'sortDirection');
   const symbols = useValue(ROOT, 'symbols');
@@ -58,17 +55,7 @@ const Settings = (): ReactElement => {
   return (
     <>
       <Row>
-        <Col xs={12} md={6} lg={3}>
-          <InputRange
-            label="# of rendered candles per chart"
-            min={MIN_CANDLES_LENGTH}
-            max={MAX_CANDLES_LENGTH}
-            id="minichart_candles_per_chart"
-            value={candlesLength}
-            onChange={setCandlesLength}
-          />
-        </Col>
-        <Col xs={12} md={6} lg={3}>
+        <Col xs={12} md={4}>
           <InputRange
             label="# of grid columns"
             min={MIN_GRID_COLUMNS}
@@ -78,7 +65,7 @@ const Settings = (): ReactElement => {
             onChange={setGridColumns}
           />
         </Col>
-        <Col xs={12} md={6} lg={3}>
+        <Col xs={12} md={4}>
           <InputRange
             label="# of charts"
             min={1}
@@ -88,7 +75,7 @@ const Settings = (): ReactElement => {
             onChange={setMaxChartsLength}
           />
         </Col>
-        <Col xs={12} md={6} lg={3}>
+        <Col xs={12} md={4}>
           <InputRange
             label="Chart height"
             min={MIN_HEIGHT}
@@ -100,7 +87,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={12} md={4}>
+        <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <SortLabel
@@ -125,7 +112,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} md={4}>
+        <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_throttleDelay">Throttle</label>
@@ -141,7 +128,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} md={4}>
+        <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_chartType">Type</label>
@@ -151,9 +138,24 @@ const Settings = (): ReactElement => {
               value={chartType}
               onChange={({ target }) => setChartType(target.value as ChartType)}
             >
-              <option value={isType<ChartType>('candlestick')}>Candlestick</option>
+              <option value={isType<ChartType>('candlestick')}>Open-high-low-close</option>
               <option value={isType<ChartType>('heikin_ashi')}>Heikin-Ashi</option>
               <option value={isType<ChartType>('heikin_ashi_actual_price')}>Heikin-Ashi (actual price)</option>
+            </select>
+          </div>
+        </Col>
+        <Col xs={12} md={3}>
+          <div className="input-group mb-3">
+            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+            <label className="input-group-text" htmlFor="minichart_scaleType">Scale Type</label>
+            <select
+              className="form-select bg-white"
+              id="minichart_scaleType"
+              value={scaleType}
+              onChange={({ target }) => setScaleType(target.value as ScaleType)}
+            >
+              <option value={isType<ScaleType>('linear')}>Linear</option>
+              <option value={isType<ScaleType>('log')}>Logarithmic</option>
             </select>
           </div>
         </Col>

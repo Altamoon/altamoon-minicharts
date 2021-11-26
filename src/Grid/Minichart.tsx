@@ -49,8 +49,8 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
-  const candlesLength = useValue(ROOT, 'candlesLength');
   const chartType = useValue(ROOT, 'chartType');
+  const scaleType = useValue(ROOT, 'scaleType');
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const ref = useRef<HTMLDivElement | null>(null);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
@@ -69,15 +69,17 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   );
 
   useEffect(() => {
-    if (inView) chartInstance?.update({ candles: (candles || []).slice(-candlesLength) });
-  }, [candles, candlesLength, chartInstance, inView]);
+    if (inView) chartInstance?.update({ candles: candles || [] });
+  }, [candles, chartInstance, inView]);
   useEffect(() => { if (symbolInfo) chartInstance?.update({ symbolInfo }); });
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
+  useEffect(() => { chartInstance?.update({ scaleType }); }, [chartInstance, scaleType]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (ref.current && !chartInstance) {
       const instance = new Chart(ref.current, {
+        scaleType,
         triggerAlert,
         realTimeCandles,
         symbol,
@@ -88,7 +90,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       });
 
       instance.update({
-        candles: (candles || []).slice(-candlesLength),
+        candles: candles || [],
         chartType,
         alerts: getSymbolAlerts()[symbol],
       });

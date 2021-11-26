@@ -3,7 +3,7 @@ import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 
 import {
-  ChartType, SortDirection, SortBy, AlertLogItem,
+  ChartType, SortDirection, SortBy, AlertLogItem, ScaleType,
 } from './types';
 import { alertUpUri, alertDownUri, alertVolumeUri } from './alertSounds';
 
@@ -31,8 +31,6 @@ class RootStore {
 
   public interval = getPersistentStorageValue<RootStore, api.CandlestickChartInterval>('interval', '1m');
 
-  public candlesLength = getPersistentStorageValue<RootStore, number>('candlesLength', 200);
-
   public maxChartsLength = getPersistentStorageValue<RootStore, number | null>('maxChartsLength', null);
 
   public throttleDelay = getPersistentStorageValue<RootStore, number>('throttleDelay', 1000);
@@ -40,6 +38,8 @@ class RootStore {
   public gridColumns = getPersistentStorageValue<RootStore, number>('gridColumns', 4);
 
   public chartType = getPersistentStorageValue<RootStore, ChartType>('chartType', 'candlestick');
+
+  public scaleType = getPersistentStorageValue<RootStore, ScaleType>('scaleType', 'linear');
 
   public symbolAlerts = getPersistentStorageValue<RootStore, Record<string, number[]>>('symbolAlerts', {});
 
@@ -76,11 +76,11 @@ class RootStore {
   constructor() {
     const keysToListen: (keyof RootStore)[] = [
       'interval',
-      'candlesLength',
       'maxChartsLength',
       'throttleDelay',
       'gridColumns',
       'chartType',
+      'scaleType',
       'chartHeight',
       'symbolAlerts',
       'alertLog',
@@ -203,7 +203,8 @@ class RootStore {
 
     for (const symbol of symbols) {
       void api.futuresCandles({
-        symbol, interval, limit: 500, lastCandleFromCache: true,
+        // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        symbol, interval, limit: 499, lastCandleFromCache: true,
       }).then((candles) => {
         allCandlesData[symbol] = candles;
         this.#throttledListeners[symbol]?.(candles);
