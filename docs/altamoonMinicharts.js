@@ -54460,7 +54460,7 @@ var RootStore = /*#__PURE__*/function () {
 
     _defineProperty(this, "chartType", getPersistentStorageValue('chartType', 'candlestick'));
 
-    _defineProperty(this, "scaleType", getPersistentStorageValue('scaleType', 'linear'));
+    _defineProperty(this, "scaleType", getPersistentStorageValue('scaleType', 'log'));
 
     _defineProperty(this, "symbolAlerts", getPersistentStorageValue('symbolAlerts', {}));
 
