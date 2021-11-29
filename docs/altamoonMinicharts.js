@@ -62060,7 +62060,7 @@ var Plot = /*#__PURE__*/function () {
     });
 
     _defineProperty(this, "draw", function (_ref2) {
-      var _classPrivateFieldGet2, _classPrivateFieldGet3, _classPrivateFieldGet4, _classPrivateFieldGet5, _classPrivateFieldGet10, _classPrivateFieldGet11, _classPrivateFieldGet12, _classPrivateFieldGet13;
+      var _classPrivateFieldGet2, _classPrivateFieldGet3, _classPrivateFieldGet4, _classPrivateFieldGet5, _firstCandles, _lastCandle$high, _firstCandles2, _lastCandle$low, _classPrivateFieldGet10, _classPrivateFieldGet11, _classPrivateFieldGet12, _classPrivateFieldGet13;
 
       var givenCandles = _ref2.candles,
           resizeData = _ref2.resizeData,
@@ -62077,12 +62077,13 @@ var Plot = /*#__PURE__*/function () {
         candles = givenCandles;
       }
 
+      var firstCandles = candles.slice(0, -1);
       var lastCandle = candles[candles.length - 1]; // update all candles (except first) if zoom or last candle was changed
 
-      if (resizeData.width !== ((_classPrivateFieldGet2 = _classPrivateFieldGet(_this, _resizeData)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.width) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.time) !== ((_classPrivateFieldGet3 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.time) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.interval) !== ((_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : _classPrivateFieldGet4.interval) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.symbol) !== ((_classPrivateFieldGet5 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.symbol) || _classPrivateFieldGet(_this, _zoomTransform) !== zoomTransform || _classPrivateFieldGet(_this, _chartType) !== chartType) {
+      if (resizeData.width !== ((_classPrivateFieldGet2 = _classPrivateFieldGet(_this, _resizeData)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.width) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.time) !== ((_classPrivateFieldGet3 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.time) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.interval) !== ((_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : _classPrivateFieldGet4.interval) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.symbol) !== ((_classPrivateFieldGet5 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.symbol) || _classPrivateFieldGet(_this, _zoomTransform) !== zoomTransform || _classPrivateFieldGet(_this, _chartType) !== chartType // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
+      || ((_firstCandles = firstCandles[firstCandles.length - 1]) === null || _firstCandles === void 0 ? void 0 : _firstCandles.high) < ((_lastCandle$high = lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.high) !== null && _lastCandle$high !== void 0 ? _lastCandle$high : 0) || ((_firstCandles2 = firstCandles[firstCandles.length - 1]) === null || _firstCandles2 === void 0 ? void 0 : _firstCandles2.low) > ((_lastCandle$low = lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.low) !== null && _lastCandle$low !== void 0 ? _lastCandle$low : 0)) {
         var _classPrivateFieldGet6, _classPrivateFieldGet7, _classPrivateFieldGet8, _classPrivateFieldGet9;
 
-        var firstCandles = candles.slice(0, -1);
         var upCandles = firstCandles.filter(function (x) {
           return x.direction === 'UP';
         });
