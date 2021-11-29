@@ -71,6 +71,7 @@ export default class Plot {
       candles = givenCandles;
     }
 
+    const firstCandles = candles.slice(0, -1);
     const lastCandle = candles[candles.length - 1];
     // update all candles (except first) if zoom or last candle was changed
     if (
@@ -80,8 +81,10 @@ export default class Plot {
       || lastCandle?.symbol !== this.#lastCandle?.symbol
       || this.#zoomTransform !== zoomTransform
       || this.#chartType !== chartType
+      // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
+      || firstCandles[firstCandles.length - 1]?.high < (lastCandle?.high ?? 0)
+      || firstCandles[firstCandles.length - 1]?.low > (lastCandle?.low ?? 0)
     ) {
-      const firstCandles = candles.slice(0, -1);
       const upCandles = firstCandles.filter((x) => x.direction === 'UP');
       const downCandles = firstCandles.filter((x) => x.direction === 'DOWN');
 
