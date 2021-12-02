@@ -62387,10 +62387,7 @@ var ClipPath = function ClipPath() {
   _defineProperty(this, "appendTo", function (parent, resizeData) {
     _classPrivateFieldSet(_this, _clipChart, src_select(parent).append('clipPath').attr('id', 'minichartClipChart').append('rect'));
 
-    _classPrivateFieldSet(_this, _plotMouseEventsArea, src_select(parent).append('rect').attr('clip-path', 'url(#minichartClipChart)').attr('id', 'minichartMouseEventsArea').attr('fill', 'transparent').on('dblclick', function (evt) {
-      evt.preventDefault();
-      evt.stopPropagation();
-    }));
+    _classPrivateFieldSet(_this, _plotMouseEventsArea, src_select(parent).append('rect').attr('clip-path', 'url(#minichartClipChart)').attr('id', 'minichartMouseEventsArea').attr('fill', 'transparent'));
 
     _this.resize(resizeData);
   });
@@ -64446,7 +64443,7 @@ var Chart = function Chart(container, _ref) {
     _classPrivateFieldGet(_this, _lines).update();
 
     _classPrivateFieldGet(_this, Chart_draw).call(_this);
-  })); // zoom only if shift key is pressed
+  })).on('dblclick.zoom', null); // zoom only if shift key is pressed
 
   _classPrivateFieldGet(this, _zoom).filter(function (evt) {
     return evt.shiftKey || evt.type !== 'wheel';
