@@ -12,11 +12,7 @@ export default class ClipPath {
     this.#plotMouseEventsArea = d3.select(parent).append('rect')
       .attr('clip-path', 'url(#minichartClipChart)')
       .attr('id', 'minichartMouseEventsArea')
-      .attr('fill', 'transparent')
-      .on('dblclick', (evt: MouseEvent) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-      });
+      .attr('fill', 'transparent');
 
     this.resize(resizeData);
   };

@@ -105,7 +105,7 @@ export default class Chart {
 
         this.#draw();
       }) as (selection: D3Selection<d3.BaseType>) => void,
-    );
+    ).on('dblclick.zoom', null);
 
     // zoom only if shift key is pressed
     this.#zoom.filter((evt: MouseEvent) => evt.shiftKey || evt.type !== 'wheel');
