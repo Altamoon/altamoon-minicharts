@@ -62832,8 +62832,6 @@ function PriceLines_checkPrivateRedeclaration(obj, privateCollection) { if (priv
 
 var PriceLines_wrapper = /*#__PURE__*/new WeakMap();
 
-var _parent = /*#__PURE__*/new WeakMap();
-
 var _items = /*#__PURE__*/new WeakMap();
 
 var _draggableItemIndex = /*#__PURE__*/new WeakMap();
@@ -62900,11 +62898,6 @@ var PriceLines = /*#__PURE__*/function () {
     _classCallCheck(this, PriceLines);
 
     PriceLines_classPrivateFieldInitSpec(this, PriceLines_wrapper, {
-      writable: true,
-      value: void 0
-    });
-
-    PriceLines_classPrivateFieldInitSpec(this, _parent, {
       writable: true,
       value: void 0
     });
@@ -63218,15 +63211,18 @@ var PriceLines = /*#__PURE__*/function () {
             // for some reason event datum (2nd argument of d3.Selection#on method)
             // provides wrong datum value, that's why the dirty hack is used
             var getDatumFromTarget = function getDatumFromTarget(target) {
-              var foreignObject = target.closest('.price-line-title-object'); // eslint-disable-next-line no-underscore-dangle
-
-              return _classPrivateFieldGet(_this, _items)[convertType(foreignObject)._datumIndex];
+              var foreignObject = target.closest('.price-line-title-object');
+              return _classPrivateFieldGet(_this, _items).find( // eslint-disable-next-line no-underscore-dangle
+              function (_ref9) {
+                var id = _ref9.id;
+                return convertType(foreignObject)._datumId === id;
+              });
             };
 
             var titleGroup = horizontalWrapper.append('foreignObject').attr('class', 'price-line-title-object').attr('transform', "translate(".concat(((_classPrivateFieldGet13 = (_classPrivateFieldGet14 = _classPrivateFieldGet(_this, PriceLines_resizeData)) === null || _classPrivateFieldGet14 === void 0 ? void 0 : _classPrivateFieldGet14.width) !== null && _classPrivateFieldGet13 !== void 0 ? _classPrivateFieldGet13 : 0) - 330, ", 0)")).attr('x', 0).attr('y', -12).attr('width', 400).attr('height', 24).style('text-align', 'right').style('display', function (d) {
               return d.isTitleVisible === false ? 'none' : 'auto';
-            }).property('_datumIndex', function (d) {
-              return _classPrivateFieldGet(_this, _items).indexOf(d);
+            }).property('_datumId', function (d) {
+              return d.id;
             });
             var div = titleGroup.append('xhtml:div').attr('class', 'price-line-title-inner').style('border', '1px solid currentColor').style('border-radius', '4px').style('padding', '5px 10px').style('pointer-events', 'none').style('display', 'inline-block').style('height', '100%').style('margin-right', '85px');
             div.append('xhtml:span').attr('class', 'text').style('color', '#fff');
@@ -63238,7 +63234,8 @@ var PriceLines = /*#__PURE__*/function () {
               .on('click', function (evt) {
                 var _classPrivateFieldGet15;
 
-                (_classPrivateFieldGet15 = _classPrivateFieldGet(_this, _handleClickClose)) === null || _classPrivateFieldGet15 === void 0 ? void 0 : _classPrivateFieldGet15.call(_this, getDatumFromTarget(evt.target), _classPrivateFieldGet(_this, _items));
+                var datum = getDatumFromTarget(evt.target);
+                if (datum) (_classPrivateFieldGet15 = _classPrivateFieldGet(_this, _handleClickClose)) === null || _classPrivateFieldGet15 === void 0 ? void 0 : _classPrivateFieldGet15.call(_this, datum, _classPrivateFieldGet(_this, _items));
               });
             }
 
@@ -63249,7 +63246,8 @@ var PriceLines = /*#__PURE__*/function () {
               .on('click', function (evt) {
                 var _classPrivateFieldGet16;
 
-                (_classPrivateFieldGet16 = _classPrivateFieldGet(_this, _handleClickCheck)) === null || _classPrivateFieldGet16 === void 0 ? void 0 : _classPrivateFieldGet16.call(_this, getDatumFromTarget(evt.target), _classPrivateFieldGet(_this, _items));
+                var datum = getDatumFromTarget(evt.target);
+                if (datum) (_classPrivateFieldGet16 = _classPrivateFieldGet(_this, _handleClickCheck)) === null || _classPrivateFieldGet16 === void 0 ? void 0 : _classPrivateFieldGet16.call(_this, datum, _classPrivateFieldGet(_this, _items));
               });
             }
           } // --- right label ---
@@ -63294,25 +63292,25 @@ var PriceLines = /*#__PURE__*/function () {
 
     PriceLines_classPrivateFieldInitSpec(this, _setPriceTextAttributes, {
       writable: true,
-      value: function value(_ref9) {
-        var axis = _ref9.axis,
-            orient = _ref9.orient,
-            textSelection = _ref9.textSelection;
+      value: function value(_ref10) {
+        var axis = _ref10.axis,
+            orient = _ref10.orient,
+            textSelection = _ref10.textSelection;
         var neg = orient === 'left' || orient === 'top' ? -1 : 1;
 
         switch (orient) {
           case 'left':
           case 'right':
-            textSelection.attr('x', neg * (Math.max(axis.tickSizeInner(), 0) + axis.tickPadding())).attr('y', 0).attr('dy', '.32em').style('text-anchor', neg < 0 ? 'end' : 'start').text(function (_ref10) {
-              var yValue = _ref10.yValue;
+            textSelection.attr('x', neg * (Math.max(axis.tickSizeInner(), 0) + axis.tickPadding())).attr('y', 0).attr('dy', '.32em').style('text-anchor', neg < 0 ? 'end' : 'start').text(function (_ref11) {
+              var yValue = _ref11.yValue;
               return format(",.".concat(_classPrivateFieldGet(_this, _pricePrecision), "f"))(yValue !== null && yValue !== void 0 ? yValue : 0);
             });
             break;
 
           case 'top':
           case 'bottom':
-            textSelection.attr('x', 0).attr('y', neg * (Math.max(axis.tickSizeInner(), 0) + axis.tickPadding())).attr('dy', neg < 0 ? '0em' : '.72em').style('text-anchor', 'middle').text(function (_ref11) {
-              var xValue = _ref11.xValue;
+            textSelection.attr('x', 0).attr('y', neg * (Math.max(axis.tickSizeInner(), 0) + axis.tickPadding())).attr('dy', neg < 0 ? '0em' : '.72em').style('text-anchor', 'middle').text(function (_ref12) {
+              var xValue = _ref12.xValue;
               return xValue ? timeFormat('%-d/%-m/%Y %-H:%M:%S')(xValue) : '';
             });
             break;
@@ -63392,14 +63390,13 @@ var PriceLines = /*#__PURE__*/function () {
     value: function appendTo(parent, resizeData) {
       var _classPrivateFieldGet25, _classPrivateFieldGet26;
 
-      var _ref12 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-          wrapperCSSStyle = _ref12.wrapperCSSStyle;
+      var _ref13 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+          wrapperCSSStyle = _ref13.wrapperCSSStyle;
 
-      _classPrivateFieldSet(this, _parent, convertType(src_select(parent)));
+      this.parent = convertType(src_select(parent));
+      this.eventsArea = this.parent.select('#minichartMouseEventsArea');
 
-      this.eventsArea = _classPrivateFieldGet(this, _parent).select('#minichartMouseEventsArea');
-
-      _classPrivateFieldSet(this, PriceLines_wrapper, _classPrivateFieldGet(this, _parent).append('g'));
+      _classPrivateFieldSet(this, PriceLines_wrapper, this.parent.append('g'));
 
       Object.assign((_classPrivateFieldGet25 = (_classPrivateFieldGet26 = _classPrivateFieldGet(this, PriceLines_wrapper).node()) === null || _classPrivateFieldGet26 === void 0 ? void 0 : _classPrivateFieldGet26.style) !== null && _classPrivateFieldGet25 !== void 0 ? _classPrivateFieldGet25 : {}, wrapperCSSStyle !== null && wrapperCSSStyle !== void 0 ? wrapperCSSStyle : {});
       this.update({
@@ -63435,9 +63432,9 @@ var PriceLines = /*#__PURE__*/function () {
   return PriceLines;
 }();
 
-_defineProperty(PriceLines, "getPriceTextBackgroundPath", function (_ref13) {
-  var axis = _ref13.axis,
-      orient = _ref13.orient;
+_defineProperty(PriceLines, "getPriceTextBackgroundPath", function (_ref14) {
+  var axis = _ref14.axis,
+      orient = _ref14.orient;
   var height = 14;
   var point = 4;
   var neg = orient === 'left' || orient === 'top' ? -1 : 1;
@@ -63824,7 +63821,7 @@ var AlertPriceLines = /*#__PURE__*/function (_PriceLines) {
     });
 
     _defineProperty(_assertThisInitialized(_this), "appendTo", function (parent, resizeData) {
-      var _this$eventsArea;
+      var _this$parent;
 
       var _ref5 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
           wrapperCSSStyle = _ref5.wrapperCSSStyle;
@@ -63833,7 +63830,7 @@ var AlertPriceLines = /*#__PURE__*/function (_PriceLines) {
         wrapperCSSStyle: wrapperCSSStyle
       });
 
-      (_this$eventsArea = _this.eventsArea) === null || _this$eventsArea === void 0 ? void 0 : _this$eventsArea.on('contextmenu', _classPrivateFieldGet(_assertThisInitialized(_this), _onRightClick));
+      (_this$parent = _this.parent) === null || _this$parent === void 0 ? void 0 : _this$parent.on('contextmenu', _classPrivateFieldGet(_assertThisInitialized(_this), _onRightClick));
     });
 
     AlertPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _triggerUpdate, {
