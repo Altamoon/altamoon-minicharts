@@ -163,7 +163,7 @@ export default class AlertPriceLines extends PriceLines {
     { wrapperCSSStyle }: { wrapperCSSStyle?: Partial<CSSStyleDeclaration> } = {},
   ): void => {
     super.appendTo(parent, resizeData, { wrapperCSSStyle });
-    this.eventsArea?.on('contextmenu', this.#onRightClick);
+    this.parent?.on('contextmenu', this.#onRightClick);
   };
 
   public getItems(): AlertLinesDatum[] {
