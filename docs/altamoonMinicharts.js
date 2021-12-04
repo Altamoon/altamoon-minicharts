@@ -53202,7 +53202,7 @@ function _objectWithoutPropertiesLoose(source, excluded) {
   return target;
 }
 
-var ObserverMap = new Map();
+var observerMap = new Map();
 var RootIds = new WeakMap();
 var rootId = 0;
 /**
@@ -53235,7 +53235,7 @@ function optionsToId(options) {
 function createObserver(options) {
   // Create a unique ID for this observer instance, based on the root, root margin and threshold.
   var id = optionsToId(options);
-  var instance = ObserverMap.get(id);
+  var instance = observerMap.get(id);
 
   if (!instance) {
     // Create a map of elements this observer is going to observe. Each element has a list of callbacks that should be triggered, once it comes into view.
@@ -53269,7 +53269,7 @@ function createObserver(options) {
       observer: observer,
       elements: elements
     };
-    ObserverMap.set(id, instance);
+    observerMap.set(id, instance);
   }
 
   return instance;
@@ -53316,7 +53316,7 @@ function observe(element, callback, options) {
     if (elements.size === 0) {
       // No more elements are being observer by this instance, so destroy it
       observer.disconnect();
-      ObserverMap["delete"](id);
+      observerMap["delete"](id);
     }
   };
 }
@@ -53873,6 +53873,7 @@ var localforage_default = /*#__PURE__*/__webpack_require__.n(localforage);
 ;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/futuresCandles.js
 
 
+
 const intervalStrToMs = (interval) => {
     const num = +interval.replace(/(\d+)\S/, '$1');
     const sym = interval.replace(/\d+(\S)/, '$1');
@@ -53899,7 +53900,7 @@ function runtimeTestCandlesOrder(interval, candles) {
     if (false) {}
 }
 async function futuresCandles_futuresCandles({ symbol, interval, limit, lastCandleFromCache, }) {
-    const storageKey = `${symbol}_${interval}`;
+    const storageKey = `${api_options.isTestnet ? 'testnet_' : ''}${symbol}_${interval}`;
     let startDate;
     let calculatedLimit = limit;
     let cachedCandles = [];
@@ -53994,12 +53995,23 @@ async function futuresCandles_futuresCandles({ symbol, interval, limit, lastCand
     // runtimeTestCandlesOrder(interval, candles);
     return candles;
 }
-window.clearCandles = () => localforage_default().clear();
+window.clearCandlesCache = () => {
+    void localforage_default().clear();
+};
 
 ;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/futuresREST.js
 
 
 
+/**
+ * Array of all possible intervals.
+ * @example
+ * ```ts
+ * import { futuresIntervals } from 'altamoon-binance-api';
+ *
+ * console.log(futuresIntervals);
+ * ```
+ */
 const futuresIntervals = [
     '1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M',
 ];
@@ -54117,7 +54129,7 @@ async function futuresExchangeInfo() {
 }
 /**
  * New Order (TRADE)
- * @remarks Send in a new order.
+ * @remarks Send in a new order. This is the general function used internally by `futuresMarketOrder`, `futuresLimitOrder` etc.
  * @see {@link https://binance-docs.github.io/apidocs/futures/en/#new-order-trade}
  * @param options - Order options
  * @param options.side - Order side
@@ -54148,11 +54160,32 @@ async function futuresOrder({ side, symbol, quantity, price, stopPrice, type, ti
         newClientOrderId,
     }, { type: 'TRADE', method: 'POST' });
 }
+/**
+ * Create market order
+ * @param side - Order side
+ * @param symbol - Symbol
+ * @param quantity - Quantity
+ * @param options - Additional order options
+ * @param options.reduceOnly - Reduce only
+ * @returns New order
+ */
 async function futuresMarketOrder(side, symbol, quantity, { reduceOnly } = {}) {
     return futuresOrder({
         side, symbol, quantity, price: null, stopPrice: null, type: 'MARKET', reduceOnly,
     });
 }
+/**
+ * Create limit order
+ * @param side - Order side
+ * @param symbol - Symbol
+ * @param quantity - Quantity
+ * @param price - Price
+ * @param options - Additional order options
+ * @param options.reduceOnly - Reduce only
+ * @param options.timeInForce - Time in force
+ * @param options.newClientOrderId - A unique id among open orders. Automatically generated if not sent
+ * @returns New order
+ */
 async function futuresLimitOrder(side, symbol, quantity, price, { reduceOnly, timeInForce, newClientOrderId, } = {}) {
     return futuresOrder({
         side,
@@ -54166,26 +54199,81 @@ async function futuresLimitOrder(side, symbol, quantity, price, { reduceOnly, ti
         newClientOrderId,
     });
 }
+/**
+ * Create stop market order
+ * @param side - Order side
+ * @param symbol - Symbol
+ * @param quantity - Quantity
+ * @param stopPrice - Stop price
+ * @param options - Additional order options
+ * @param options.reduceOnly - Reduce only
+ * @returns New order
+ */
 async function futuresStopMarketOrder(side, symbol, quantity, stopPrice, { reduceOnly } = {}) {
     return futuresOrder({
         side, symbol, quantity, price: null, type: 'STOP_MARKET', reduceOnly, stopPrice,
     });
 }
+/**
+ * Create stop market order
+ * @param side - Order side
+ * @param symbol - Symbol
+ * @param quantity - Quantity
+ * @param price - Price
+ * @param stopPrice - Stop price
+ * @param options - Additional order options
+ * @param options.reduceOnly - Reduce only
+ * @param options.timeInForce - Time in force
+ * @param options.newClientOrderId - A unique id among open orders. Automatically generated if not sent
+ * @returns New order
+ */
 async function futuresStopLimitOrder(side, symbol, quantity, price, stopPrice, { reduceOnly, timeInForce, newClientOrderId, } = {}) {
     return futuresOrder({
         side, symbol, quantity, price, type: 'STOP', reduceOnly, timeInForce, stopPrice, newClientOrderId,
     });
 }
+/**
+ * Get Income History (USER_DATA)
+ * @param params - Request params
+ * @param params.symbol - Symbol
+ * @param params.incomeType - Incomr type
+ * @param params.startTime - Timestamp in ms to get funding from INCLUSIVE.
+ * @param params.endTime - Timestamp in ms to get funding until INCLUSIVE
+ * @param params.limit - Default 100; max 1000
+ * @param params.recvWindow - Specify the number of milliseconds after timestamp the request is valid for
+ * @param params.timestamp - Millisecond timestamp of when the request was created and sent
+ * @returns Income information array
+ */
 async function futuresIncome(params) {
     return promiseRequest('v1/income', params, { type: 'SIGNED' });
 }
-// Either orderId or origClientOrderId must be sent
+/**
+ * Cancel Order (TRADE)
+ * @remarks Cancel an active order. Either `orderId` or `origClientOrderId` must be sent.
+ * @param symbol - Symbol
+ * @param options - Order information
+ * @param options.orderId - Order ID
+ * @param options.origClientOrderId - Previously used newClientOrderId
+ * @returns Canceled order
+ */
 async function futuresCancelOrder(symbol, { orderId, origClientOrderId }) {
     return promiseRequest('v1/order', { symbol, orderId, origClientOrderId }, { type: 'SIGNED', method: 'DELETE' });
 }
+/**
+ * Cancel All Open Orders (TRADE)
+ * @param symbol - Symbol
+ * @returns Request info
+ */
 async function futuresCancelAllOrders(symbol) {
     return promiseRequest('v1/allOpenOrders', { symbol }, { type: 'SIGNED', method: 'DELETE' });
 }
+/**
+ * Modify Isolated Position Margin (TRADE)
+ * @param symbol - Symbol
+ * @param amount - Amount
+ * @param type - 1: Add position margin，2: Reduce position margin
+ * @returns Request info
+ */
 function futuresPositionMargin(symbol, amount, type) {
     return promiseRequest('v1/positionMargin', { symbol, amount, type }, { method: 'POST', type: 'SIGNED' });
 }
@@ -61923,11 +62011,14 @@ function Plot_checkPrivateRedeclaration(obj, privateCollection) { if (privateCol
 
 
 
+
 var _resizeData = /*#__PURE__*/new WeakMap();
 
 var _chartType = /*#__PURE__*/new WeakMap();
 
 var _lastCandle = /*#__PURE__*/new WeakMap();
+
+var _yDomain = /*#__PURE__*/new WeakMap();
 
 var _scales = /*#__PURE__*/new WeakMap();
 
@@ -61980,6 +62071,11 @@ var Plot = /*#__PURE__*/function () {
     Plot_classPrivateFieldInitSpec(this, _lastCandle, {
       writable: true,
       value: void 0
+    });
+
+    Plot_classPrivateFieldInitSpec(this, _yDomain, {
+      writable: true,
+      value: [0, 0]
     });
 
     Plot_classPrivateFieldInitSpec(this, _scales, {
@@ -62060,7 +62156,7 @@ var Plot = /*#__PURE__*/function () {
     });
 
     _defineProperty(this, "draw", function (_ref2) {
-      var _classPrivateFieldGet2, _classPrivateFieldGet3, _classPrivateFieldGet4, _classPrivateFieldGet5, _firstCandles, _lastCandle$high, _firstCandles2, _lastCandle$low, _classPrivateFieldGet10, _classPrivateFieldGet11, _classPrivateFieldGet12, _classPrivateFieldGet13;
+      var _classPrivateFieldGet2, _classPrivateFieldGet3, _classPrivateFieldGet4, _classPrivateFieldGet5, _classPrivateFieldGet6, _classPrivateFieldGet7, _classPrivateFieldGet8, _classPrivateFieldGet9;
 
       var givenCandles = _ref2.candles,
           resizeData = _ref2.resizeData,
@@ -62078,11 +62174,21 @@ var Plot = /*#__PURE__*/function () {
       }
 
       var firstCandles = candles.slice(0, -1);
-      var lastCandle = candles[candles.length - 1]; // update all candles (except first) if zoom or last candle was changed
+      var lastCandle = candles[candles.length - 1];
 
-      if (resizeData.width !== ((_classPrivateFieldGet2 = _classPrivateFieldGet(_this, _resizeData)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.width) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.time) !== ((_classPrivateFieldGet3 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.time) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.interval) !== ((_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : _classPrivateFieldGet4.interval) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.symbol) !== ((_classPrivateFieldGet5 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.symbol) || _classPrivateFieldGet(_this, _zoomTransform) !== zoomTransform || _classPrivateFieldGet(_this, _chartType) !== chartType // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
-      || ((_firstCandles = firstCandles[firstCandles.length - 1]) === null || _firstCandles === void 0 ? void 0 : _firstCandles.high) < ((_lastCandle$high = lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.high) !== null && _lastCandle$high !== void 0 ? _lastCandle$high : 0) || ((_firstCandles2 = firstCandles[firstCandles.length - 1]) === null || _firstCandles2 === void 0 ? void 0 : _firstCandles2.low) > ((_lastCandle$low = lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.low) !== null && _lastCandle$low !== void 0 ? _lastCandle$low : 0)) {
-        var _classPrivateFieldGet6, _classPrivateFieldGet7, _classPrivateFieldGet8, _classPrivateFieldGet9;
+      var yDomain = _classPrivateFieldGet(_this, _scales).y.domain(); // update last candle
+
+
+      var upLastCandles = (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.direction) === 'UP' ? [lastCandle] : [];
+      var downLastCandles = (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.direction) === 'DOWN' ? [lastCandle] : [];
+      (_classPrivateFieldGet2 = _classPrivateFieldGet(_this, _pathLastBodysUp)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, upLastCandles, 'UP'));
+      (_classPrivateFieldGet3 = _classPrivateFieldGet(_this, _pathLastWickUp)) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, upLastCandles));
+      (_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _pathLastBodyDown)) === null || _classPrivateFieldGet4 === void 0 ? void 0 : _classPrivateFieldGet4.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, downLastCandles, 'DOWN'));
+      (_classPrivateFieldGet5 = _classPrivateFieldGet(_this, _pathLastWickDown)) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, downLastCandles)); // update rest if zoom or last candle was changed
+
+      if (resizeData.width !== ((_classPrivateFieldGet6 = _classPrivateFieldGet(_this, _resizeData)) === null || _classPrivateFieldGet6 === void 0 ? void 0 : _classPrivateFieldGet6.width) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.time) !== ((_classPrivateFieldGet7 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet7 === void 0 ? void 0 : _classPrivateFieldGet7.time) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.interval) !== ((_classPrivateFieldGet8 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet8 === void 0 ? void 0 : _classPrivateFieldGet8.interval) || (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.symbol) !== ((_classPrivateFieldGet9 = _classPrivateFieldGet(_this, _lastCandle)) === null || _classPrivateFieldGet9 === void 0 ? void 0 : _classPrivateFieldGet9.symbol) || _classPrivateFieldGet(_this, _zoomTransform) !== zoomTransform || _classPrivateFieldGet(_this, _chartType) !== chartType // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
+      || !(0,lodash.isEqual)(yDomain, _classPrivateFieldGet(_this, _yDomain))) {
+        var _classPrivateFieldGet10, _classPrivateFieldGet11, _classPrivateFieldGet12, _classPrivateFieldGet13;
 
         var upCandles = firstCandles.filter(function (x) {
           return x.direction === 'UP';
@@ -62090,19 +62196,13 @@ var Plot = /*#__PURE__*/function () {
         var downCandles = firstCandles.filter(function (x) {
           return x.direction === 'DOWN';
         });
-        (_classPrivateFieldGet6 = _classPrivateFieldGet(_this, _pathBodiesUp)) === null || _classPrivateFieldGet6 === void 0 ? void 0 : _classPrivateFieldGet6.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, upCandles, 'UP'));
-        (_classPrivateFieldGet7 = _classPrivateFieldGet(_this, _pathWicksUp)) === null || _classPrivateFieldGet7 === void 0 ? void 0 : _classPrivateFieldGet7.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, upCandles));
-        (_classPrivateFieldGet8 = _classPrivateFieldGet(_this, _pathBodiesDown)) === null || _classPrivateFieldGet8 === void 0 ? void 0 : _classPrivateFieldGet8.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, downCandles, 'DOWN'));
-        (_classPrivateFieldGet9 = _classPrivateFieldGet(_this, _pathWicksDown)) === null || _classPrivateFieldGet9 === void 0 ? void 0 : _classPrivateFieldGet9.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, downCandles));
-      } // update last candle
+        (_classPrivateFieldGet10 = _classPrivateFieldGet(_this, _pathBodiesUp)) === null || _classPrivateFieldGet10 === void 0 ? void 0 : _classPrivateFieldGet10.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, upCandles, 'UP'));
+        (_classPrivateFieldGet11 = _classPrivateFieldGet(_this, _pathWicksUp)) === null || _classPrivateFieldGet11 === void 0 ? void 0 : _classPrivateFieldGet11.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, upCandles));
+        (_classPrivateFieldGet12 = _classPrivateFieldGet(_this, _pathBodiesDown)) === null || _classPrivateFieldGet12 === void 0 ? void 0 : _classPrivateFieldGet12.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, downCandles, 'DOWN'));
+        (_classPrivateFieldGet13 = _classPrivateFieldGet(_this, _pathWicksDown)) === null || _classPrivateFieldGet13 === void 0 ? void 0 : _classPrivateFieldGet13.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, downCandles));
 
-
-      var upLastCandles = (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.direction) === 'UP' ? [lastCandle] : [];
-      var downLastCandles = (lastCandle === null || lastCandle === void 0 ? void 0 : lastCandle.direction) === 'DOWN' ? [lastCandle] : [];
-      (_classPrivateFieldGet10 = _classPrivateFieldGet(_this, _pathLastBodysUp)) === null || _classPrivateFieldGet10 === void 0 ? void 0 : _classPrivateFieldGet10.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, upLastCandles, 'UP'));
-      (_classPrivateFieldGet11 = _classPrivateFieldGet(_this, _pathLastWickUp)) === null || _classPrivateFieldGet11 === void 0 ? void 0 : _classPrivateFieldGet11.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, upLastCandles));
-      (_classPrivateFieldGet12 = _classPrivateFieldGet(_this, _pathLastBodyDown)) === null || _classPrivateFieldGet12 === void 0 ? void 0 : _classPrivateFieldGet12.attr('d', _classPrivateFieldGet(_this, _getBodies).call(_this, downLastCandles, 'DOWN'));
-      (_classPrivateFieldGet13 = _classPrivateFieldGet(_this, _pathLastWickDown)) === null || _classPrivateFieldGet13 === void 0 ? void 0 : _classPrivateFieldGet13.attr('d', _classPrivateFieldGet(_this, _getWicks).call(_this, downLastCandles));
+        _classPrivateFieldSet(_this, _yDomain, yDomain);
+      }
 
       _classPrivateFieldSet(_this, _lastCandle, lastCandle);
 
