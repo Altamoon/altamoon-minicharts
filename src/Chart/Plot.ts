@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
 
+import { isEqual } from 'lodash';
 import {
   D3Selection, DrawData, ResizeData, Scales,
 } from './types';
@@ -12,6 +13,8 @@ export default class Plot {
   #chartType: ChartType = 'candlestick';
 
   #lastCandle?: api.FuturesChartCandle;
+
+  #yDomain: [number, number] = [0, 0];
 
   #scales: Scales;
 
@@ -73,26 +76,7 @@ export default class Plot {
 
     const firstCandles = candles.slice(0, -1);
     const lastCandle = candles[candles.length - 1];
-    // update all candles (except first) if zoom or last candle was changed
-    if (
-      resizeData.width !== this.#resizeData?.width
-      || lastCandle?.time !== this.#lastCandle?.time
-      || lastCandle?.interval !== this.#lastCandle?.interval
-      || lastCandle?.symbol !== this.#lastCandle?.symbol
-      || this.#zoomTransform !== zoomTransform
-      || this.#chartType !== chartType
-      // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
-      || firstCandles[firstCandles.length - 1]?.high < (lastCandle?.high ?? 0)
-      || firstCandles[firstCandles.length - 1]?.low > (lastCandle?.low ?? 0)
-    ) {
-      const upCandles = firstCandles.filter((x) => x.direction === 'UP');
-      const downCandles = firstCandles.filter((x) => x.direction === 'DOWN');
-
-      this.#pathBodiesUp?.attr('d', this.#getBodies(upCandles, 'UP'));
-      this.#pathWicksUp?.attr('d', this.#getWicks(upCandles));
-      this.#pathBodiesDown?.attr('d', this.#getBodies(downCandles, 'DOWN'));
-      this.#pathWicksDown?.attr('d', this.#getWicks(downCandles));
-    }
+    const yDomain = this.#scales.y.domain() as [number, number];
 
     // update last candle
     const upLastCandles = lastCandle?.direction === 'UP' ? [lastCandle] : [];
@@ -102,6 +86,28 @@ export default class Plot {
     this.#pathLastWickUp?.attr('d', this.#getWicks(upLastCandles));
     this.#pathLastBodyDown?.attr('d', this.#getBodies(downLastCandles, 'DOWN'));
     this.#pathLastWickDown?.attr('d', this.#getWicks(downLastCandles));
+
+    // update rest if zoom or last candle was changed
+    if (
+      resizeData.width !== this.#resizeData?.width
+      || lastCandle?.time !== this.#lastCandle?.time
+      || lastCandle?.interval !== this.#lastCandle?.interval
+      || lastCandle?.symbol !== this.#lastCandle?.symbol
+      || this.#zoomTransform !== zoomTransform
+      || this.#chartType !== chartType
+      // fixes https://trello.com/c/MOY6UwuT/208-chart-chart-not-resizing-when-price-goes-beyond-extreme
+      || !isEqual(yDomain, this.#yDomain)
+    ) {
+      const upCandles = firstCandles.filter((x) => x.direction === 'UP');
+      const downCandles = firstCandles.filter((x) => x.direction === 'DOWN');
+
+      this.#pathBodiesUp?.attr('d', this.#getBodies(upCandles, 'UP'));
+      this.#pathWicksUp?.attr('d', this.#getWicks(upCandles));
+      this.#pathBodiesDown?.attr('d', this.#getBodies(downCandles, 'DOWN'));
+      this.#pathWicksDown?.attr('d', this.#getWicks(downCandles));
+
+      this.#yDomain = yDomain;
+    }
 
     this.#lastCandle = lastCandle;
     this.#zoomTransform = zoomTransform;
