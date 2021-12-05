@@ -105,7 +105,6 @@ const Settings = (): ReactElement => {
               value={sortBy}
               onChange={({ target }) => setSortBy(target.value as SortBy)}
             >
-              <option value={isType<SortBy>('none')}>Default</option>
               <option value={isType<SortBy>('alphabetically')}>Alphabetically</option>
               <option value={isType<SortBy>('volume')}>Volume (24h)</option>
               <option value={isType<SortBy>('volume_change')}>% change (24h)</option>

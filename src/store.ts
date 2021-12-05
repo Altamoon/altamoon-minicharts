@@ -45,7 +45,7 @@ class RootStore {
 
   public alertLog = getPersistentStorageValue<RootStore, AlertLogItem[]>('alertLog', []);
 
-  public sortBy = getPersistentStorageValue<RootStore, SortBy>('sortBy', 'none');
+  public sortBy = getPersistentStorageValue<RootStore, SortBy>('sortBy', 'alphabetically');
 
   public sortDirection = getPersistentStorageValue<RootStore, SortDirection>('sortDirection', -1);
 
@@ -154,12 +154,6 @@ class RootStore {
 
   #sortSymbols = () => {
     switch (this.sortBy) {
-      case 'none': {
-        const symbols = Object.values(this.futuresExchangeSymbolsMap).map(({ symbol }) => symbol);
-        if (this.sortDirection === 1) symbols.reverse();
-        this.symbols = symbols;
-        break;
-      }
       case 'alphabetically':
         this.symbols = this.symbols
           .sort((a, b) => (a > b ? this.sortDirection : -this.sortDirection)).slice();
