@@ -29,9 +29,9 @@ class RootStore {
 
   public chartHeight = getPersistentStorageValue<RootStore, number>('chartHeight', 200);
 
-  public interval = getPersistentStorageValue<RootStore, api.CandlestickChartInterval>('interval', '1m');
+  public interval = getPersistentStorageValue<RootStore, api.CandlestickChartInterval>('interval', '5m');
 
-  public maxChartsLength = getPersistentStorageValue<RootStore, number | null>('maxChartsLength', null);
+  public maxChartsLength = getPersistentStorageValue<RootStore, number | null>('maxChartsLength', 20);
 
   public throttleDelay = getPersistentStorageValue<RootStore, number>('throttleDelay', 1000);
 
@@ -197,7 +197,7 @@ class RootStore {
 
     for (const symbol of symbols) {
       void api.futuresCandles({
-        // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
         symbol, interval, limit: 499, lastCandleFromCache: true,
       }).then((candles) => {
         allCandlesData[symbol] = candles;
