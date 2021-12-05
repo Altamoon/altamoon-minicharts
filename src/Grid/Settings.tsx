@@ -12,7 +12,7 @@ import InputRange from '../lib/InputRange';
 const Intervals = styled.div`
   padding-bottom: 1rem;
   flex-wrap: nowrap!important;
-  overflow: auto;  
+  overflow: auto;
 `;
 
 const SortLabel = styled.label`
@@ -57,7 +57,7 @@ const Settings = (): ReactElement => {
       <Row>
         <Col xs={12} md={4}>
           <InputRange
-            label="# of grid columns"
+            label="Columns"
             min={MIN_GRID_COLUMNS}
             max={MAX_GRID_COLUMNS}
             id="minichart_columns"
@@ -67,7 +67,7 @@ const Settings = (): ReactElement => {
         </Col>
         <Col xs={12} md={4}>
           <InputRange
-            label="# of charts"
+            label="Charts"
             min={1}
             max={symbols.length}
             id="minichart_max_charts"
@@ -114,7 +114,7 @@ const Settings = (): ReactElement => {
         <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_throttleDelay">Throttle</label>
+            <label className="input-group-text" htmlFor="minichart_throttleDelay">Refresh</label>
             <select
               className="form-select bg-white"
               id="minichart_throttleDelay"
@@ -130,14 +130,14 @@ const Settings = (): ReactElement => {
         <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_chartType">Type</label>
+            <label className="input-group-text" htmlFor="minichart_chartType">Candle Type</label>
             <select
               className="form-select bg-white"
               id="minichart_chartType"
               value={chartType}
               onChange={({ target }) => setChartType(target.value as ChartType)}
             >
-              <option value={isType<ChartType>('candlestick')}>Open-high-low-close</option>
+              <option value={isType<ChartType>('candlestick')}>Candles</option>
               <option value={isType<ChartType>('heikin_ashi')}>Heikin-Ashi</option>
               <option value={isType<ChartType>('heikin_ashi_actual_price')}>Heikin-Ashi (actual price)</option>
             </select>
@@ -146,7 +146,7 @@ const Settings = (): ReactElement => {
         <Col xs={12} md={3}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_scaleType">Scale Type</label>
+            <label className="input-group-text" htmlFor="minichart_scaleType">Scale</label>
             <select
               className="form-select bg-white"
               id="minichart_scaleType"
