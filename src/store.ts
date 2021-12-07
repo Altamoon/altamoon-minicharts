@@ -29,9 +29,9 @@ export class MinichartsStore {
 
   public chartHeight = persistent<number>('chartHeight', 200);
 
-  public interval = persistent<api.CandlestickChartInterval>('interval', '1m');
+  public interval = persistent<api.CandlestickChartInterval>('interval', '5m');
 
-  public maxChartsLength = persistent<number | null>('maxChartsLength', null);
+  public maxChartsLength = persistent<number | null>('maxChartsLength', 20);
 
   public throttleDelay = persistent<number>('throttleDelay', 1000);
 
@@ -45,7 +45,7 @@ export class MinichartsStore {
 
   public alertLog = persistent<AlertLogItem[]>('alertLog', []);
 
-  public sortBy = persistent<SortBy>('sortBy', 'none');
+  public sortBy = persistent<SortBy>('sortBy', 'alphabetically');
 
   public sortDirection = persistent<SortDirection>('sortDirection', -1);
 
@@ -154,12 +154,6 @@ export class MinichartsStore {
 
   #sortSymbols = () => {
     switch (this.sortBy) {
-      case 'none': {
-        const symbols = Object.values(this.futuresExchangeSymbolsMap).map(({ symbol }) => symbol);
-        if (this.sortDirection === 1) symbols.reverse();
-        this.symbols = symbols;
-        break;
-      }
       case 'alphabetically':
         this.symbols = this.symbols
           .sort((a, b) => (a > b ? this.sortDirection : -this.sortDirection)).slice();
@@ -203,7 +197,7 @@ export class MinichartsStore {
 
     for (const symbol of symbols) {
       void api.futuresCandles({
-        // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
         symbol, interval, limit: 499, lastCandleFromCache: true,
       }).then((candles) => {
         allCandlesData[symbol] = candles;
