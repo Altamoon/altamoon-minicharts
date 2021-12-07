@@ -52291,6 +52291,8 @@ __webpack_require__.d(__webpack_exports__, {
   "default": () => (/* binding */ altamoonMinicharts)
 });
 
+// UNUSED EXPORTS: MinichartsStore, store
+
 // NAMESPACE OBJECT: ./node_modules/@popperjs/core/lib/index.js
 var core_lib_namespaceObject = {};
 __webpack_require__.r(core_lib_namespaceObject);
@@ -53149,469 +53151,6 @@ function _nonIterableRest() {
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
-;// CONCATENATED MODULE: ./node_modules/react-intersection-observer/react-intersection-observer.m.js
-
-
-
-function _extends() {
-  _extends = Object.assign || function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-
-  return _extends.apply(this, arguments);
-}
-
-function _inheritsLoose(subClass, superClass) {
-  subClass.prototype = Object.create(superClass.prototype);
-  subClass.prototype.constructor = subClass;
-
-  _setPrototypeOf(subClass, superClass);
-}
-
-function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-    o.__proto__ = p;
-    return o;
-  };
-
-  return _setPrototypeOf(o, p);
-}
-
-function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null) return {};
-  var target = {};
-  var sourceKeys = Object.keys(source);
-  var key, i;
-
-  for (i = 0; i < sourceKeys.length; i++) {
-    key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0) continue;
-    target[key] = source[key];
-  }
-
-  return target;
-}
-
-var observerMap = new Map();
-var RootIds = new WeakMap();
-var rootId = 0;
-/**
- * Generate a unique ID for the root element
- * @param root
- */
-
-function getRootId(root) {
-  if (!root) return '0';
-  if (RootIds.has(root)) return RootIds.get(root);
-  rootId += 1;
-  RootIds.set(root, rootId.toString());
-  return RootIds.get(root);
-}
-/**
- * Convert the options to a string Id, based on the values.
- * Ensures we can reuse the same observer when observing elements with the same options.
- * @param options
- */
-
-
-function optionsToId(options) {
-  return Object.keys(options).sort().filter(function (key) {
-    return options[key] !== undefined;
-  }).map(function (key) {
-    return key + "_" + (key === 'root' ? getRootId(options.root) : options[key]);
-  }).toString();
-}
-
-function createObserver(options) {
-  // Create a unique ID for this observer instance, based on the root, root margin and threshold.
-  var id = optionsToId(options);
-  var instance = observerMap.get(id);
-
-  if (!instance) {
-    // Create a map of elements this observer is going to observe. Each element has a list of callbacks that should be triggered, once it comes into view.
-    var elements = new Map();
-    var thresholds;
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        var _elements$get;
-
-        // While it would be nice if you could just look at isIntersecting to determine if the component is inside the viewport, browsers can't agree on how to use it.
-        // -Firefox ignores `threshold` when considering `isIntersecting`, so it will never be false again if `threshold` is > 0
-        var inView = entry.isIntersecting && thresholds.some(function (threshold) {
-          return entry.intersectionRatio >= threshold;
-        }); // @ts-ignore support IntersectionObserver v2
-
-        if (options.trackVisibility && typeof entry.isVisible === 'undefined') {
-          // The browser doesn't support Intersection Observer v2, falling back to v1 behavior.
-          // @ts-ignore
-          entry.isVisible = inView;
-        }
-
-        (_elements$get = elements.get(entry.target)) == null ? void 0 : _elements$get.forEach(function (callback) {
-          callback(inView, entry);
-        });
-      });
-    }, options); // Ensure we have a valid thresholds array. If not, use the threshold from the options
-
-    thresholds = observer.thresholds || (Array.isArray(options.threshold) ? options.threshold : [options.threshold || 0]);
-    instance = {
-      id: id,
-      observer: observer,
-      elements: elements
-    };
-    observerMap.set(id, instance);
-  }
-
-  return instance;
-}
-/**
- * @param element - DOM Element to observe
- * @param callback - Callback function to trigger when intersection status changes
- * @param options - Intersection Observer options
- * @return Function - Cleanup function that should be triggered to unregister the observer
- */
-
-
-function observe(element, callback, options) {
-  if (options === void 0) {
-    options = {};
-  }
-
-  if (!element) return function () {}; // An observer with the same options can be reused, so lets use this fact
-
-  var _createObserver = createObserver(options),
-      id = _createObserver.id,
-      observer = _createObserver.observer,
-      elements = _createObserver.elements; // Register the callback listener for this element
-
-
-  var callbacks = elements.get(element) || [];
-
-  if (!elements.has(element)) {
-    elements.set(element, callbacks);
-  }
-
-  callbacks.push(callback);
-  observer.observe(element);
-  return function unobserve() {
-    // Remove the callback from the callback list
-    callbacks.splice(callbacks.indexOf(callback), 1);
-
-    if (callbacks.length === 0) {
-      // No more callback exists for element, so destroy it
-      elements["delete"](element);
-      observer.unobserve(element);
-    }
-
-    if (elements.size === 0) {
-      // No more elements are being observer by this instance, so destroy it
-      observer.disconnect();
-      observerMap["delete"](id);
-    }
-  };
-}
-
-var _excluded = ["children", "as", "tag", "triggerOnce", "threshold", "root", "rootMargin", "onChange", "skip", "trackVisibility", "delay", "initialInView"];
-
-function isPlainChildren(props) {
-  return typeof props.children !== 'function';
-}
-/**
- ## Render props
-
- To use the `<InView>` component, you pass it a function. It will be called
- whenever the state changes, with the new value of `inView`. In addition to the
- `inView` prop, children also receive a `ref` that should be set on the
- containing DOM element. This is the element that the IntersectionObserver will
- monitor.
-
- If you need it, you can also access the
- [`IntersectionObserverEntry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)
- on `entry`, giving you access to all the details about the current intersection
- state.
-
- ```jsx
- import { InView } from 'react-intersection-observer';
-
- const Component = () => (
- <InView>
- {({ inView, ref, entry }) => (
-      <div ref={ref}>
-        <h2>{`Header inside viewport ${inView}.`}</h2>
-      </div>
-    )}
- </InView>
- );
-
- export default Component;
- ```
-
- ## Plain children
-
- You can pass any element to the `<InView />`, and it will handle creating the
- wrapping DOM element. Add a handler to the `onChange` method, and control the
- state in your own component. Any extra props you add to `<InView>` will be
- passed to the HTML element, allowing you set the `className`, `style`, etc.
-
- ```jsx
- import { InView } from 'react-intersection-observer';
-
- const Component = () => (
- <InView as="div" onChange={(inView, entry) => console.log('Inview:', inView)}>
- <h2>Plain children are always rendered. Use onChange to monitor state.</h2>
- </InView>
- );
-
- export default Component;
- ```
- */
-
-
-var InView = /*#__PURE__*/function (_React$Component) {
-  _inheritsLoose(InView, _React$Component);
-
-  function InView(props) {
-    var _this;
-
-    _this = _React$Component.call(this, props) || this;
-    _this.node = null;
-    _this._unobserveCb = null;
-
-    _this.handleNode = function (node) {
-      if (_this.node) {
-        // Clear the old observer, before we start observing a new element
-        _this.unobserve();
-
-        if (!node && !_this.props.triggerOnce && !_this.props.skip) {
-          // Reset the state if we get a new node, and we aren't ignoring updates
-          _this.setState({
-            inView: !!_this.props.initialInView,
-            entry: undefined
-          });
-        }
-      }
-
-      _this.node = node ? node : null;
-
-      _this.observeNode();
-    };
-
-    _this.handleChange = function (inView, entry) {
-      if (inView && _this.props.triggerOnce) {
-        // If `triggerOnce` is true, we should stop observing the element.
-        _this.unobserve();
-      }
-
-      if (!isPlainChildren(_this.props)) {
-        // Store the current State, so we can pass it to the children in the next render update
-        // There's no reason to update the state for plain children, since it's not used in the rendering.
-        _this.setState({
-          inView: inView,
-          entry: entry
-        });
-      }
-
-      if (_this.props.onChange) {
-        // If the user is actively listening for onChange, always trigger it
-        _this.props.onChange(inView, entry);
-      }
-    };
-
-    _this.state = {
-      inView: !!props.initialInView,
-      entry: undefined
-    };
-    return _this;
-  }
-
-  var _proto = InView.prototype;
-
-  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    // If a IntersectionObserver option changed, reinit the observer
-    if (prevProps.rootMargin !== this.props.rootMargin || prevProps.root !== this.props.root || prevProps.threshold !== this.props.threshold || prevProps.skip !== this.props.skip || prevProps.trackVisibility !== this.props.trackVisibility || prevProps.delay !== this.props.delay) {
-      this.unobserve();
-      this.observeNode();
-    }
-  };
-
-  _proto.componentWillUnmount = function componentWillUnmount() {
-    this.unobserve();
-    this.node = null;
-  };
-
-  _proto.observeNode = function observeNode() {
-    if (!this.node || this.props.skip) return;
-    var _this$props = this.props,
-        threshold = _this$props.threshold,
-        root = _this$props.root,
-        rootMargin = _this$props.rootMargin,
-        trackVisibility = _this$props.trackVisibility,
-        delay = _this$props.delay;
-    this._unobserveCb = observe(this.node, this.handleChange, {
-      threshold: threshold,
-      root: root,
-      rootMargin: rootMargin,
-      // @ts-ignore
-      trackVisibility: trackVisibility,
-      // @ts-ignore
-      delay: delay
-    });
-  };
-
-  _proto.unobserve = function unobserve() {
-    if (this._unobserveCb) {
-      this._unobserveCb();
-
-      this._unobserveCb = null;
-    }
-  };
-
-  _proto.render = function render() {
-    if (!isPlainChildren(this.props)) {
-      var _this$state = this.state,
-          inView = _this$state.inView,
-          entry = _this$state.entry;
-      return this.props.children({
-        inView: inView,
-        entry: entry,
-        ref: this.handleNode
-      });
-    }
-
-    var _this$props2 = this.props,
-        children = _this$props2.children,
-        as = _this$props2.as,
-        tag = _this$props2.tag,
-        props = _objectWithoutPropertiesLoose(_this$props2, _excluded);
-
-    return /*#__PURE__*/react.createElement(as || tag || 'div', _extends({
-      ref: this.handleNode
-    }, props), children);
-  };
-
-  return InView;
-}(react.Component);
-InView.displayName = 'InView';
-InView.defaultProps = {
-  threshold: 0,
-  triggerOnce: false,
-  initialInView: false
-};
-
-/**
- * React Hooks make it easy to monitor the `inView` state of your components. Call
- * the `useInView` hook with the (optional) [options](#options) you need. It will
- * return an array containing a `ref`, the `inView` status and the current
- * [`entry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry).
- * Assign the `ref` to the DOM element you want to monitor, and the hook will
- * report the status.
- *
- * @example
- * ```jsx
- * import React from 'react';
- * import { useInView } from 'react-intersection-observer';
- *
- * const Component = () => {
- *   const { ref, inView, entry } = useInView({
- *       threshold: 0,
- *   });
- *
- *   return (
- *     <div ref={ref}>
- *       <h2>{`Header inside viewport ${inView}.`}</h2>
- *     </div>
- *   );
- * };
- * ```
- */
-
-function useInView(_temp) {
-  var _ref = _temp === void 0 ? {} : _temp,
-      threshold = _ref.threshold,
-      delay = _ref.delay,
-      trackVisibility = _ref.trackVisibility,
-      rootMargin = _ref.rootMargin,
-      root = _ref.root,
-      triggerOnce = _ref.triggerOnce,
-      skip = _ref.skip,
-      initialInView = _ref.initialInView;
-
-  var unobserve = react.useRef();
-
-  var _React$useState = react.useState({
-    inView: !!initialInView
-  }),
-      state = _React$useState[0],
-      setState = _React$useState[1];
-
-  var setRef = react.useCallback(function (node) {
-    if (unobserve.current !== undefined) {
-      unobserve.current();
-      unobserve.current = undefined;
-    } // Skip creating the observer
-
-
-    if (skip) return;
-
-    if (node) {
-      unobserve.current = observe(node, function (inView, entry) {
-        setState({
-          inView: inView,
-          entry: entry
-        });
-
-        if (entry.isIntersecting && triggerOnce && unobserve.current) {
-          // If it should only trigger once, unobserve the element after it's inView
-          unobserve.current();
-          unobserve.current = undefined;
-        }
-      }, {
-        root: root,
-        rootMargin: rootMargin,
-        threshold: threshold,
-        // @ts-ignore
-        trackVisibility: trackVisibility,
-        // @ts-ignore
-        delay: delay
-      });
-    }
-  }, // We break the rule here, because we aren't including the actual `threshold` variable
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [// If the threshold is an array, convert it to a string so it won't change between renders.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  Array.isArray(threshold) ? threshold.toString() : threshold, root, rootMargin, triggerOnce, skip, trackVisibility, delay]);
-  /* eslint-disable-next-line */
-
-  (0,react.useEffect)(function () {
-    if (!unobserve.current && state.entry && !triggerOnce && !skip) {
-      // If we don't have a ref, then reset the state (unless the hook is set to only `triggerOnce` or `skip`)
-      // This ensures we correctly reflect the current state - If you aren't observing anything, then nothing is inView
-      setState({
-        inView: !!initialInView
-      });
-    }
-  });
-  var result = [setRef, state.inView, state.entry]; // Support object destructuring, by adding the specific values.
-
-  result.ref = result[0];
-  result.inView = result[1];
-  result.entry = result[2];
-  return result;
-}
-
-
-//# sourceMappingURL=react-intersection-observer.m.js.map
-
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
@@ -54495,7 +54034,7 @@ var downSound = new Audio(alertDownUri);
 var volumeSound = new Audio(alertVolumeUri);
 var STORAGE_PREFIX = 'altamoonMinicharts_';
 
-function getPersistentStorageValue(key, defaultValue) {
+function persistent(key, defaultValue) {
   var storageValue = localStorage.getItem("".concat(STORAGE_PREFIX).concat(key));
   return storageValue ? JSON.parse(storageValue) : defaultValue;
 }
@@ -54524,11 +54063,11 @@ var _allSymbolsSubscribe = /*#__PURE__*/new WeakMap();
 
 var _volumeSubscribe = /*#__PURE__*/new WeakMap();
 
-var RootStore = /*#__PURE__*/function () {
-  function RootStore() {
+var MinichartsStore = /*#__PURE__*/function () {
+  function MinichartsStore() {
     var _this = this;
 
-    _classCallCheck(this, RootStore);
+    _classCallCheck(this, MinichartsStore);
 
     _defineProperty(this, "candles", []);
 
@@ -54536,29 +54075,29 @@ var RootStore = /*#__PURE__*/function () {
 
     _defineProperty(this, "symbols", []);
 
-    _defineProperty(this, "chartHeight", getPersistentStorageValue('chartHeight', 200));
+    _defineProperty(this, "chartHeight", persistent('chartHeight', 200));
 
-    _defineProperty(this, "interval", getPersistentStorageValue('interval', '1m'));
+    _defineProperty(this, "interval", persistent('interval', '5m'));
 
-    _defineProperty(this, "maxChartsLength", getPersistentStorageValue('maxChartsLength', null));
+    _defineProperty(this, "maxChartsLength", persistent('maxChartsLength', 20));
 
-    _defineProperty(this, "throttleDelay", getPersistentStorageValue('throttleDelay', 1000));
+    _defineProperty(this, "throttleDelay", persistent('throttleDelay', 1000));
 
-    _defineProperty(this, "gridColumns", getPersistentStorageValue('gridColumns', 4));
+    _defineProperty(this, "gridColumns", persistent('gridColumns', 4));
 
-    _defineProperty(this, "chartType", getPersistentStorageValue('chartType', 'candlestick'));
+    _defineProperty(this, "chartType", persistent('chartType', 'candlestick'));
 
-    _defineProperty(this, "scaleType", getPersistentStorageValue('scaleType', 'log'));
+    _defineProperty(this, "scaleType", persistent('scaleType', 'log'));
 
-    _defineProperty(this, "symbolAlerts", getPersistentStorageValue('symbolAlerts', {}));
+    _defineProperty(this, "symbolAlerts", persistent('symbolAlerts', {}));
 
-    _defineProperty(this, "alertLog", getPersistentStorageValue('alertLog', []));
+    _defineProperty(this, "alertLog", persistent('alertLog', []));
 
-    _defineProperty(this, "sortBy", getPersistentStorageValue('sortBy', 'none'));
+    _defineProperty(this, "sortBy", persistent('sortBy', 'alphabetically'));
 
-    _defineProperty(this, "sortDirection", getPersistentStorageValue('sortDirection', -1));
+    _defineProperty(this, "sortDirection", persistent('sortDirection', -1));
 
-    _defineProperty(this, "alertLogLastSeenISO", getPersistentStorageValue('alertLogLastSeenISO', null));
+    _defineProperty(this, "alertLogLastSeenISO", persistent('alertLogLastSeenISO', null));
 
     _classPrivateFieldInitSpec(this, _allCandles, {
       writable: true,
@@ -54701,17 +54240,6 @@ var RootStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         switch (_this.sortBy) {
-          case 'none':
-            {
-              var symbols = Object.values(_this.futuresExchangeSymbolsMap).map(function (_ref3) {
-                var symbol = _ref3.symbol;
-                return symbol;
-              });
-              if (_this.sortDirection === 1) symbols.reverse();
-              _this.symbols = symbols;
-              break;
-            }
-
           case 'alphabetically':
             _this.symbols = _this.symbols.sort(function (a, b) {
               return a > b ? _this.sortDirection : -_this.sortDirection;
@@ -54723,9 +54251,9 @@ var RootStore = /*#__PURE__*/function () {
               return [symbol, +_classPrivateFieldGet(_this, _volumes)[symbol] || 0];
             }).sort(function (a, b) {
               return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref4) {
-              var _ref5 = _slicedToArray(_ref4, 1),
-                  symbol = _ref5[0];
+            }).map(function (_ref3) {
+              var _ref4 = _slicedToArray(_ref3, 1),
+                  symbol = _ref4[0];
 
               return symbol;
             });
@@ -54736,9 +54264,9 @@ var RootStore = /*#__PURE__*/function () {
               return [symbol, +_classPrivateFieldGet(_this, _priceChangePercents)[symbol] || 0];
             }).sort(function (a, b) {
               return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref6) {
-              var _ref7 = _slicedToArray(_ref6, 1),
-                  symbol = _ref7[0];
+            }).map(function (_ref5) {
+              var _ref6 = _slicedToArray(_ref5, 1),
+                  symbol = _ref6[0];
 
               return symbol;
             });
@@ -54788,7 +54316,7 @@ var RootStore = /*#__PURE__*/function () {
           var _loop = function _loop() {
             var symbol = _step.value;
             void futuresCandles_futuresCandles({
-              // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+              // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
               symbol: symbol,
               interval: interval,
               limit: 499,
@@ -54860,12 +54388,12 @@ var RootStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         futuresTickerStream(function (ticker) {
-          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
-            var quoteVolume = _ref8.quoteVolume;
+          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref7) {
+            var quoteVolume = _ref7.quoteVolume;
             return quoteVolume;
           }));
-          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
-            var priceChangePercent = _ref9.priceChangePercent;
+          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
+            var priceChangePercent = _ref8.priceChangePercent;
             return priceChangePercent;
           }));
 
@@ -54887,7 +54415,7 @@ var RootStore = /*#__PURE__*/function () {
     (0,dist.listenChange)(this, 'sortDirection', _classPrivateFieldGet(this, _sortSymbols));
   }
 
-  _createClass(RootStore, [{
+  _createClass(MinichartsStore, [{
     key: "allCandles",
     get: // allCandles is readonly from outside
     function get() {
@@ -54906,9 +54434,8 @@ var RootStore = /*#__PURE__*/function () {
     }
   }]);
 
-  return RootStore;
+  return MinichartsStore;
 }();
-
 var ROOT = function ROOT(store) {
   return store;
 };
@@ -54921,11 +54448,474 @@ var VOLUMES = function VOLUMES(store) {
 var PRICE_CHANGE = function PRICE_CHANGE(store) {
   return store.priceChangePercents;
 };
-var store = new RootStore();
+var store = new MinichartsStore();
 
 if (false) {}
 
 /* harmony default export */ const src_store = (store);
+;// CONCATENATED MODULE: ./node_modules/react-intersection-observer/react-intersection-observer.m.js
+
+
+
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+
+  _setPrototypeOf(subClass, superClass);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+
+  return target;
+}
+
+var observerMap = new Map();
+var RootIds = new WeakMap();
+var rootId = 0;
+/**
+ * Generate a unique ID for the root element
+ * @param root
+ */
+
+function getRootId(root) {
+  if (!root) return '0';
+  if (RootIds.has(root)) return RootIds.get(root);
+  rootId += 1;
+  RootIds.set(root, rootId.toString());
+  return RootIds.get(root);
+}
+/**
+ * Convert the options to a string Id, based on the values.
+ * Ensures we can reuse the same observer when observing elements with the same options.
+ * @param options
+ */
+
+
+function optionsToId(options) {
+  return Object.keys(options).sort().filter(function (key) {
+    return options[key] !== undefined;
+  }).map(function (key) {
+    return key + "_" + (key === 'root' ? getRootId(options.root) : options[key]);
+  }).toString();
+}
+
+function createObserver(options) {
+  // Create a unique ID for this observer instance, based on the root, root margin and threshold.
+  var id = optionsToId(options);
+  var instance = observerMap.get(id);
+
+  if (!instance) {
+    // Create a map of elements this observer is going to observe. Each element has a list of callbacks that should be triggered, once it comes into view.
+    var elements = new Map();
+    var thresholds;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var _elements$get;
+
+        // While it would be nice if you could just look at isIntersecting to determine if the component is inside the viewport, browsers can't agree on how to use it.
+        // -Firefox ignores `threshold` when considering `isIntersecting`, so it will never be false again if `threshold` is > 0
+        var inView = entry.isIntersecting && thresholds.some(function (threshold) {
+          return entry.intersectionRatio >= threshold;
+        }); // @ts-ignore support IntersectionObserver v2
+
+        if (options.trackVisibility && typeof entry.isVisible === 'undefined') {
+          // The browser doesn't support Intersection Observer v2, falling back to v1 behavior.
+          // @ts-ignore
+          entry.isVisible = inView;
+        }
+
+        (_elements$get = elements.get(entry.target)) == null ? void 0 : _elements$get.forEach(function (callback) {
+          callback(inView, entry);
+        });
+      });
+    }, options); // Ensure we have a valid thresholds array. If not, use the threshold from the options
+
+    thresholds = observer.thresholds || (Array.isArray(options.threshold) ? options.threshold : [options.threshold || 0]);
+    instance = {
+      id: id,
+      observer: observer,
+      elements: elements
+    };
+    observerMap.set(id, instance);
+  }
+
+  return instance;
+}
+/**
+ * @param element - DOM Element to observe
+ * @param callback - Callback function to trigger when intersection status changes
+ * @param options - Intersection Observer options
+ * @return Function - Cleanup function that should be triggered to unregister the observer
+ */
+
+
+function observe(element, callback, options) {
+  if (options === void 0) {
+    options = {};
+  }
+
+  if (!element) return function () {}; // An observer with the same options can be reused, so lets use this fact
+
+  var _createObserver = createObserver(options),
+      id = _createObserver.id,
+      observer = _createObserver.observer,
+      elements = _createObserver.elements; // Register the callback listener for this element
+
+
+  var callbacks = elements.get(element) || [];
+
+  if (!elements.has(element)) {
+    elements.set(element, callbacks);
+  }
+
+  callbacks.push(callback);
+  observer.observe(element);
+  return function unobserve() {
+    // Remove the callback from the callback list
+    callbacks.splice(callbacks.indexOf(callback), 1);
+
+    if (callbacks.length === 0) {
+      // No more callback exists for element, so destroy it
+      elements["delete"](element);
+      observer.unobserve(element);
+    }
+
+    if (elements.size === 0) {
+      // No more elements are being observer by this instance, so destroy it
+      observer.disconnect();
+      observerMap["delete"](id);
+    }
+  };
+}
+
+var _excluded = ["children", "as", "tag", "triggerOnce", "threshold", "root", "rootMargin", "onChange", "skip", "trackVisibility", "delay", "initialInView"];
+
+function isPlainChildren(props) {
+  return typeof props.children !== 'function';
+}
+/**
+ ## Render props
+
+ To use the `<InView>` component, you pass it a function. It will be called
+ whenever the state changes, with the new value of `inView`. In addition to the
+ `inView` prop, children also receive a `ref` that should be set on the
+ containing DOM element. This is the element that the IntersectionObserver will
+ monitor.
+
+ If you need it, you can also access the
+ [`IntersectionObserverEntry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)
+ on `entry`, giving you access to all the details about the current intersection
+ state.
+
+ ```jsx
+ import { InView } from 'react-intersection-observer';
+
+ const Component = () => (
+ <InView>
+ {({ inView, ref, entry }) => (
+      <div ref={ref}>
+        <h2>{`Header inside viewport ${inView}.`}</h2>
+      </div>
+    )}
+ </InView>
+ );
+
+ export default Component;
+ ```
+
+ ## Plain children
+
+ You can pass any element to the `<InView />`, and it will handle creating the
+ wrapping DOM element. Add a handler to the `onChange` method, and control the
+ state in your own component. Any extra props you add to `<InView>` will be
+ passed to the HTML element, allowing you set the `className`, `style`, etc.
+
+ ```jsx
+ import { InView } from 'react-intersection-observer';
+
+ const Component = () => (
+ <InView as="div" onChange={(inView, entry) => console.log('Inview:', inView)}>
+ <h2>Plain children are always rendered. Use onChange to monitor state.</h2>
+ </InView>
+ );
+
+ export default Component;
+ ```
+ */
+
+
+var InView = /*#__PURE__*/function (_React$Component) {
+  _inheritsLoose(InView, _React$Component);
+
+  function InView(props) {
+    var _this;
+
+    _this = _React$Component.call(this, props) || this;
+    _this.node = null;
+    _this._unobserveCb = null;
+
+    _this.handleNode = function (node) {
+      if (_this.node) {
+        // Clear the old observer, before we start observing a new element
+        _this.unobserve();
+
+        if (!node && !_this.props.triggerOnce && !_this.props.skip) {
+          // Reset the state if we get a new node, and we aren't ignoring updates
+          _this.setState({
+            inView: !!_this.props.initialInView,
+            entry: undefined
+          });
+        }
+      }
+
+      _this.node = node ? node : null;
+
+      _this.observeNode();
+    };
+
+    _this.handleChange = function (inView, entry) {
+      if (inView && _this.props.triggerOnce) {
+        // If `triggerOnce` is true, we should stop observing the element.
+        _this.unobserve();
+      }
+
+      if (!isPlainChildren(_this.props)) {
+        // Store the current State, so we can pass it to the children in the next render update
+        // There's no reason to update the state for plain children, since it's not used in the rendering.
+        _this.setState({
+          inView: inView,
+          entry: entry
+        });
+      }
+
+      if (_this.props.onChange) {
+        // If the user is actively listening for onChange, always trigger it
+        _this.props.onChange(inView, entry);
+      }
+    };
+
+    _this.state = {
+      inView: !!props.initialInView,
+      entry: undefined
+    };
+    return _this;
+  }
+
+  var _proto = InView.prototype;
+
+  _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
+    // If a IntersectionObserver option changed, reinit the observer
+    if (prevProps.rootMargin !== this.props.rootMargin || prevProps.root !== this.props.root || prevProps.threshold !== this.props.threshold || prevProps.skip !== this.props.skip || prevProps.trackVisibility !== this.props.trackVisibility || prevProps.delay !== this.props.delay) {
+      this.unobserve();
+      this.observeNode();
+    }
+  };
+
+  _proto.componentWillUnmount = function componentWillUnmount() {
+    this.unobserve();
+    this.node = null;
+  };
+
+  _proto.observeNode = function observeNode() {
+    if (!this.node || this.props.skip) return;
+    var _this$props = this.props,
+        threshold = _this$props.threshold,
+        root = _this$props.root,
+        rootMargin = _this$props.rootMargin,
+        trackVisibility = _this$props.trackVisibility,
+        delay = _this$props.delay;
+    this._unobserveCb = observe(this.node, this.handleChange, {
+      threshold: threshold,
+      root: root,
+      rootMargin: rootMargin,
+      // @ts-ignore
+      trackVisibility: trackVisibility,
+      // @ts-ignore
+      delay: delay
+    });
+  };
+
+  _proto.unobserve = function unobserve() {
+    if (this._unobserveCb) {
+      this._unobserveCb();
+
+      this._unobserveCb = null;
+    }
+  };
+
+  _proto.render = function render() {
+    if (!isPlainChildren(this.props)) {
+      var _this$state = this.state,
+          inView = _this$state.inView,
+          entry = _this$state.entry;
+      return this.props.children({
+        inView: inView,
+        entry: entry,
+        ref: this.handleNode
+      });
+    }
+
+    var _this$props2 = this.props,
+        children = _this$props2.children,
+        as = _this$props2.as,
+        tag = _this$props2.tag,
+        props = _objectWithoutPropertiesLoose(_this$props2, _excluded);
+
+    return /*#__PURE__*/react.createElement(as || tag || 'div', _extends({
+      ref: this.handleNode
+    }, props), children);
+  };
+
+  return InView;
+}(react.Component);
+InView.displayName = 'InView';
+InView.defaultProps = {
+  threshold: 0,
+  triggerOnce: false,
+  initialInView: false
+};
+
+/**
+ * React Hooks make it easy to monitor the `inView` state of your components. Call
+ * the `useInView` hook with the (optional) [options](#options) you need. It will
+ * return an array containing a `ref`, the `inView` status and the current
+ * [`entry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry).
+ * Assign the `ref` to the DOM element you want to monitor, and the hook will
+ * report the status.
+ *
+ * @example
+ * ```jsx
+ * import React from 'react';
+ * import { useInView } from 'react-intersection-observer';
+ *
+ * const Component = () => {
+ *   const { ref, inView, entry } = useInView({
+ *       threshold: 0,
+ *   });
+ *
+ *   return (
+ *     <div ref={ref}>
+ *       <h2>{`Header inside viewport ${inView}.`}</h2>
+ *     </div>
+ *   );
+ * };
+ * ```
+ */
+
+function useInView(_temp) {
+  var _ref = _temp === void 0 ? {} : _temp,
+      threshold = _ref.threshold,
+      delay = _ref.delay,
+      trackVisibility = _ref.trackVisibility,
+      rootMargin = _ref.rootMargin,
+      root = _ref.root,
+      triggerOnce = _ref.triggerOnce,
+      skip = _ref.skip,
+      initialInView = _ref.initialInView;
+
+  var unobserve = react.useRef();
+
+  var _React$useState = react.useState({
+    inView: !!initialInView
+  }),
+      state = _React$useState[0],
+      setState = _React$useState[1];
+
+  var setRef = react.useCallback(function (node) {
+    if (unobserve.current !== undefined) {
+      unobserve.current();
+      unobserve.current = undefined;
+    } // Skip creating the observer
+
+
+    if (skip) return;
+
+    if (node) {
+      unobserve.current = observe(node, function (inView, entry) {
+        setState({
+          inView: inView,
+          entry: entry
+        });
+
+        if (entry.isIntersecting && triggerOnce && unobserve.current) {
+          // If it should only trigger once, unobserve the element after it's inView
+          unobserve.current();
+          unobserve.current = undefined;
+        }
+      }, {
+        root: root,
+        rootMargin: rootMargin,
+        threshold: threshold,
+        // @ts-ignore
+        trackVisibility: trackVisibility,
+        // @ts-ignore
+        delay: delay
+      });
+    }
+  }, // We break the rule here, because we aren't including the actual `threshold` variable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [// If the threshold is an array, convert it to a string so it won't change between renders.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  Array.isArray(threshold) ? threshold.toString() : threshold, root, rootMargin, triggerOnce, skip, trackVisibility, delay]);
+  /* eslint-disable-next-line */
+
+  (0,react.useEffect)(function () {
+    if (!unobserve.current && state.entry && !triggerOnce && !skip) {
+      // If we don't have a ref, then reset the state (unless the hook is set to only `triggerOnce` or `skip`)
+      // This ensures we correctly reflect the current state - If you aren't observing anything, then nothing is inView
+      setState({
+        inView: !!initialInView
+      });
+    }
+  });
+  var result = [setRef, state.inView, state.entry]; // Support object destructuring, by adding the specific values.
+
+  result.ref = result[0];
+  result.inView = result[1];
+  result.entry = result[2];
+  return result;
+}
+
+
+//# sourceMappingURL=react-intersection-observer.m.js.map
+
 ;// CONCATENATED MODULE: ./node_modules/d3-array/src/max.js
 function max(values, valueof) {
   let max;
@@ -61987,7 +61977,7 @@ function defaultConstrain(transform, extent, translateExtent) {
 
 
 
-;// CONCATENATED MODULE: ./src/Chart/Plot.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Plot.ts
 
 
 
@@ -62394,7 +62384,7 @@ _defineProperty(Plot, "candlesToHeikinAshi", function (candles) {
 });
 
 
-;// CONCATENATED MODULE: ./src/Chart/Svg.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Svg.ts
 
 
 
@@ -62453,7 +62443,7 @@ var Svg = function Svg() {
 };
 
 
-;// CONCATENATED MODULE: ./src/Chart/ClipPath.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/ClipPath.ts
 
 
 
@@ -62503,7 +62493,7 @@ var ClipPath = function ClipPath() {
 };
 
 
-;// CONCATENATED MODULE: ./src/Chart/Axes.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Axes.ts
 
 
 
@@ -62627,7 +62617,7 @@ var Axes = /*#__PURE__*/function () {
 }();
 
 
-;// CONCATENATED MODULE: ./src/Chart/GridLines.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/GridLines.ts
 
 
 
@@ -62815,7 +62805,7 @@ function _getPrototypeOf(o) {
 function convertType(value) {
   return value;
 }
-;// CONCATENATED MODULE: ./src/Chart/Lines/PriceLines.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/PriceLines.ts
 
 
 
@@ -63467,7 +63457,7 @@ _defineProperty(PriceLines, "getPriceTextBackgroundPath", function (_ref14) {
 });
 
 
-;// CONCATENATED MODULE: ./src/Chart/Lines/CurrentPriceLines.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/CurrentPriceLines.ts
 
 
 
@@ -63546,7 +63536,7 @@ function _get() {
 
   return _get.apply(this, arguments);
 }
-;// CONCATENATED MODULE: ./src/Chart/Lines/CrosshairPriceLines.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/CrosshairPriceLines.ts
 
 
 
@@ -63652,7 +63642,7 @@ var CrosshairPriceLines = /*#__PURE__*/function (_PriceLines) {
 // EXTERNAL MODULE: ./node_modules/moment/moment.js
 var moment = __webpack_require__(381);
 var moment_default = /*#__PURE__*/__webpack_require__.n(moment);
-;// CONCATENATED MODULE: ./src/Chart/Lines/AlertPriceLines.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/AlertPriceLines.ts
 
 
 
@@ -63950,7 +63940,7 @@ _defineProperty(AlertPriceLines, "createAlertLine", function (yValue) {
 });
 
 
-;// CONCATENATED MODULE: ./src/Chart/Lines/index.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/index.ts
 
 
 
@@ -64070,7 +64060,7 @@ var Lines = /*#__PURE__*/function () {
 }();
 
 
-;// CONCATENATED MODULE: ./src/Chart/index.ts
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/index.ts
 
 
 
@@ -64274,10 +64264,8 @@ var Chart = function Chart(container, _ref) {
       }
     }
 
-    if (typeof data.symbolInfo !== 'undefined') {
-      var _data$symbolInfo$pric, _data$symbolInfo;
-
-      var pricePrecision = (_data$symbolInfo$pric = (_data$symbolInfo = data.symbolInfo) === null || _data$symbolInfo === void 0 ? void 0 : _data$symbolInfo.pricePrecision) !== null && _data$symbolInfo$pric !== void 0 ? _data$symbolInfo$pric : 0;
+    if (typeof data.pricePrecision !== 'undefined') {
+      var pricePrecision = data.pricePrecision;
 
       if (_classPrivateFieldGet(_this, Chart_pricePrecision) !== pricePrecision) {
         _classPrivateFieldGet(_this, _axes).update({
@@ -71618,7 +71606,7 @@ function tooltipRef(options) {
     }
   };
 }
-;// CONCATENATED MODULE: ./src/Grid/TextIndicators.tsx
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/TextIndicators.tsx
 
 
 var _templateObject;
@@ -71628,14 +71616,11 @@ var _templateObject;
 
 
 
-
-
 var InfoContainer = styled_components_browser_esm.span(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: inline-block;\n  vertical-align: top;\n  margin-top: -1px;\n  pointer-events: auto;\n  opacity: 0.4;\n  cursor: help;\n  &:hover { opacity: 1; }\n"])));
 
 var TextIndicators = function TextIndicators(_ref) {
-  var symbol = _ref.symbol;
-  var volume = (0,dist.useValue)(VOLUMES, symbol);
-  var priceChangePercent = (0,dist.useValue)(PRICE_CHANGE, symbol);
+  var volume = _ref.volume,
+      priceChangePercent = _ref.priceChangePercent;
   return /*#__PURE__*/react.createElement(react.Fragment, null, /*#__PURE__*/react.createElement("span", null, formatMoneyNumber(+volume || 0), ' ', /*#__PURE__*/react.createElement(InfoContainer, {
     ref: tooltipRef(),
     title: "Volume (24h)"
@@ -71647,7 +71632,7 @@ var TextIndicators = function TextIndicators(_ref) {
   }, /*#__PURE__*/react.createElement(info_circle, null))));
 };
 
-/* harmony default export */ const Grid_TextIndicators = (TextIndicators);
+/* harmony default export */ const AltamoonMinichart_TextIndicators = (TextIndicators);
 /*
 import intervalExtendedInfoCandleLength from './lib/intervalExtendedInfoCandleLength';
 
@@ -71677,39 +71662,39 @@ additionalInfoCandlesLengths.map(([period, candleLength]) => {
   );
 })}
 */
-;// CONCATENATED MODULE: ./src/Grid/Minichart.tsx
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/index.tsx
 
 
 
-
-var Minichart_templateObject, _templateObject2, _templateObject3;
-
-function Minichart_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
-
-function Minichart_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { Minichart_ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { Minichart_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+var AltamoonMinichart_templateObject, _templateObject2, _templateObject3;
 
 
 
 
 
 
-
-
-var ChartInfo = styled_components_browser_esm.div(Minichart_templateObject || (Minichart_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: calc(100% - 55px);\n  padding: 0.25rem 0.5rem;\n  pointer-events: none;\n"])));
+var ChartInfo = styled_components_browser_esm.div(AltamoonMinichart_templateObject || (AltamoonMinichart_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: calc(100% - 55px);\n  padding: 0.25rem 0.5rem;\n  pointer-events: none;\n"])));
 var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["\n  color: #fff;\n  display: inline;\n  cursor: pointer;\n  pointer-events: auto;\n\n  &:hover {\n    text-decoration: underline;\n  }\n"])));
 var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n"])));
 
-var Minichart = function Minichart(_ref) {
-  var symbol = _ref.symbol,
-      onSymbolSelect = _ref.onSymbolSelect;
-  var candles = (0,dist.useValue)(CANDLES, symbol);
-  var realTimeCandles = (0,dist.useValue)(ROOT, 'realTimeCandles');
-  var interval = (0,dist.useValue)(ROOT, 'interval');
-  var chartHeight = (0,dist.useValue)(ROOT, 'chartHeight');
-  var gridColumns = (0,dist.useValue)(ROOT, 'gridColumns');
-  var chartType = (0,dist.useValue)(ROOT, 'chartType');
-  var scaleType = (0,dist.useValue)(ROOT, 'scaleType');
-  var symbolInfo = (0,dist.useValue)(ROOT, 'futuresExchangeSymbolsMap')[symbol];
+var AltamoonMinichart = function AltamoonMinichart(_ref) {
+  var candles = _ref.candles,
+      realTimeCandles = _ref.realTimeCandles,
+      interval = _ref.interval,
+      width = _ref.width,
+      height = _ref.height,
+      chartType = _ref.chartType,
+      scaleType = _ref.scaleType,
+      pricePrecision = _ref.pricePrecision,
+      symbol = _ref.symbol,
+      initialAlerts = _ref.initialAlerts,
+      baseAsset = _ref.baseAsset,
+      quoteAsset = _ref.quoteAsset,
+      volume = _ref.volume,
+      priceChangePercent = _ref.priceChangePercent,
+      onSymbolSelect = _ref.onSymbolSelect,
+      onAlert = _ref.onAlert,
+      onUpdateAlerts = _ref.onUpdateAlerts;
   var ref = (0,react.useRef)(null);
 
   var _useState = (0,react.useState)(null),
@@ -71717,9 +71702,6 @@ var Minichart = function Minichart(_ref) {
       chartInstance = _useState2[0],
       setChartInstance = _useState2[1];
 
-  var setSymbolAlerts = (0,dist.useSet)(ROOT, 'symbolAlerts');
-  var getSymbolAlerts = (0,dist.useGet)(ROOT, 'symbolAlerts');
-  var triggerAlert = (0,dist.useSilent)(ROOT, 'triggerAlert');
   var onSymbolNameClick = onSymbolSelect !== null && onSymbolSelect !== void 0 ? onSymbolSelect : function (sym) {
     return window.open("https://www.binance.com/en/futures/".concat(sym));
   };
@@ -71739,10 +71721,10 @@ var Minichart = function Minichart(_ref) {
     });
   }, [candles, chartInstance, inView]);
   (0,react.useEffect)(function () {
-    if (symbolInfo) chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
-      symbolInfo: symbolInfo
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      pricePrecision: pricePrecision
     });
-  });
+  }, [chartInstance, pricePrecision]);
   (0,react.useEffect)(function () {
     chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       chartType: chartType
@@ -71758,45 +71740,99 @@ var Minichart = function Minichart(_ref) {
     if (ref.current && !chartInstance) {
       var instance = new Chart(ref.current, {
         scaleType: scaleType,
-        triggerAlert: triggerAlert,
+        triggerAlert: onAlert,
         realTimeCandles: realTimeCandles,
         symbol: symbol,
-        onUpdateAlerts: function onUpdateAlerts(d) {
-          return setSymbolAlerts(function (v) {
-            return Minichart_objectSpread(Minichart_objectSpread({}, v), {}, _defineProperty({}, symbol, d));
-          });
-        }
+        onUpdateAlerts: onUpdateAlerts
       });
       instance.update({
-        candles: candles || [],
+        candles: candles,
         chartType: chartType,
-        alerts: getSymbolAlerts()[symbol]
+        alerts: initialAlerts
       });
       setChartInstance(instance);
     }
   });
   return /*#__PURE__*/react.createElement(Container, {
     style: {
-      width: "".concat(100 / gridColumns, "%")
+      width: width
     },
     "data-minichart-symbol": symbol
   }, /*#__PURE__*/react.createElement(ChartInfo, null, /*#__PURE__*/react.createElement(SymbolName, {
     onClick: function onClick() {
       return onSymbolNameClick === null || onSymbolNameClick === void 0 ? void 0 : onSymbolNameClick(symbol);
     }
-  }, symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.baseAsset, "/", symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.quoteAsset), /*#__PURE__*/react.createElement("div", {
+  }, baseAsset, "/", quoteAsset), /*#__PURE__*/react.createElement("div", {
     className: "float-end text-end",
     style: {
       fontSize: '.75em'
     }
-  }, !(candles !== null && candles !== void 0 && candles.length) || candles[0].interval !== interval ? "Loading ".concat(interval, "...") : /*#__PURE__*/react.createElement(Grid_TextIndicators, {
-    symbol: symbol
+  }, !(candles !== null && candles !== void 0 && candles.length) || candles[0].interval !== interval ? "Loading ".concat(interval, "...") : /*#__PURE__*/react.createElement(AltamoonMinichart_TextIndicators, {
+    volume: volume,
+    priceChangePercent: priceChangePercent
   }))), /*#__PURE__*/react.createElement("div", {
     style: {
-      height: "".concat(chartHeight, "px")
+      height: height
     },
     ref: setRefs
   }));
+};
+
+/* harmony default export */ const src_AltamoonMinichart = (/*#__PURE__*/(0,react.memo)(AltamoonMinichart));
+;// CONCATENATED MODULE: ./src/Grid/Minichart.tsx
+
+
+function Minichart_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function Minichart_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { Minichart_ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { Minichart_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+
+
+
+
+
+var Minichart = function Minichart(_ref) {
+  var _symbolInfo$pricePrec, _getSymbolAlerts$symb, _symbolInfo$baseAsset, _symbolInfo$quoteAsse;
+
+  var symbol = _ref.symbol,
+      onSymbolSelect = _ref.onSymbolSelect;
+  var candles = (0,dist.useValue)(CANDLES, symbol);
+  var realTimeCandles = (0,dist.useValue)(ROOT, 'realTimeCandles');
+  var interval = (0,dist.useValue)(ROOT, 'interval');
+  var chartHeight = (0,dist.useValue)(ROOT, 'chartHeight');
+  var gridColumns = (0,dist.useValue)(ROOT, 'gridColumns');
+  var chartType = (0,dist.useValue)(ROOT, 'chartType');
+  var scaleType = (0,dist.useValue)(ROOT, 'scaleType');
+  var volume = (0,dist.useValue)(VOLUMES, symbol);
+  var priceChangePercent = (0,dist.useValue)(PRICE_CHANGE, symbol);
+  var symbolInfo = (0,dist.useValue)(ROOT, 'futuresExchangeSymbolsMap')[symbol];
+  var setSymbolAlerts = (0,dist.useSet)(ROOT, 'symbolAlerts');
+  var getSymbolAlerts = (0,dist.useGet)(ROOT, 'symbolAlerts');
+  var triggerAlert = (0,dist.useSilent)(ROOT, 'triggerAlert');
+  var onUpdateAlerts = (0,react.useCallback)(function (d) {
+    return setSymbolAlerts(function (v) {
+      return Minichart_objectSpread(Minichart_objectSpread({}, v), {}, _defineProperty({}, symbol, d));
+    });
+  }, [setSymbolAlerts, symbol]);
+  return /*#__PURE__*/react.createElement(src_AltamoonMinichart, {
+    candles: candles !== null && candles !== void 0 ? candles : [],
+    realTimeCandles: realTimeCandles,
+    interval: interval,
+    width: "".concat(100 / gridColumns, "%"),
+    height: "".concat(chartHeight, "px"),
+    chartType: chartType,
+    scaleType: scaleType,
+    pricePrecision: (_symbolInfo$pricePrec = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.pricePrecision) !== null && _symbolInfo$pricePrec !== void 0 ? _symbolInfo$pricePrec : 0,
+    symbol: symbol,
+    initialAlerts: (_getSymbolAlerts$symb = getSymbolAlerts()[symbol]) !== null && _getSymbolAlerts$symb !== void 0 ? _getSymbolAlerts$symb : [],
+    baseAsset: (_symbolInfo$baseAsset = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.baseAsset) !== null && _symbolInfo$baseAsset !== void 0 ? _symbolInfo$baseAsset : 'UNKNOWN',
+    quoteAsset: (_symbolInfo$quoteAsse = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.quoteAsset) !== null && _symbolInfo$quoteAsse !== void 0 ? _symbolInfo$quoteAsse : 'UNKNOWN',
+    volume: volume,
+    priceChangePercent: priceChangePercent,
+    onSymbolSelect: onSymbolSelect,
+    onAlert: triggerAlert,
+    onUpdateAlerts: onUpdateAlerts
+  });
 };
 
 /* harmony default export */ const Grid_Minichart = (/*#__PURE__*/(0,react.memo)(Minichart));
@@ -79480,7 +79516,7 @@ var Settings_templateObject, Settings_templateObject2, Settings_templateObject3;
 
 
 
-var Intervals = styled_components_browser_esm.div(Settings_templateObject || (Settings_templateObject = _taggedTemplateLiteral(["\n  padding-bottom: 1rem;\n  flex-wrap: nowrap!important;\n  overflow: auto;  \n"])));
+var Intervals = styled_components_browser_esm.div(Settings_templateObject || (Settings_templateObject = _taggedTemplateLiteral(["\n  padding-bottom: 1rem;\n  flex-wrap: nowrap!important;\n  overflow: auto;\n"])));
 var SortLabel = styled_components_browser_esm.label(Settings_templateObject2 || (Settings_templateObject2 = _taggedTemplateLiteral(["\n  cursor: pointer;\n  &:hover { color: #fff; }\n"])));
 var IntervalItem = styled_components_browser_esm.div(Settings_templateObject3 || (Settings_templateObject3 = _taggedTemplateLiteral(["\n  & > span {\n    padding: 0.5rem 0.75rem;\n  }\n"])));
 var MIN_GRID_COLUMNS = 1;
@@ -79547,7 +79583,7 @@ var Settings = function Settings() {
     xs: 12,
     md: 4
   }, /*#__PURE__*/react.createElement(lib_InputRange, {
-    label: "# of grid columns",
+    label: "Columns",
     min: MIN_GRID_COLUMNS,
     max: MAX_GRID_COLUMNS,
     id: "minichart_columns",
@@ -79557,7 +79593,7 @@ var Settings = function Settings() {
     xs: 12,
     md: 4
   }, /*#__PURE__*/react.createElement(lib_InputRange, {
-    label: "# of charts",
+    label: "Charts",
     min: 1,
     max: symbols.length,
     id: "minichart_max_charts",
@@ -79595,8 +79631,6 @@ var Settings = function Settings() {
       return setSortBy(target.value);
     }
   }, /*#__PURE__*/react.createElement("option", {
-    value: isType('none')
-  }, "Default"), /*#__PURE__*/react.createElement("option", {
     value: isType('alphabetically')
   }, "Alphabetically"), /*#__PURE__*/react.createElement("option", {
     value: isType('volume')
@@ -79610,7 +79644,7 @@ var Settings = function Settings() {
   }, /*#__PURE__*/react.createElement("label", {
     className: "input-group-text",
     htmlFor: "minichart_throttleDelay"
-  }, "Throttle"), /*#__PURE__*/react.createElement("select", {
+  }, "Refresh"), /*#__PURE__*/react.createElement("select", {
     className: "form-select bg-white",
     id: "minichart_throttleDelay",
     value: throttleDelay,
@@ -79635,7 +79669,7 @@ var Settings = function Settings() {
   }, /*#__PURE__*/react.createElement("label", {
     className: "input-group-text",
     htmlFor: "minichart_chartType"
-  }, "Type"), /*#__PURE__*/react.createElement("select", {
+  }, "Candle Type"), /*#__PURE__*/react.createElement("select", {
     className: "form-select bg-white",
     id: "minichart_chartType",
     value: chartType,
@@ -79645,7 +79679,7 @@ var Settings = function Settings() {
     }
   }, /*#__PURE__*/react.createElement("option", {
     value: isType('candlestick')
-  }, "Open-high-low-close"), /*#__PURE__*/react.createElement("option", {
+  }, "Candles"), /*#__PURE__*/react.createElement("option", {
     value: isType('heikin_ashi')
   }, "Heikin-Ashi"), /*#__PURE__*/react.createElement("option", {
     value: isType('heikin_ashi_actual_price')
@@ -79657,7 +79691,7 @@ var Settings = function Settings() {
   }, /*#__PURE__*/react.createElement("label", {
     className: "input-group-text",
     htmlFor: "minichart_scaleType"
-  }, "Scale Type"), /*#__PURE__*/react.createElement("select", {
+  }, "Scale"), /*#__PURE__*/react.createElement("select", {
     className: "form-select bg-white",
     id: "minichart_scaleType",
     value: scaleType,
@@ -80064,6 +80098,7 @@ var MinichartGrid = function MinichartGrid(_ref) {
 
 /* harmony default export */ const Grid = ((0,root/* hot */.w)(MinichartGrid));
 ;// CONCATENATED MODULE: ./src/index.tsx
+
 
 
 
