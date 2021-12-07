@@ -4,7 +4,7 @@ import { listenChange } from 'use-change';
 
 import {
   ChartType, SortDirection, SortBy, AlertLogItem, ScaleType,
-} from './types';
+} from './AltamoonMinichart/types';
 import { alertUpUri, alertDownUri, alertVolumeUri } from './alertSounds';
 
 const upSound = new Audio(alertUpUri);
@@ -13,7 +13,7 @@ const volumeSound = new Audio(alertVolumeUri);
 
 const STORAGE_PREFIX = 'altamoonMinicharts_';
 
-function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
+function persistent<T>(key: keyof RootStore, defaultValue: T): T {
   const storageValue = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
@@ -27,29 +27,29 @@ class RootStore {
 
   public symbols: string[] = [];
 
-  public chartHeight = getPersistentStorageValue<RootStore, number>('chartHeight', 200);
+  public chartHeight = persistent<number>('chartHeight', 200);
 
-  public interval = getPersistentStorageValue<RootStore, api.CandlestickChartInterval>('interval', '1m');
+  public interval = persistent<api.CandlestickChartInterval>('interval', '1m');
 
-  public maxChartsLength = getPersistentStorageValue<RootStore, number | null>('maxChartsLength', null);
+  public maxChartsLength = persistent<number | null>('maxChartsLength', null);
 
-  public throttleDelay = getPersistentStorageValue<RootStore, number>('throttleDelay', 1000);
+  public throttleDelay = persistent<number>('throttleDelay', 1000);
 
-  public gridColumns = getPersistentStorageValue<RootStore, number>('gridColumns', 4);
+  public gridColumns = persistent<number>('gridColumns', 4);
 
-  public chartType = getPersistentStorageValue<RootStore, ChartType>('chartType', 'candlestick');
+  public chartType = persistent<ChartType>('chartType', 'candlestick');
 
-  public scaleType = getPersistentStorageValue<RootStore, ScaleType>('scaleType', 'log');
+  public scaleType = persistent<ScaleType>('scaleType', 'log');
 
-  public symbolAlerts = getPersistentStorageValue<RootStore, Record<string, number[]>>('symbolAlerts', {});
+  public symbolAlerts = persistent<Record<string, number[]>>('symbolAlerts', {});
 
-  public alertLog = getPersistentStorageValue<RootStore, AlertLogItem[]>('alertLog', []);
+  public alertLog = persistent<AlertLogItem[]>('alertLog', []);
 
-  public sortBy = getPersistentStorageValue<RootStore, SortBy>('sortBy', 'none');
+  public sortBy = persistent<SortBy>('sortBy', 'none');
 
-  public sortDirection = getPersistentStorageValue<RootStore, SortDirection>('sortDirection', -1);
+  public sortDirection = persistent<SortDirection>('sortDirection', -1);
 
-  public alertLogLastSeenISO = getPersistentStorageValue<RootStore, null | string>('alertLogLastSeenISO', null);
+  public alertLogLastSeenISO = persistent<null | string>('alertLogLastSeenISO', null);
 
   // allCandles is readonly from outside
   public get allCandles(): Record<string, api.FuturesChartCandle[]> { return this.#allCandles; }

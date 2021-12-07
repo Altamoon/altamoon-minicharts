@@ -113,7 +113,7 @@ export default class Chart {
 
   public update = (data: {
     candles?: api.FuturesChartCandle[];
-    symbolInfo?: api.FuturesExchangeInfoSymbol | null;
+    pricePrecision?: number;
     chartType?: ChartType;
     alerts?: number[];
     scaleType?: ScaleType;
@@ -140,8 +140,8 @@ export default class Chart {
       }
     }
 
-    if (typeof data.symbolInfo !== 'undefined') {
-      const pricePrecision = data.symbolInfo?.pricePrecision ?? 0;
+    if (typeof data.pricePrecision !== 'undefined') {
+      const { pricePrecision } = data;
       if (this.#pricePrecision !== pricePrecision) {
         this.#axes.update({ pricePrecision });
         this.#lines.update({ pricePrecision });

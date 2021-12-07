@@ -18,37 +18,33 @@ const InfoContainer = styled.span`
 `;
 
 interface Props {
-  symbol: string;
+  volume: string;
+  priceChangePercent: string;
 }
 
-const TextIndicators = ({ symbol }: Props): ReactElement => {
-  const volume = useValue(VOLUMES, symbol);
-  const priceChangePercent = useValue(PRICE_CHANGE, symbol);
-
-  return (
-    <>
-      <span>
-        {formatMoneyNumber(+volume || 0)}
-        {' '}
-        <InfoContainer ref={tooltipRef()} title="Volume (24h)">
-          <InfoCircle />
-        </InfoContainer>
+const TextIndicators = ({ volume, priceChangePercent }: Props): ReactElement => (
+  <>
+    <span>
+      {formatMoneyNumber(+volume || 0)}
+      {' '}
+      <InfoContainer ref={tooltipRef()} title="Volume (24h)">
+        <InfoCircle />
+      </InfoContainer>
+    </span>
+    <br />
+    <span>
+      <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
+        {+priceChangePercent > 0 ? '+' : ''}
+        {priceChangePercent || 0}
+        %
       </span>
-      <br />
-      <span>
-        <span className={(!!+priceChangePercent && (+priceChangePercent > 0 ? 'text-success' : 'text-danger')) || undefined}>
-          {+priceChangePercent > 0 ? '+' : ''}
-          {priceChangePercent || 0}
-          %
-        </span>
-        {' '}
-        <InfoContainer ref={tooltipRef()} title="% change (24h)">
-          <InfoCircle />
-        </InfoContainer>
-      </span>
-    </>
-  );
-};
+      {' '}
+      <InfoContainer ref={tooltipRef()} title="% change (24h)">
+        <InfoCircle />
+      </InfoContainer>
+    </span>
+  </>
+);
 
 export default TextIndicators;
 

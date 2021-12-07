@@ -5,7 +5,7 @@ import useChange, { useValue } from 'use-change';
 import { Row, Col } from 'reactstrap';
 
 import { ROOT } from '../store';
-import { ChartType, ScaleType, SortBy } from '../types';
+import { ChartType, ScaleType, SortBy } from '../AltamoonMinichart/types';
 import isType from '../lib/isType';
 import InputRange from '../lib/InputRange';
 
