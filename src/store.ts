@@ -13,14 +13,14 @@ const volumeSound = new Audio(alertVolumeUri);
 
 const STORAGE_PREFIX = 'altamoonMinicharts_';
 
-function persistent<T>(key: keyof RootStore, defaultValue: T): T {
+function persistent<T>(key: keyof MinichartsStore, defaultValue: T): T {
   const storageValue = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
 
 type AnomalyKey = `${api.CandlestickChartInterval}_${number}`;
 
-class RootStore {
+export class MinichartsStore {
   public candles: api.FuturesChartCandle[] = [];
 
   public futuresExchangeSymbolsMap: Record<string, api.FuturesExchangeInfoSymbol> = {};
@@ -74,7 +74,7 @@ class RootStore {
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
   constructor() {
-    const keysToListen: (keyof RootStore)[] = [
+    const keysToListen: (keyof MinichartsStore)[] = [
       'interval',
       'maxChartsLength',
       'throttleDelay',
@@ -268,17 +268,17 @@ class RootStore {
   };
 }
 
-export const ROOT = (store: RootStore): RootStore => store;
-export const CANDLES = (store: RootStore): typeof store.allCandles => store.allCandles;
-export const VOLUMES = (store: RootStore): typeof store.volumes => store.volumes;
+export const ROOT = (store: MinichartsStore): MinichartsStore => store;
+export const CANDLES = (store: MinichartsStore): typeof store.allCandles => store.allCandles;
+export const VOLUMES = (store: MinichartsStore): typeof store.volumes => store.volumes;
 export const PRICE_CHANGE = (
-  store: RootStore,
+  store: MinichartsStore,
 ): typeof store.priceChangePercents => store.priceChangePercents;
 
-const store = new RootStore();
+const store = new MinichartsStore();
 if (process.env.NODE_ENV === 'development') {
   // make store to be accessed ass a global variable
-  (window as unknown as { store: RootStore; }).store = store;
+  (window as unknown as { store: MinichartsStore; }).store = store;
 }
 
 export default store;

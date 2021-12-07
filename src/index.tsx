@@ -4,13 +4,15 @@ import $ from 'balajs';
 import { Provider } from 'use-change';
 
 import MinichartGrid from './Grid';
-import store from './store';
+import store, { MinichartsStore } from './store';
 
 interface Options {
   settingsContainer?: HTMLElement;
   alertLogContainer?: HTMLElement;
   onSymbolSelect?: (symbol: string) => void;
 }
+
+export { store, MinichartsStore };
 
 export default function altamoonMinicharts(
   givenElement: string | HTMLElement | HTMLElement[],

@@ -1,9 +1,7 @@
 import React, { ReactElement } from 'react';
-import { useValue } from 'use-change';
 import styled from 'styled-components';
 import { InfoCircle } from 'react-bootstrap-icons';
 
-import { PRICE_CHANGE, VOLUMES } from '../store';
 import formatMoneyNumber from '../lib/formatMoneyNumber';
 import tooltipRef from '../lib/tooltipRef';
 
