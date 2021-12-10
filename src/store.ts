@@ -278,10 +278,10 @@ export const PRICE_CHANGE = (
   store: MinichartsStore,
 ): typeof store.priceChangePercents => store.priceChangePercents;
 
-const store = new MinichartsStore();
+const minichartsStore = new MinichartsStore();
 if (process.env.NODE_ENV === 'development') {
   // make store to be accessed ass a global variable
-  (window as unknown as { store: MinichartsStore; }).store = store;
+  (window as unknown as { minichartsStore: MinichartsStore; }).minichartsStore = minichartsStore;
 }
 
-export default store;
+export default minichartsStore;
