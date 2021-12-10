@@ -52291,7 +52291,7 @@ __webpack_require__.d(__webpack_exports__, {
   "default": () => (/* binding */ altamoonMinicharts)
 });
 
-// UNUSED EXPORTS: MinichartsStore, store
+// UNUSED EXPORTS: MinichartsStore, minichartsStore
 
 // NAMESPACE OBJECT: ./node_modules/@popperjs/core/lib/index.js
 var core_lib_namespaceObject = {};
@@ -54043,6 +54043,10 @@ var _allCandles = /*#__PURE__*/new WeakMap();
 
 var _volumes = /*#__PURE__*/new WeakMap();
 
+var _positions = /*#__PURE__*/new WeakMap();
+
+var _orders = /*#__PURE__*/new WeakMap();
+
 var _priceChangePercents = /*#__PURE__*/new WeakMap();
 
 var _allSymbolsUnsubscribe = /*#__PURE__*/new WeakMap();
@@ -54105,6 +54109,16 @@ var MinichartsStore = /*#__PURE__*/function () {
     });
 
     _classPrivateFieldInitSpec(this, _volumes, {
+      writable: true,
+      value: {}
+    });
+
+    _classPrivateFieldInitSpec(this, _positions, {
+      writable: true,
+      value: {}
+    });
+
+    _classPrivateFieldInitSpec(this, _orders, {
       writable: true,
       value: {}
     });
@@ -54417,15 +54431,23 @@ var MinichartsStore = /*#__PURE__*/function () {
 
   _createClass(MinichartsStore, [{
     key: "allCandles",
-    get: // allCandles is readonly from outside
-    function get() {
+    get: function get() {
       return _classPrivateFieldGet(this, _allCandles);
     }
   }, {
     key: "volumes",
-    get: // volumes is readonly from outside
-    function get() {
+    get: function get() {
       return _classPrivateFieldGet(this, _volumes);
+    }
+  }, {
+    key: "positions",
+    get: function get() {
+      return _classPrivateFieldGet(this, _positions);
+    }
+  }, {
+    key: "orders",
+    get: function get() {
+      return _classPrivateFieldGet(this, _orders);
     }
   }, {
     key: "priceChangePercents",
@@ -54441,6 +54463,12 @@ var ROOT = function ROOT(store) {
 };
 var CANDLES = function CANDLES(store) {
   return store.allCandles;
+};
+var POSITIONS = function POSITIONS(store) {
+  return store.positions;
+};
+var ORDERS = function ORDERS(store) {
+  return store.orders;
 };
 var VOLUMES = function VOLUMES(store) {
   return store.volumes;
@@ -63073,6 +63101,8 @@ var PriceLines = /*#__PURE__*/function () {
             var _d$pointerEventsNone;
 
             return ((_d$pointerEventsNone = d.pointerEventsNone) !== null && _d$pointerEventsNone !== void 0 ? _d$pointerEventsNone : _classPrivateFieldGet(_this, _pointerEventsNone)) ? 'none' : 'auto';
+          }).style('opacity', function (d) {
+            return d.opacity ? String(d.opacity) : '';
           });
           update.select('.price-line-horizontal-group .price-line-line').attr('stroke-dasharray', function (d) {
             var _d$lineStyle;
@@ -63940,6 +63970,187 @@ _defineProperty(AlertPriceLines, "createAlertLine", function (yValue) {
 });
 
 
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/OrderPriceLines.ts
+
+
+
+
+
+
+
+
+
+function OrderPriceLines_createSuper(Derived) { var hasNativeReflectConstruct = OrderPriceLines_isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function OrderPriceLines_isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function OrderPriceLines_classPrivateFieldInitSpec(obj, privateMap, value) { OrderPriceLines_checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
+
+function OrderPriceLines_checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+
+
+
+var _forceOrderPrices = /*#__PURE__*/new WeakMap();
+
+var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
+  _inherits(OrderPriceLines, _PriceLines);
+
+  var _super = OrderPriceLines_createSuper(OrderPriceLines);
+
+  // we neeed this to preserve line position when it was dragged
+  // but not yet removed (not yet re-created)
+  function OrderPriceLines(_ref) {
+    var _this;
+
+    var axis = _ref.axis;
+
+    _classCallCheck(this, OrderPriceLines);
+
+    _this = _super.call(this, {
+      axis: axis,
+      items: [],
+      isTitleVisible: true,
+      lineStyle: 'solid',
+      isBackgroundFill: true
+    });
+
+    OrderPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _forceOrderPrices, {
+      writable: true,
+      value: {}
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "updateOrderLines", function (orders) {
+      var items = [].concat(_toConsumableArray(orders.map(function (order) {
+        var _classPrivateFieldGet2;
+
+        var price = order.price,
+            side = order.side,
+            origQty = order.origQty,
+            executedQty = order.executedQty,
+            symbol = order.symbol,
+            type = order.type,
+            isCanceled = order.isCanceled,
+            clientOrderId = order.clientOrderId;
+        var color = side === 'BUY' ? 'var(--altamoon-buy-color)' : 'var(--altamoon-sell-color)';
+        return {
+          isDraggable: type === 'LIMIT',
+          yValue: (_classPrivateFieldGet2 = _classPrivateFieldGet(_assertThisInitialized(_this), _forceOrderPrices)[clientOrderId]) !== null && _classPrivateFieldGet2 !== void 0 ? _classPrivateFieldGet2 : price,
+          isVisible: true,
+          color: isCanceled ? 'var(--bs-gray)' : color,
+          opacity: isCanceled ? 0.8 : 1,
+          // TODO this is a potentially wrong way to retrieve
+          // asset name from symbol name because of BNB/BUSD pairs
+          title: "Limit ".concat(origQty - executedQty, " ").concat(symbol.replace('USDT', '')),
+          id: clientOrderId,
+          customData: {
+            order: order
+          },
+          pointerEventsNone: isCanceled
+        };
+      })), _toConsumableArray(orders.filter(function (_ref2) {
+        var stopPrice = _ref2.stopPrice;
+        return !!stopPrice;
+      }).map(function (_ref3) {
+        var stopPrice = _ref3.stopPrice,
+            side = _ref3.side,
+            clientOrderId = _ref3.clientOrderId;
+        return {
+          yValue: stopPrice,
+          isVisible: true,
+          color: side === 'BUY' ? 'var(--altamoon-stop-buy-color)' : 'var(--altamoon-stop-sell-color)',
+          title: 'Stop price',
+          id: clientOrderId,
+          customData: {}
+        };
+      })));
+
+      _this.update({
+        items: items
+      });
+    });
+
+    return _this;
+  }
+
+  return OrderPriceLines;
+}(PriceLines);
+
+
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/PositionPriceLines.ts
+
+
+
+
+
+
+
+function PositionPriceLines_createSuper(Derived) { var hasNativeReflectConstruct = PositionPriceLines_isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function PositionPriceLines_isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+
+
+var PositionPriceLines = /*#__PURE__*/function (_PriceLines) {
+  _inherits(PositionPriceLines, _PriceLines);
+
+  var _super = PositionPriceLines_createSuper(PositionPriceLines);
+
+  function PositionPriceLines(_ref) {
+    var _this;
+
+    var axis = _ref.axis;
+
+    _classCallCheck(this, PositionPriceLines);
+
+    _this = _super.call(this, {
+      axis: axis,
+      items: [{
+        id: 'liquidation',
+        isVisible: false,
+        title: 'Pos. liquidation',
+        isTitleVisible: 'hover',
+        color: 'var(--bs-red)'
+      }, {
+        id: 'position',
+        isVisible: false
+      }],
+      isBackgroundFill: true,
+      isTitleVisible: true
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "updatePositionLine", function (position) {
+      if (position === null) {
+        _this.updateItem('position', {
+          isVisible: false
+        });
+
+        _this.updateItem('liquidation', {
+          isVisible: false
+        });
+      } else {
+        _this.updateItem('position', {
+          isVisible: true,
+          yValue: position.entryPrice,
+          // eslint-disable-next-line no-nested-ternary
+          color: position.isClosed ? 'var(--bs-gray)' : position.side === 'BUY' ? '#30b332' : '#ab257c',
+          title: "".concat(position.positionAmt, " ").concat(position.baseAsset),
+          opacity: position.isClosed ? 0.8 : 1
+        });
+
+        _this.updateItem('liquidation', {
+          isVisible: true,
+          yValue: position.liquidationPrice
+        });
+      }
+    });
+
+    return _this;
+  }
+
+  return PositionPriceLines;
+}(PriceLines);
+
+
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/index.ts
 
 
@@ -63956,11 +64167,17 @@ function Lines_checkPrivateRedeclaration(obj, privateCollection) { if (privateCo
 
 
 
+
+
 var _currentPriceLines = /*#__PURE__*/new WeakMap();
 
 var _crosshairPriceLines = /*#__PURE__*/new WeakMap();
 
 var _alertPriceLines = /*#__PURE__*/new WeakMap();
+
+var _orderPriceLines = /*#__PURE__*/new WeakMap();
+
+var _positionPriceLines = /*#__PURE__*/new WeakMap();
 
 var Lines = /*#__PURE__*/function () {
   function Lines(_ref) {
@@ -63989,6 +64206,16 @@ var Lines = /*#__PURE__*/function () {
       value: void 0
     });
 
+    Lines_classPrivateFieldInitSpec(this, _orderPriceLines, {
+      writable: true,
+      value: void 0
+    });
+
+    Lines_classPrivateFieldInitSpec(this, _positionPriceLines, {
+      writable: true,
+      value: void 0
+    });
+
     _defineProperty(this, "resize", function (resizeData) {
       _classPrivateFieldGet(_this, _currentPriceLines).resize(resizeData);
 
@@ -64012,6 +64239,18 @@ var Lines = /*#__PURE__*/function () {
       triggerAlert: triggerAlert,
       onUpdateAlerts: onUpdateAlerts
     }));
+
+    _classPrivateFieldSet(this, _crosshairPriceLines, new CrosshairPriceLines({
+      axis: axis
+    }));
+
+    _classPrivateFieldSet(this, _orderPriceLines, new OrderPriceLines({
+      axis: axis
+    }));
+
+    _classPrivateFieldSet(this, _positionPriceLines, new PositionPriceLines({
+      axis: axis
+    }));
   }
 
   _createClass(Lines, [{
@@ -64031,6 +64270,14 @@ var Lines = /*#__PURE__*/function () {
         _classPrivateFieldGet(this, _alertPriceLines).update({
           pricePrecision: data.pricePrecision
         });
+
+        _classPrivateFieldGet(this, _orderPriceLines).update({
+          pricePrecision: data.pricePrecision
+        });
+
+        _classPrivateFieldGet(this, _positionPriceLines).update({
+          pricePrecision: data.pricePrecision
+        });
       }
 
       if (typeof data.lastPrice !== 'undefined') {
@@ -64039,6 +64286,14 @@ var Lines = /*#__PURE__*/function () {
 
       if (typeof data.alerts !== 'undefined') {
         _classPrivateFieldGet(this, _alertPriceLines).updateAlertLines(data.alerts);
+      }
+
+      if (typeof data.orders !== 'undefined') {
+        _classPrivateFieldGet(this, _orderPriceLines).updateOrderLines(data.orders);
+      }
+
+      if (typeof data.position !== 'undefined') {
+        _classPrivateFieldGet(this, _positionPriceLines).updatePositionLine(data.position);
       }
 
       if ((0,lodash.isEmpty)(data)) {
@@ -64287,6 +64542,18 @@ var Chart = function Chart(container, _ref) {
     if (typeof data.alerts !== 'undefined') {
       _classPrivateFieldGet(_this, _lines).update({
         alerts: data.alerts
+      });
+    }
+
+    if (typeof data.orders !== 'undefined') {
+      _classPrivateFieldGet(_this, _lines).update({
+        orders: data.orders
+      });
+    }
+
+    if (typeof data.position !== 'undefined') {
+      _classPrivateFieldGet(_this, _lines).update({
+        position: data.position
       });
     }
 
@@ -71688,6 +71955,8 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       pricePrecision = _ref.pricePrecision,
       symbol = _ref.symbol,
       initialAlerts = _ref.initialAlerts,
+      orders = _ref.orders,
+      position = _ref.position,
       baseAsset = _ref.baseAsset,
       quoteAsset = _ref.quoteAsset,
       volume = _ref.volume,
@@ -71730,6 +71999,16 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       chartType: chartType
     });
   }, [chartInstance, chartType]);
+  (0,react.useEffect)(function () {
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      orders: orders
+    });
+  }, [chartInstance, orders, scaleType]);
+  (0,react.useEffect)(function () {
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      position: position
+    });
+  }, [chartInstance, position, scaleType]);
   (0,react.useEffect)(function () {
     chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       scaleType: scaleType
@@ -71797,6 +72076,8 @@ var Minichart = function Minichart(_ref) {
   var symbol = _ref.symbol,
       onSymbolSelect = _ref.onSymbolSelect;
   var candles = (0,dist.useValue)(CANDLES, symbol);
+  var position = (0,dist.useValue)(POSITIONS, symbol);
+  var orders = (0,dist.useValue)(ORDERS, symbol);
   var realTimeCandles = (0,dist.useValue)(ROOT, 'realTimeCandles');
   var interval = (0,dist.useValue)(ROOT, 'interval');
   var chartHeight = (0,dist.useValue)(ROOT, 'chartHeight');
@@ -71825,6 +72106,8 @@ var Minichart = function Minichart(_ref) {
     pricePrecision: (_symbolInfo$pricePrec = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.pricePrecision) !== null && _symbolInfo$pricePrec !== void 0 ? _symbolInfo$pricePrec : 0,
     symbol: symbol,
     initialAlerts: (_getSymbolAlerts$symb = getSymbolAlerts()[symbol]) !== null && _getSymbolAlerts$symb !== void 0 ? _getSymbolAlerts$symb : [],
+    position: position,
+    orders: orders,
     baseAsset: (_symbolInfo$baseAsset = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.baseAsset) !== null && _symbolInfo$baseAsset !== void 0 ? _symbolInfo$baseAsset : 'UNKNOWN',
     quoteAsset: (_symbolInfo$quoteAsse = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.quoteAsset) !== null && _symbolInfo$quoteAsse !== void 0 ? _symbolInfo$quoteAsse : 'UNKNOWN',
     volume: volume,
