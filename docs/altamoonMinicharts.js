@@ -52097,7 +52097,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const useChange_1 = __importDefault(__webpack_require__(2430));
 function useValue(storeSlice, key) {
     // "any" is a temporary solution because ovwerloads aren't compatible for some reason
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
     return (0, useChange_1.default)(storeSlice, key)[0];
 }
 exports["default"] = useValue;
@@ -53360,6 +53361,7 @@ var crypto_js = __webpack_require__(1354);
 
 
 
+let timeDiffPromise;
 async function promiseRequest_promiseRequest(url, givenData = {}, flags = {}) {
     let query = '';
     const data = { ...givenData };
@@ -53376,9 +53378,11 @@ async function promiseRequest_promiseRequest(url, givenData = {}, flags = {}) {
     }
     let resource;
     if (type === 'SIGNED' || type === 'TRADE' || type === 'USER_DATA') {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        timeDiffPromise = timeDiffPromise || promiseRequest_promiseRequest('v3/time', {}, { method: 'GET', baseURL: 'https://api.binance.com/api/' }).then(({ serverTime }) => Date.now() - serverTime);
         if (!api_options.apiSecret)
             throw new Error('Invalid API credentials!');
-        data.timestamp = new Date().getTime();
+        data.timestamp = Date.now() - await timeDiffPromise;
         query = lib_default().stringify(data);
         const signature = (0,crypto_js.HmacSHA256)(query, api_options.apiSecret);
         resource = `${baseURL}${url}?${query}&signature=${signature.toString()}`;
@@ -53391,6 +53395,7 @@ async function promiseRequest_promiseRequest(url, givenData = {}, flags = {}) {
         const responseText = await (await fetch(resource, {
             headers,
             method,
+            mode: 'cors',
         })).text();
         const response = JSON.parse(responseText);
         if (!!response && 'code' in response && 'msg' in response && response.msg !== 'success' && response.code !== 200) {
@@ -53646,11 +53651,22 @@ async function futuresAccount() {
  * Account Trade List (USER_DATA)
  * @remarks Get trades for a specific account and symbol.
  * @see {@link https://binance-docs.github.io/apidocs/futures/en/#account-trade-list-user_data}
- * @param symbol - Symbol
+ * @param options - Request options
+ * @param options.symbol - Symbol
+ * @param options.startTime - Start time
+ * @param options.endTime - End time
+ * @param options.fromId - Trade id to fetch from. Default gets most recent trades.
+ * @param options.limit - Limit
  * @returns List of trades
  */
-async function futuresUserTrades(symbol) {
-    return promiseRequest('v1/userTrades', { symbol }, { type: 'SIGNED' });
+async function futuresUserTrades({ symbol, startTime, endTime, fromId, limit, }) {
+    return promiseRequest('v1/userTrades', {
+        symbol,
+        startTime,
+        endTime,
+        fromId,
+        limit,
+    }, { type: 'SIGNED' });
 }
 /**
  * Get order Book
@@ -54476,11 +54492,11 @@ var VOLUMES = function VOLUMES(store) {
 var PRICE_CHANGE = function PRICE_CHANGE(store) {
   return store.priceChangePercents;
 };
-var store = new MinichartsStore();
+var minichartsStore = new MinichartsStore();
 
 if (false) {}
 
-/* harmony default export */ const src_store = (store);
+/* harmony default export */ const store = (minichartsStore);
 ;// CONCATENATED MODULE: ./node_modules/react-intersection-observer/react-intersection-observer.m.js
 
 
@@ -54537,6 +54553,17 @@ function _objectWithoutPropertiesLoose(source, excluded) {
 var observerMap = new Map();
 var RootIds = new WeakMap();
 var rootId = 0;
+var unsupportedValue = undefined;
+/**
+ * What should be the default behavior if the IntersectionObserver is unsupported?
+ * Ideally the polyfill has been loaded, you can have the following happen:
+ * - `undefined`: Throw an error
+ * - `true` or `false`: Set the `inView` value to this regardless of intersection state
+ * **/
+
+function defaultFallbackInView(inView) {
+  unsupportedValue = inView;
+}
 /**
  * Generate a unique ID for the root element
  * @param root
@@ -54610,16 +54637,35 @@ function createObserver(options) {
  * @param element - DOM Element to observe
  * @param callback - Callback function to trigger when intersection status changes
  * @param options - Intersection Observer options
+ * @param fallbackInView - Fallback inView value.
  * @return Function - Cleanup function that should be triggered to unregister the observer
  */
 
 
-function observe(element, callback, options) {
+function observe(element, callback, options, fallbackInView) {
   if (options === void 0) {
     options = {};
   }
 
-  if (!element) return function () {}; // An observer with the same options can be reused, so lets use this fact
+  if (fallbackInView === void 0) {
+    fallbackInView = unsupportedValue;
+  }
+
+  if (typeof window.IntersectionObserver === 'undefined' && fallbackInView !== undefined) {
+    var bounds = element.getBoundingClientRect();
+    callback(fallbackInView, {
+      isIntersecting: fallbackInView,
+      target: element,
+      intersectionRatio: typeof options.threshold === 'number' ? options.threshold : 0,
+      time: 0,
+      boundingClientRect: bounds,
+      intersectionRect: bounds,
+      rootBounds: bounds
+    });
+    return function () {// Nothing to cleanup
+    };
+  } // An observer with the same options can be reused, so lets use this fact
+
 
   var _createObserver = createObserver(options),
       id = _createObserver.id,
@@ -54653,7 +54699,7 @@ function observe(element, callback, options) {
   };
 }
 
-var _excluded = ["children", "as", "tag", "triggerOnce", "threshold", "root", "rootMargin", "onChange", "skip", "trackVisibility", "delay", "initialInView"];
+var _excluded = ["children", "as", "tag", "triggerOnce", "threshold", "root", "rootMargin", "onChange", "skip", "trackVisibility", "delay", "initialInView", "fallbackInView"];
 
 function isPlainChildren(props) {
   return typeof props.children !== 'function';
@@ -54788,7 +54834,8 @@ var InView = /*#__PURE__*/function (_React$Component) {
         root = _this$props.root,
         rootMargin = _this$props.rootMargin,
         trackVisibility = _this$props.trackVisibility,
-        delay = _this$props.delay;
+        delay = _this$props.delay,
+        fallbackInView = _this$props.fallbackInView;
     this._unobserveCb = observe(this.node, this.handleChange, {
       threshold: threshold,
       root: root,
@@ -54797,7 +54844,7 @@ var InView = /*#__PURE__*/function (_React$Component) {
       trackVisibility: trackVisibility,
       // @ts-ignore
       delay: delay
-    });
+    }, fallbackInView);
   };
 
   _proto.unobserve = function unobserve() {
@@ -54876,7 +54923,8 @@ function useInView(_temp) {
       root = _ref.root,
       triggerOnce = _ref.triggerOnce,
       skip = _ref.skip,
-      initialInView = _ref.initialInView;
+      initialInView = _ref.initialInView,
+      fallbackInView = _ref.fallbackInView;
 
   var unobserve = react.useRef();
 
@@ -54915,13 +54963,13 @@ function useInView(_temp) {
         trackVisibility: trackVisibility,
         // @ts-ignore
         delay: delay
-      });
+      }, fallbackInView);
     }
   }, // We break the rule here, because we aren't including the actual `threshold` variable
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [// If the threshold is an array, convert it to a string so it won't change between renders.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  Array.isArray(threshold) ? threshold.toString() : threshold, root, rootMargin, triggerOnce, skip, trackVisibility, delay]);
+  Array.isArray(threshold) ? threshold.toString() : threshold, root, rootMargin, triggerOnce, skip, trackVisibility, fallbackInView, delay]);
   /* eslint-disable-next-line */
 
   (0,react.useEffect)(function () {
@@ -80397,7 +80445,7 @@ function altamoonMinicharts(givenElement) {
   var element = bala_umd_default().one(givenElement);
   if (!element) throw new Error('Element is not found');
   (0,react_dom.render)( /*#__PURE__*/react.createElement(dist.Provider, {
-    value: src_store
+    value: store
   }, /*#__PURE__*/react.createElement(Grid, {
     settingsContainer: settingsContainer,
     alertLogContainer: alertLogContainer,
