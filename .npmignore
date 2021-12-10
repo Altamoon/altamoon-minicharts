@@ -1,4 +1,5 @@
 src
+docs
 assets
 webpack.config.js
 .eslintrc.js
