@@ -33,8 +33,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: 'assets', to: '' },
-        { from: 'src/style.css', to: '' },
-        { from: 'src/altamoonMinicharts.d.ts', to: '' },
+        { from: 'style.css', to: '' },
       ],
     }),
     new webpack.EnvironmentPlugin(['NODE_ENV', 'SKIP_RUNTIME_TESTS']),
