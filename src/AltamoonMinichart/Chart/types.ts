@@ -32,6 +32,7 @@ export interface PriceLinesDatum<T = unknown> {
   yValue?: number;
   title?: string | ((element: HTMLElement) => void);
   color?: string;
+  opacity?: number;
   id: string | number;
   isVisible?: boolean;
   isDraggable?: boolean;

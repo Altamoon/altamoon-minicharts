@@ -2,6 +2,7 @@ import * as api from 'altamoon-binance-api';
 import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 
+import { TradingOrder, TradingPosition } from 'altamoon-types';
 import {
   ChartType, SortDirection, SortBy, AlertLogItem, ScaleType,
 } from './AltamoonMinichart/types';
@@ -51,15 +52,21 @@ export class MinichartsStore {
 
   public alertLogLastSeenISO = persistent<null | string>('alertLogLastSeenISO', null);
 
-  // allCandles is readonly from outside
-  public get allCandles(): Record<string, api.FuturesChartCandle[]> { return this.#allCandles; }
+  public get allCandles() { return this.#allCandles; }
 
   #allCandles: Record<string, api.FuturesChartCandle[]> = {};
 
-  // volumes is readonly from outside
-  public get volumes(): Record<string, string> { return this.#volumes; }
+  public get volumes() { return this.#volumes; }
 
   #volumes: Record<string, string> = {};
+
+  public get positions() { return this.#positions; }
+
+  #positions: Record<string, TradingPosition> = {};
+
+  public get orders() { return this.#orders; }
+
+  #orders: Record<string, TradingOrder[]> = {};
 
   public get priceChangePercents(): Record<string, string> { return this.#priceChangePercents; }
 
@@ -264,6 +271,8 @@ export class MinichartsStore {
 
 export const ROOT = (store: MinichartsStore): MinichartsStore => store;
 export const CANDLES = (store: MinichartsStore): typeof store.allCandles => store.allCandles;
+export const POSITIONS = (store: MinichartsStore): typeof store.positions => store.positions;
+export const ORDERS = (store: MinichartsStore): typeof store.orders => store.orders;
 export const VOLUMES = (store: MinichartsStore): typeof store.volumes => store.volumes;
 export const PRICE_CHANGE = (
   store: MinichartsStore,

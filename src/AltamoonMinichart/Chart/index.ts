@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
 import { debounce, last } from 'lodash';
+import { TradingOrder, TradingPosition } from 'altamoon-types';
 
 import {
   Scales, StyleMargin, ResizeData, D3Selection, DrawData,
@@ -115,8 +116,10 @@ export default class Chart {
     candles?: api.FuturesChartCandle[];
     pricePrecision?: number;
     chartType?: ChartType;
-    alerts?: number[];
     scaleType?: ScaleType;
+    alerts?: number[];
+    orders?: TradingOrder[];
+    position?: TradingPosition;
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -156,6 +159,14 @@ export default class Chart {
 
     if (typeof data.alerts !== 'undefined') {
       this.#lines.update({ alerts: data.alerts });
+    }
+
+    if (typeof data.orders !== 'undefined') {
+      this.#lines.update({ orders: data.orders });
+    }
+
+    if (typeof data.position !== 'undefined') {
+      this.#lines.update({ position: data.position });
     }
 
     if (typeof data.scaleType !== 'undefined') {

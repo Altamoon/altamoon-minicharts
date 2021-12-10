@@ -4,6 +4,7 @@ import React, {
 import styled from 'styled-components';
 import { useInView } from 'react-intersection-observer';
 import * as api from 'altamoon-binance-api';
+import { TradingOrder, TradingPosition } from 'altamoon-types';
 
 import Chart from './Chart';
 import TextIndicators from './TextIndicators';
@@ -47,6 +48,8 @@ interface Props {
   pricePrecision: number;
   symbol: string;
   initialAlerts: number[];
+  orders?: TradingOrder[];
+  position?: TradingPosition;
   baseAsset: string;
   quoteAsset: string;
   volume: string;
@@ -67,6 +70,8 @@ const AltamoonMinichart = ({
   pricePrecision,
   symbol,
   initialAlerts,
+  orders,
+  position,
   baseAsset,
   quoteAsset,
   volume,
@@ -93,6 +98,8 @@ const AltamoonMinichart = ({
   }, [candles, chartInstance, inView]);
   useEffect(() => { chartInstance?.update({ pricePrecision }); }, [chartInstance, pricePrecision]);
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
+  useEffect(() => { chartInstance?.update({ orders }); }, [chartInstance, orders, scaleType]);
+  useEffect(() => { chartInstance?.update({ position }); }, [chartInstance, position, scaleType]);
   useEffect(() => { chartInstance?.update({ scaleType }); }, [chartInstance, scaleType]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

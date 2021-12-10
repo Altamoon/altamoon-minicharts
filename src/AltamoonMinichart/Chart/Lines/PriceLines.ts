@@ -191,7 +191,8 @@ export default class PriceLines {
         .attr('transform', (d) => `translate(0, ${String(axis.scale()(d.yValue ?? 0))})`)
         .attr('color', ({ color }) => color ?? this.#color)
         .style('visibility', ({ isVisible }) => (typeof isVisible === 'undefined' || isVisible ? '' : 'hidden'))
-        .style('pointer-events', (d) => (d.pointerEventsNone ?? this.#pointerEventsNone ? 'none' : 'auto'));
+        .style('pointer-events', (d) => (d.pointerEventsNone ?? this.#pointerEventsNone ? 'none' : 'auto'))
+        .style('opacity', (d) => (d.opacity ? String(d.opacity) : ''));
 
       update.select('.price-line-horizontal-group .price-line-line')
         .attr('stroke-dasharray', (d) => {

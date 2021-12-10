@@ -4,7 +4,7 @@ import $ from 'balajs';
 import { Provider } from 'use-change';
 
 import MinichartGrid from './Grid';
-import store, { MinichartsStore } from './store';
+import minichartsStore, { MinichartsStore } from './store';
 
 interface Options {
   settingsContainer?: HTMLElement;
@@ -12,7 +12,7 @@ interface Options {
   onSymbolSelect?: (symbol: string) => void;
 }
 
-export { store, MinichartsStore };
+export { minichartsStore, MinichartsStore };
 
 export default function altamoonMinicharts(
   givenElement: string | HTMLElement | HTMLElement[],
@@ -23,7 +23,7 @@ export default function altamoonMinicharts(
   if (!element) throw new Error('Element is not found');
 
   render((
-    <Provider value={store}>
+    <Provider value={minichartsStore}>
       <MinichartGrid
         settingsContainer={settingsContainer}
         alertLogContainer={alertLogContainer}

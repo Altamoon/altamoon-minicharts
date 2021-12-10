@@ -1,10 +1,13 @@
 import { isEmpty } from 'lodash';
 import * as api from 'altamoon-binance-api';
+import { TradingOrder, TradingPosition } from 'altamoon-types';
 
 import { ResizeData } from '../types';
 import CurrentPriceLines from './CurrentPriceLines';
 import CrosshairPriceLines from './CrosshairPriceLines';
 import AlertPriceLines from './AlertPriceLines';
+import OrderPriceLines from './OrderPriceLines';
+import PositionPriceLines from './PositionPriceLines';
 import { AlertLogItem } from '../../types';
 
 interface Params {
@@ -22,6 +25,10 @@ export default class Lines {
 
   #alertPriceLines: AlertPriceLines;
 
+  #orderPriceLines: OrderPriceLines;
+
+  #positionPriceLines: PositionPriceLines;
+
   constructor({
     axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
   }: Params) {
@@ -36,15 +43,27 @@ export default class Lines {
       triggerAlert,
       onUpdateAlerts,
     });
+
+    this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
+
+    this.#orderPriceLines = new OrderPriceLines({ axis });
+
+    this.#positionPriceLines = new PositionPriceLines({ axis });
   }
 
   update(data: {
-    pricePrecision?: number; lastPrice?: number; alerts?: number[];
+    pricePrecision?: number;
+    lastPrice?: number;
+    alerts?: number[];
+    orders?: TradingOrder[];
+    position?: TradingPosition;
   } = {}): void {
     if (typeof data.pricePrecision !== 'undefined') {
       this.#currentPriceLines.update({ pricePrecision: data.pricePrecision });
       this.#crosshairPriceLines.update({ pricePrecision: data.pricePrecision });
       this.#alertPriceLines.update({ pricePrecision: data.pricePrecision });
+      this.#orderPriceLines.update({ pricePrecision: data.pricePrecision });
+      this.#positionPriceLines.update({ pricePrecision: data.pricePrecision });
     }
 
     if (typeof data.lastPrice !== 'undefined') {
@@ -53,6 +72,14 @@ export default class Lines {
 
     if (typeof data.alerts !== 'undefined') {
       this.#alertPriceLines.updateAlertLines(data.alerts);
+    }
+
+    if (typeof data.orders !== 'undefined') {
+      this.#orderPriceLines.updateOrderLines(data.orders);
+    }
+
+    if (typeof data.position !== 'undefined') {
+      this.#positionPriceLines.updatePositionLine(data.position);
     }
 
     if (isEmpty(data)) {
