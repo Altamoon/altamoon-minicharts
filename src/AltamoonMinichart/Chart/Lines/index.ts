@@ -94,11 +94,15 @@ export default class Lines {
     this.#currentPriceLines.appendTo(parent, resizeData);
     this.#crosshairPriceLines.appendTo(parent, resizeData);
     this.#alertPriceLines.appendTo(parent, resizeData);
+    this.#orderPriceLines.appendTo(parent, resizeData);
+    this.#positionPriceLines.appendTo(parent, resizeData);
   }
 
   public resize = (resizeData: ResizeData): void => {
     this.#currentPriceLines.resize(resizeData);
     this.#crosshairPriceLines.resize(resizeData);
     this.#alertPriceLines.resize(resizeData);
+    this.#orderPriceLines.resize(resizeData);
+    this.#positionPriceLines.resize(resizeData);
   };
 }
