@@ -64693,6 +64693,8 @@ var _candles = /*#__PURE__*/new WeakMap();
 
 var Chart_chartType = /*#__PURE__*/new WeakMap();
 
+var Chart_yDomain = /*#__PURE__*/new WeakMap();
+
 var _initialRender = /*#__PURE__*/new WeakMap();
 
 var Chart_draw = /*#__PURE__*/new WeakMap();
@@ -64821,6 +64823,11 @@ var Chart = function Chart(container, _ref) {
     value: 'candlestick'
   });
 
+  Chart_classPrivateFieldInitSpec(this, Chart_yDomain, {
+    writable: true,
+    value: [0, 0]
+  });
+
   _defineProperty(this, "update", function (data) {
     if (typeof data.candles !== 'undefined') {
       var _classPrivateFieldGet2, _data$candles$, _classPrivateFieldGet3, _data$candles$2, _classPrivateFieldGet4, _data$candles;
@@ -64937,13 +64944,20 @@ var Chart = function Chart(container, _ref) {
 
       _classPrivateFieldGet(_this, _calcXDomain).call(_this);
 
-      _classPrivateFieldGet(_this, _calcYDomain).call(_this);
+      var yDomain = _classPrivateFieldGet(_this, _calcYDomain).call(_this);
 
       _classPrivateFieldGet(_this, _axes).draw(resizeData);
 
       _classPrivateFieldGet(_this, _plot).draw(drawData);
 
-      _classPrivateFieldGet(_this, _gridLines).draw(resizeData);
+      _classPrivateFieldGet(_this, _gridLines).draw(resizeData); // fixes https://trello.com/c/tLjFqdCB/230-chart-order-and-alert-lines-are-not-redrawn-on-price-ath-atl
+
+
+      if (!(0,lodash.isEqual)(_classPrivateFieldGet(_this, Chart_yDomain), yDomain)) {
+        _classPrivateFieldGet(_this, _lines).resize(resizeData);
+
+        _classPrivateFieldSet(_this, Chart_yDomain, yDomain);
+      }
 
       _classPrivateFieldGet(_this, _lines).update({
         lastPrice: +((_classPrivateFieldGet5 = (_classPrivateFieldGet6 = _classPrivateFieldGet(_this, _candles)[_classPrivateFieldGet(_this, _candles).length - 1]) === null || _classPrivateFieldGet6 === void 0 ? void 0 : _classPrivateFieldGet6.close) !== null && _classPrivateFieldGet5 !== void 0 ? _classPrivateFieldGet5 : 0)
@@ -65056,6 +65070,7 @@ var Chart = function Chart(container, _ref) {
       yDomain[1] = ((_yDomain$ = yDomain[1]) !== null && _yDomain$ !== void 0 ? _yDomain$ : 0) + +yPaddingTop.toFixed(_classPrivateFieldGet(_this, Chart_pricePrecision));
       yDomain[0] = ((_yDomain$2 = yDomain[0]) !== null && _yDomain$2 !== void 0 ? _yDomain$2 : 0) - +yPaddingBottom.toFixed(_classPrivateFieldGet(_this, Chart_pricePrecision));
       y.domain(yDomain);
+      return yDomain;
     }
   });
 
