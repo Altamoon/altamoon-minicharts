@@ -1,6 +1,6 @@
 {
   "name": "altamoon-minicharts",
-  "version": "0.3.32",
+  "version": "0.3.33",
   "description": "An embeddable online tool that allows to track all the Binance futures markets on one page",
   "main": "npm",
   "style": "style.css",
