@@ -64350,6 +64350,7 @@ var LiquidationPriceLines = /*#__PURE__*/function (_PriceLines) {
         var position = _classPrivateFieldGet(_assertThisInitialized(_this), _position);
 
         var orders = (_classPrivateFieldGet2 = _classPrivateFieldGet(_assertThisInitialized(_this), _orders)) !== null && _classPrivateFieldGet2 !== void 0 ? _classPrivateFieldGet2 : [];
+        if (!orders.length) return [];
 
         if ((position === null || position === void 0 ? void 0 : position.side) === side) {
           sizes.push({
