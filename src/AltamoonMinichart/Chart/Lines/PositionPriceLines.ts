@@ -16,7 +16,7 @@ export default class PositionPriceLines extends PriceLines {
         id: 'position', isVisible: false,
       }],
       isBackgroundFill: true,
-      isTitleVisible: true,
+      isTitleVisible: 'hover',
     });
   }
 

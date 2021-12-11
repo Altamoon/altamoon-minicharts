@@ -15,7 +15,7 @@ export default class OrderPriceLines extends PriceLines {
     super({
       axis,
       items: [],
-      isTitleVisible: true,
+      isTitleVisible: 'hover',
       lineStyle: 'solid',
       isBackgroundFill: true,
     });
