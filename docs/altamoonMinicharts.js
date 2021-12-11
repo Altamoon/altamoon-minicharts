@@ -64082,7 +64082,7 @@ var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
             clientOrderId = order.clientOrderId;
         var color = side === 'BUY' ? 'var(--altamoon-buy-color)' : 'var(--altamoon-sell-color)';
         return {
-          isDraggable: type === 'LIMIT',
+          isDraggable: false,
           yValue: (_classPrivateFieldGet2 = _classPrivateFieldGet(_assertThisInitialized(_this), _forceOrderPrices)[clientOrderId]) !== null && _classPrivateFieldGet2 !== void 0 ? _classPrivateFieldGet2 : price,
           isVisible: true,
           color: isCanceled ? 'var(--bs-gray)' : color,
