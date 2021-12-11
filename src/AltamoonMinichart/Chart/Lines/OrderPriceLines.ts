@@ -32,7 +32,7 @@ export default class OrderPriceLines extends PriceLines {
           } = order;
           const color = side === 'BUY' ? 'var(--altamoon-buy-color)' : 'var(--altamoon-sell-color)';
           return ({
-            isDraggable: type === 'LIMIT',
+            isDraggable: false,
             yValue: this.#forceOrderPrices[clientOrderId] ?? price,
             isVisible: true,
             color: isCanceled ? 'var(--bs-gray)' : color,
