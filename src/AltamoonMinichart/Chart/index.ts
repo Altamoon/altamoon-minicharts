@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
-import { debounce, last } from 'lodash';
+import { debounce, isEqual, last } from 'lodash';
 import { TradingOrder, TradingPosition } from 'altamoon-types';
 
 import {
@@ -61,6 +61,8 @@ export default class Chart {
   #candles: api.FuturesChartCandle[] = [];
 
   #chartType: ChartType = 'candlestick';
+
+  #yDomain: [number, number] = [0, 0];
 
   constructor(
     container: HTMLDivElement,
@@ -221,10 +223,16 @@ export default class Chart {
     };
 
     this.#calcXDomain();
-    this.#calcYDomain();
+    const yDomain = this.#calcYDomain();
     this.#axes.draw(resizeData);
     this.#plot.draw(drawData);
     this.#gridLines.draw(resizeData);
+
+    // fixes https://trello.com/c/tLjFqdCB/230-chart-order-and-alert-lines-are-not-redrawn-on-price-ath-atl
+    if (!isEqual(this.#yDomain, yDomain)) {
+      this.#lines.resize(resizeData);
+      this.#yDomain = yDomain;
+    }
 
     this.#lines.update({
       lastPrice: +(this.#candles[this.#candles.length - 1]?.close ?? 0),
@@ -288,7 +296,7 @@ export default class Chart {
     this.#scales.x.domain(xDomain as Iterable<Date | d3.NumberValue>);
   };
 
-  #calcYDomain = (): void => {
+  #calcYDomain = (): [number, number] => {
     const { y, scaledX } = this.#scales;
     const xDomain = scaledX.domain();
     const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
@@ -315,5 +323,7 @@ export default class Chart {
     yDomain[0] = (yDomain[0] ?? 0) - (+yPaddingBottom.toFixed(this.#pricePrecision));
 
     y.domain(yDomain);
+
+    return yDomain;
   };
 }
