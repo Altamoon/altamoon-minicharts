@@ -51838,8 +51838,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 // allow to use one global WeakMap to support multiple instances of use-change
 // for example two different scripts that both use their own use-change instance
 // and they share one object to listen to
-const globalObject = typeof window !== 'undefined' ? window : {};
-const weakMap = globalObject.__useChangeObjectMap || new WeakMap();
+const globalObject = typeof window !== 'undefined'
+    ? window
+    : {};
+const weakMap = globalObject.__useChangeObjectMap
+    || new WeakMap();
 globalObject.__useChangeObjectMap = weakMap;
 exports["default"] = weakMap;
 
@@ -51923,18 +51926,18 @@ function listenChange(givenObject, key, handler) {
     var _a, _b;
     const all = (_a = changeMap_1.default.get(givenObject)) !== null && _a !== void 0 ? _a : {};
     if (!((_b = Object.getOwnPropertyDescriptor(givenObject, key)) === null || _b === void 0 ? void 0 : _b.get)) {
-        const sym = Symbol.for(key);
-        const object = givenObject;
-        object[sym] = object[key];
-        Object.defineProperty(object, key, {
+        let value = givenObject[key];
+        Object.defineProperty(givenObject, key, {
             configurable: false,
-            get: () => object[sym],
-            set: (v) => {
+            get: () => value,
+            set: (newValue) => {
                 var _a;
-                if (object[sym] !== v) {
-                    const prev = object[sym];
-                    object[sym] = v;
-                    (_a = all[key]) === null || _a === void 0 ? void 0 : _a.forEach((h) => { h(v, prev); });
+                const prevValue = givenObject[key];
+                if (prevValue !== newValue) {
+                    value = newValue;
+                    (_a = all[key]) === null || _a === void 0 ? void 0 : _a.forEach((h) => {
+                        h(newValue, prevValue);
+                    });
                 }
             },
         });
@@ -52096,9 +52099,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const useChange_1 = __importDefault(__webpack_require__(2430));
 function useValue(storeSlice, key) {
-    // "any" is a temporary solution because ovwerloads aren't compatible for some reason
-    // eslint-disable-next-line max-len
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
     return (0, useChange_1.default)(storeSlice, key)[0];
 }
 exports["default"] = useValue;
@@ -54059,9 +54059,13 @@ var _allCandles = /*#__PURE__*/new WeakMap();
 
 var _volumes = /*#__PURE__*/new WeakMap();
 
-var _positions = /*#__PURE__*/new WeakMap();
+var _allPositions = /*#__PURE__*/new WeakMap();
 
-var _orders = /*#__PURE__*/new WeakMap();
+var _allOrders = /*#__PURE__*/new WeakMap();
+
+var _allLeverages = /*#__PURE__*/new WeakMap();
+
+var _allLeverageBrackets = /*#__PURE__*/new WeakMap();
 
 var _priceChangePercents = /*#__PURE__*/new WeakMap();
 
@@ -54129,12 +54133,22 @@ var MinichartsStore = /*#__PURE__*/function () {
       value: {}
     });
 
-    _classPrivateFieldInitSpec(this, _positions, {
+    _classPrivateFieldInitSpec(this, _allPositions, {
       writable: true,
       value: {}
     });
 
-    _classPrivateFieldInitSpec(this, _orders, {
+    _classPrivateFieldInitSpec(this, _allOrders, {
+      writable: true,
+      value: {}
+    });
+
+    _classPrivateFieldInitSpec(this, _allLeverages, {
+      writable: true,
+      value: {}
+    });
+
+    _classPrivateFieldInitSpec(this, _allLeverageBrackets, {
       writable: true,
       value: {}
     });
@@ -54456,14 +54470,24 @@ var MinichartsStore = /*#__PURE__*/function () {
       return _classPrivateFieldGet(this, _volumes);
     }
   }, {
-    key: "positions",
+    key: "allPositions",
     get: function get() {
-      return _classPrivateFieldGet(this, _positions);
+      return _classPrivateFieldGet(this, _allPositions);
     }
   }, {
-    key: "orders",
+    key: "allOrders",
     get: function get() {
-      return _classPrivateFieldGet(this, _orders);
+      return _classPrivateFieldGet(this, _allOrders);
+    }
+  }, {
+    key: "allLeverages",
+    get: function get() {
+      return _classPrivateFieldGet(this, _allLeverages);
+    }
+  }, {
+    key: "allLeverageBrackets",
+    get: function get() {
+      return _classPrivateFieldGet(this, _allLeverageBrackets);
     }
   }, {
     key: "priceChangePercents",
@@ -54481,10 +54505,16 @@ var CANDLES = function CANDLES(store) {
   return store.allCandles;
 };
 var POSITIONS = function POSITIONS(store) {
-  return store.positions;
+  return store.allPositions;
 };
 var ORDERS = function ORDERS(store) {
-  return store.orders;
+  return store.allOrders;
+};
+var LEVERAGES = function LEVERAGES(store) {
+  return store.allLeverages;
+};
+var LEVERAGE_BRACKETS = function LEVERAGE_BRACKETS(store) {
+  return store.allLeverageBrackets;
 };
 var VOLUMES = function VOLUMES(store) {
   return store.volumes;
@@ -64057,7 +64087,7 @@ var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
     _this = _super.call(this, {
       axis: axis,
       items: [],
-      isTitleVisible: true,
+      isTitleVisible: 'hover',
       lineStyle: 'solid',
       isBackgroundFill: true
     });
@@ -64077,7 +64107,6 @@ var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
             origQty = order.origQty,
             executedQty = order.executedQty,
             symbol = order.symbol,
-            type = order.type,
             isCanceled = order.isCanceled,
             clientOrderId = order.clientOrderId;
         var color = side === 'BUY' ? 'var(--altamoon-buy-color)' : 'var(--altamoon-sell-color)';
@@ -64164,7 +64193,7 @@ var PositionPriceLines = /*#__PURE__*/function (_PriceLines) {
         isVisible: false
       }],
       isBackgroundFill: true,
-      isTitleVisible: true
+      isTitleVisible: 'hover'
     });
 
     _defineProperty(_assertThisInitialized(_this), "updatePositionLine", function (position) {
@@ -64200,6 +64229,220 @@ var PositionPriceLines = /*#__PURE__*/function (_PriceLines) {
 }(PriceLines);
 
 
+;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/LiquidationPriceLines.ts
+
+
+
+
+
+
+
+
+
+
+function LiquidationPriceLines_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = LiquidationPriceLines_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function LiquidationPriceLines_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return LiquidationPriceLines_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return LiquidationPriceLines_arrayLikeToArray(o, minLen); }
+
+function LiquidationPriceLines_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function LiquidationPriceLines_createSuper(Derived) { var hasNativeReflectConstruct = LiquidationPriceLines_isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function LiquidationPriceLines_isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function LiquidationPriceLines_classPrivateFieldInitSpec(obj, privateMap, value) { LiquidationPriceLines_checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
+
+function LiquidationPriceLines_checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+
+
+
+var _orders = /*#__PURE__*/new WeakMap();
+
+var _position = /*#__PURE__*/new WeakMap();
+
+var _leverage = /*#__PURE__*/new WeakMap();
+
+var _leverageBrackets = /*#__PURE__*/new WeakMap();
+
+var _getLiquidationLinesSizes = /*#__PURE__*/new WeakMap();
+
+var _getLiquidationPrice = /*#__PURE__*/new WeakMap();
+
+var LiquidationPriceLines = /*#__PURE__*/function (_PriceLines) {
+  _inherits(LiquidationPriceLines, _PriceLines);
+
+  var _super = LiquidationPriceLines_createSuper(LiquidationPriceLines);
+
+  function LiquidationPriceLines(_ref) {
+    var _this;
+
+    var axis = _ref.axis;
+
+    _classCallCheck(this, LiquidationPriceLines);
+
+    _this = _super.call(this, {
+      axis: axis,
+      items: [{
+        id: 'BUY',
+        isVisible: false,
+        lineStyle: 'dashed',
+        title: 'Buy liquidation'
+      }, {
+        id: 'SELL',
+        isVisible: false,
+        lineStyle: 'dashed',
+        title: 'Sell liquidation'
+      }],
+      color: 'var(--bs-red)',
+      isTitleVisible: 'hover'
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _orders, {
+      writable: true,
+      value: null
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _position, {
+      writable: true,
+      value: null
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _leverage, {
+      writable: true,
+      value: 1
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _leverageBrackets, {
+      writable: true,
+      value: null
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "updateLiquidationLines", function (_ref2) {
+      var orders = _ref2.orders,
+          position = _ref2.position,
+          leverage = _ref2.leverage,
+          leverageBrackets = _ref2.leverageBrackets;
+      if (typeof orders !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _orders, orders);
+      if (typeof position !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _position, position);
+      if (typeof leverage !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _leverage, leverage);
+      if (typeof leverageBrackets !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _leverageBrackets, leverageBrackets);
+
+      var buyValue = _classPrivateFieldGet(_assertThisInitialized(_this), _getLiquidationPrice).call(_assertThisInitialized(_this), 'BUY');
+
+      var sellValue = _classPrivateFieldGet(_assertThisInitialized(_this), _getLiquidationPrice).call(_assertThisInitialized(_this), 'SELL');
+
+      _this.updateItem('BUY', {
+        isVisible: buyValue !== null,
+        yValue: buyValue === null ? 0 : buyValue
+      });
+
+      _this.updateItem('SELL', {
+        isVisible: sellValue !== null,
+        yValue: sellValue === null ? 0 : sellValue
+      });
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _getLiquidationLinesSizes, {
+      writable: true,
+      value: function value(side) {
+        var _classPrivateFieldGet2;
+
+        var sizes = [];
+
+        var position = _classPrivateFieldGet(_assertThisInitialized(_this), _position);
+
+        var orders = (_classPrivateFieldGet2 = _classPrivateFieldGet(_assertThisInitialized(_this), _orders)) !== null && _classPrivateFieldGet2 !== void 0 ? _classPrivateFieldGet2 : [];
+
+        if ((position === null || position === void 0 ? void 0 : position.side) === side) {
+          sizes.push({
+            type: 'POSITION',
+            side: side,
+            price: position.entryPrice,
+            amount: Math.abs(position.positionAmt)
+          });
+        }
+
+        sizes.push.apply(sizes, _toConsumableArray(orders.filter(function (o) {
+          return o.side === side;
+        }).map(function (_ref3) {
+          var price = _ref3.price,
+              origQty = _ref3.origQty;
+          return {
+            type: 'ORDER',
+            side: side,
+            price: price,
+            amount: Math.abs(origQty)
+          };
+        })));
+        return sizes;
+      }
+    });
+
+    LiquidationPriceLines_classPrivateFieldInitSpec(_assertThisInitialized(_this), _getLiquidationPrice, {
+      writable: true,
+      value: function value(side) {
+        var sizes = _classPrivateFieldGet(_assertThisInitialized(_this), _getLiquidationLinesSizes).call(_assertThisInitialized(_this), side);
+
+        if (!sizes.length) return null;
+
+        var leverage = _classPrivateFieldGet(_assertThisInitialized(_this), _leverage);
+
+        var leverageBrackets = _classPrivateFieldGet(_assertThisInitialized(_this), _leverageBrackets);
+
+        var direction = side === 'BUY' ? 1 : -1;
+        sizes.sort(function (a, b) {
+          return a.price > b.price ? -direction : direction;
+        });
+        if (!leverageBrackets) return 0;
+        var total = {
+          margin: 0,
+          averagePrice: 0,
+          amount: 0
+        };
+        var liquidation = 0;
+        /**
+         * Add up items one by one, (re)calculate liquidation for each,
+         * stop when current item is out of last liquidation price
+         * */
+
+        var _iterator = LiquidationPriceLines_createForOfIteratorHelper(sizes),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var _leverageBrackets$fin;
+
+            var size = _step.value;
+            if (liquidation && direction * size.price <= liquidation * direction) break;
+            var weightedTotalPrice = size.price * size.amount + total.averagePrice * total.amount;
+            var totalAmt = size.amount + total.amount;
+            total.averagePrice = weightedTotalPrice / totalAmt;
+            total.margin += size.amount * size.price / leverage;
+            total.amount = totalAmt;
+            var positionValue = direction * total.amount * total.averagePrice;
+            var leverageBracket = (_leverageBrackets$fin = leverageBrackets.find(function (_ref4) {
+              var notionalCap = _ref4.notionalCap;
+              return notionalCap > total.amount * total.averagePrice;
+            })) !== null && _leverageBrackets$fin !== void 0 ? _leverageBrackets$fin : leverageBrackets[0];
+            liquidation = (total.margin + (leverageBracket === null || leverageBracket === void 0 ? void 0 : leverageBracket.cum) - positionValue) / (total.amount * ((leverageBracket === null || leverageBracket === void 0 ? void 0 : leverageBracket.maintMarginRatio) - direction));
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+
+        return liquidation;
+      }
+    });
+
+    return _this;
+  }
+
+  return LiquidationPriceLines;
+}(PriceLines);
+
+
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/index.ts
 
 
@@ -64218,6 +64461,7 @@ function Lines_checkPrivateRedeclaration(obj, privateCollection) { if (privateCo
 
 
 
+
 var _currentPriceLines = /*#__PURE__*/new WeakMap();
 
 var _crosshairPriceLines = /*#__PURE__*/new WeakMap();
@@ -64227,6 +64471,8 @@ var _alertPriceLines = /*#__PURE__*/new WeakMap();
 var _orderPriceLines = /*#__PURE__*/new WeakMap();
 
 var _positionPriceLines = /*#__PURE__*/new WeakMap();
+
+var _liquidationPriceLines = /*#__PURE__*/new WeakMap();
 
 var Lines = /*#__PURE__*/function () {
   function Lines(_ref) {
@@ -64265,6 +64511,11 @@ var Lines = /*#__PURE__*/function () {
       value: void 0
     });
 
+    Lines_classPrivateFieldInitSpec(this, _liquidationPriceLines, {
+      writable: true,
+      value: void 0
+    });
+
     _defineProperty(this, "resize", function (resizeData) {
       _classPrivateFieldGet(_this, _currentPriceLines).resize(resizeData);
 
@@ -64275,6 +64526,8 @@ var Lines = /*#__PURE__*/function () {
       _classPrivateFieldGet(_this, _orderPriceLines).resize(resizeData);
 
       _classPrivateFieldGet(_this, _positionPriceLines).resize(resizeData);
+
+      _classPrivateFieldGet(_this, _liquidationPriceLines).resize(resizeData);
     });
 
     _classPrivateFieldSet(this, _currentPriceLines, new CurrentPriceLines({
@@ -64304,6 +64557,10 @@ var Lines = /*#__PURE__*/function () {
     _classPrivateFieldSet(this, _positionPriceLines, new PositionPriceLines({
       axis: axis
     }));
+
+    _classPrivateFieldSet(this, _liquidationPriceLines, new LiquidationPriceLines({
+      axis: axis
+    }));
   }
 
   _createClass(Lines, [{
@@ -64331,6 +64588,10 @@ var Lines = /*#__PURE__*/function () {
         _classPrivateFieldGet(this, _positionPriceLines).update({
           pricePrecision: data.pricePrecision
         });
+
+        _classPrivateFieldGet(this, _liquidationPriceLines).update({
+          pricePrecision: data.pricePrecision
+        });
       }
 
       if (typeof data.lastPrice !== 'undefined') {
@@ -64349,6 +64610,10 @@ var Lines = /*#__PURE__*/function () {
         _classPrivateFieldGet(this, _positionPriceLines).updatePositionLine(data.position);
       }
 
+      if (typeof data.orders !== 'undefined' || typeof data.position !== 'undefined' || typeof data.leverage !== 'undefined' || typeof data.leverageBrackets !== 'undefined') {
+        _classPrivateFieldGet(this, _liquidationPriceLines).updateLiquidationLines(data);
+      }
+
       if ((0,lodash.isEmpty)(data)) {
         _classPrivateFieldGet(this, _currentPriceLines).update();
       }
@@ -64365,6 +64630,8 @@ var Lines = /*#__PURE__*/function () {
       _classPrivateFieldGet(this, _orderPriceLines).appendTo(parent, resizeData);
 
       _classPrivateFieldGet(this, _positionPriceLines).appendTo(parent, resizeData);
+
+      _classPrivateFieldGet(this, _liquidationPriceLines).appendTo(parent, resizeData);
     }
   }]);
 
@@ -64612,6 +64879,10 @@ var Chart = function Chart(container, _ref) {
       _classPrivateFieldGet(_this, _lines).update({
         position: data.position
       });
+    }
+
+    if (typeof data.orders !== 'undefined' || typeof data.position !== 'undefined' || typeof data.leverage !== 'undefined' || typeof data.leverageBrackets !== 'undefined') {
+      _classPrivateFieldGet(_this, _lines).update(data);
     }
 
     if (typeof data.scaleType !== 'undefined') {
@@ -72014,6 +72285,8 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       initialAlerts = _ref.initialAlerts,
       orders = _ref.orders,
       position = _ref.position,
+      leverage = _ref.leverage,
+      leverageBrackets = _ref.leverageBrackets,
       baseAsset = _ref.baseAsset,
       quoteAsset = _ref.quoteAsset,
       volume = _ref.volume,
@@ -72066,6 +72339,16 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       position: position
     });
   }, [chartInstance, position, scaleType]);
+  (0,react.useEffect)(function () {
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      leverage: leverage
+    });
+  }, [chartInstance, leverage, scaleType]);
+  (0,react.useEffect)(function () {
+    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
+      leverageBrackets: leverageBrackets
+    });
+  }, [chartInstance, leverageBrackets, scaleType]);
   (0,react.useEffect)(function () {
     chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       scaleType: scaleType
@@ -72135,6 +72418,8 @@ var Minichart = function Minichart(_ref) {
   var candles = (0,dist.useValue)(CANDLES, symbol);
   var position = (0,dist.useValue)(POSITIONS, symbol);
   var orders = (0,dist.useValue)(ORDERS, symbol);
+  var leverage = (0,dist.useValue)(LEVERAGES, symbol);
+  var leverageBrackets = (0,dist.useValue)(LEVERAGE_BRACKETS, symbol);
   var realTimeCandles = (0,dist.useValue)(ROOT, 'realTimeCandles');
   var interval = (0,dist.useValue)(ROOT, 'interval');
   var chartHeight = (0,dist.useValue)(ROOT, 'chartHeight');
@@ -72165,6 +72450,8 @@ var Minichart = function Minichart(_ref) {
     initialAlerts: (_getSymbolAlerts$symb = getSymbolAlerts()[symbol]) !== null && _getSymbolAlerts$symb !== void 0 ? _getSymbolAlerts$symb : [],
     position: position,
     orders: orders,
+    leverage: leverage,
+    leverageBrackets: leverageBrackets,
     baseAsset: (_symbolInfo$baseAsset = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.baseAsset) !== null && _symbolInfo$baseAsset !== void 0 ? _symbolInfo$baseAsset : 'UNKNOWN',
     quoteAsset: (_symbolInfo$quoteAsse = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.quoteAsset) !== null && _symbolInfo$quoteAsse !== void 0 ? _symbolInfo$quoteAsse : 'UNKNOWN',
     volume: volume,
