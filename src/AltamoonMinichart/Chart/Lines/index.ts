@@ -55,8 +55,8 @@ export default class Lines {
     pricePrecision?: number;
     lastPrice?: number;
     alerts?: number[];
-    orders?: TradingOrder[];
-    position?: TradingPosition;
+    orders?: TradingOrder[] | null;
+    position?: TradingPosition | null;
   } = {}): void {
     if (typeof data.pricePrecision !== 'undefined') {
       this.#currentPriceLines.update({ pricePrecision: data.pricePrecision });

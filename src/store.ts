@@ -62,11 +62,11 @@ export class MinichartsStore {
 
   public get positions() { return this.#positions; }
 
-  #positions: Record<string, TradingPosition> = {};
+  #positions: Record<string, TradingPosition | null> = {};
 
   public get orders() { return this.#orders; }
 
-  #orders: Record<string, TradingOrder[]> = {};
+  #orders: Record<string, TradingOrder[] | null> = {};
 
   public get priceChangePercents(): Record<string, string> { return this.#priceChangePercents; }
 

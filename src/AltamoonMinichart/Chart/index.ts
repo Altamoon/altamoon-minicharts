@@ -118,8 +118,8 @@ export default class Chart {
     chartType?: ChartType;
     scaleType?: ScaleType;
     alerts?: number[];
-    orders?: TradingOrder[];
-    position?: TradingPosition;
+    orders?: TradingOrder[] | null;
+    position?: TradingPosition | null;
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;

@@ -21,7 +21,9 @@ export default class OrderPriceLines extends PriceLines {
     });
   }
 
-  public updateOrderLines = (orders: TradingOrder[]): void => {
+  public updateOrderLines = (givenOrders: TradingOrder[] | null): void => {
+    const orders = givenOrders ?? [];
+
     const items: PriceLinesDatum[] = [
       ...orders
         .map((order): PriceLinesDatum => {

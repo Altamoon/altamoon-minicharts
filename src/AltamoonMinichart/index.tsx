@@ -48,8 +48,8 @@ interface Props {
   pricePrecision: number;
   symbol: string;
   initialAlerts: number[];
-  orders?: TradingOrder[];
-  position?: TradingPosition;
+  orders?: TradingOrder[] | null;
+  position?: TradingPosition | null;
   baseAsset: string;
   quoteAsset: string;
   volume: string;
