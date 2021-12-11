@@ -89,7 +89,7 @@
     "reactstrap": "^9.0.1",
     "stream": "^0.0.2",
     "styled-components": "^5.3.3",
-    "use-change": "^1.0.3",
+    "use-change": "^1.0.4-beta.2",
     "use-onclickoutside": "^0.4.0"
   }
 }

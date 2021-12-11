@@ -60,13 +60,21 @@ export class MinichartsStore {
 
   #volumes: Record<string, string> = {};
 
-  public get positions() { return this.#positions; }
+  public get allPositions() { return this.#allPositions; }
 
-  #positions: Record<string, TradingPosition | null> = {};
+  #allPositions: Record<string, TradingPosition | null> = {};
 
-  public get orders() { return this.#orders; }
+  public get allOrders() { return this.#allOrders; }
 
-  #orders: Record<string, TradingOrder[] | null> = {};
+  #allOrders: Record<string, TradingOrder[] | null> = {};
+
+  public get allLeverages() { return this.#allLeverages; }
+
+  #allLeverages: Record<string, number> = {};
+
+  public get allLeverageBrackets() { return this.#allLeverageBrackets; }
+
+  #allLeverageBrackets: Record<string, api.FuturesLeverageBracket[]> = {};
 
   public get priceChangePercents(): Record<string, string> { return this.#priceChangePercents; }
 
@@ -271,8 +279,12 @@ export class MinichartsStore {
 
 export const ROOT = (store: MinichartsStore): MinichartsStore => store;
 export const CANDLES = (store: MinichartsStore): typeof store.allCandles => store.allCandles;
-export const POSITIONS = (store: MinichartsStore): typeof store.positions => store.positions;
-export const ORDERS = (store: MinichartsStore): typeof store.orders => store.orders;
+export const POSITIONS = (store: MinichartsStore): typeof store.allPositions => store.allPositions;
+export const ORDERS = (store: MinichartsStore): typeof store.allOrders => store.allOrders;
+export const LEVERAGES = (store: MinichartsStore): typeof store.allLeverages => store.allLeverages;
+export const LEVERAGE_BRACKETS = (
+  store: MinichartsStore,
+): typeof store.allLeverageBrackets => store.allLeverageBrackets;
 export const VOLUMES = (store: MinichartsStore): typeof store.volumes => store.volumes;
 export const PRICE_CHANGE = (
   store: MinichartsStore,

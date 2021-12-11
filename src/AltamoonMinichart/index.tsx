@@ -50,6 +50,8 @@ interface Props {
   initialAlerts: number[];
   orders?: TradingOrder[] | null;
   position?: TradingPosition | null;
+  leverage?: number;
+  leverageBrackets?: api.FuturesLeverageBracket[];
   baseAsset: string;
   quoteAsset: string;
   volume: string;
@@ -72,6 +74,8 @@ const AltamoonMinichart = ({
   initialAlerts,
   orders,
   position,
+  leverage,
+  leverageBrackets,
   baseAsset,
   quoteAsset,
   volume,
@@ -100,6 +104,10 @@ const AltamoonMinichart = ({
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
   useEffect(() => { chartInstance?.update({ orders }); }, [chartInstance, orders, scaleType]);
   useEffect(() => { chartInstance?.update({ position }); }, [chartInstance, position, scaleType]);
+  useEffect(() => { chartInstance?.update({ leverage }); }, [chartInstance, leverage, scaleType]);
+  useEffect(() => {
+    chartInstance?.update({ leverageBrackets });
+  }, [chartInstance, leverageBrackets, scaleType]);
   useEffect(() => { chartInstance?.update({ scaleType }); }, [chartInstance, scaleType]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

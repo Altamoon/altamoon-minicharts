@@ -8,6 +8,7 @@ import CrosshairPriceLines from './CrosshairPriceLines';
 import AlertPriceLines from './AlertPriceLines';
 import OrderPriceLines from './OrderPriceLines';
 import PositionPriceLines from './PositionPriceLines';
+import LiquidationPriceLines from './LiquidationPriceLines';
 import { AlertLogItem } from '../../types';
 
 interface Params {
@@ -29,13 +30,13 @@ export default class Lines {
 
   #positionPriceLines: PositionPriceLines;
 
+  #liquidationPriceLines: LiquidationPriceLines;
+
   constructor({
     axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
   }: Params) {
     this.#currentPriceLines = new CurrentPriceLines({ axis });
-
     this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
-
     this.#alertPriceLines = new AlertPriceLines({
       axis,
       realTimeCandles,
@@ -43,12 +44,10 @@ export default class Lines {
       triggerAlert,
       onUpdateAlerts,
     });
-
     this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
-
     this.#orderPriceLines = new OrderPriceLines({ axis });
-
     this.#positionPriceLines = new PositionPriceLines({ axis });
+    this.#liquidationPriceLines = new LiquidationPriceLines({ axis });
   }
 
   update(data: {
@@ -57,6 +56,8 @@ export default class Lines {
     alerts?: number[];
     orders?: TradingOrder[] | null;
     position?: TradingPosition | null;
+    leverage?: number;
+    leverageBrackets?: api.FuturesLeverageBracket[];
   } = {}): void {
     if (typeof data.pricePrecision !== 'undefined') {
       this.#currentPriceLines.update({ pricePrecision: data.pricePrecision });
@@ -64,6 +65,7 @@ export default class Lines {
       this.#alertPriceLines.update({ pricePrecision: data.pricePrecision });
       this.#orderPriceLines.update({ pricePrecision: data.pricePrecision });
       this.#positionPriceLines.update({ pricePrecision: data.pricePrecision });
+      this.#liquidationPriceLines.update({ pricePrecision: data.pricePrecision });
     }
 
     if (typeof data.lastPrice !== 'undefined') {
@@ -82,6 +84,15 @@ export default class Lines {
       this.#positionPriceLines.updatePositionLine(data.position);
     }
 
+    if (
+      typeof data.orders !== 'undefined'
+      || typeof data.position !== 'undefined'
+      || typeof data.leverage !== 'undefined'
+      || typeof data.leverageBrackets !== 'undefined'
+    ) {
+      this.#liquidationPriceLines.updateLiquidationLines(data);
+    }
+
     if (isEmpty(data)) {
       this.#currentPriceLines.update();
     }
@@ -96,6 +107,7 @@ export default class Lines {
     this.#alertPriceLines.appendTo(parent, resizeData);
     this.#orderPriceLines.appendTo(parent, resizeData);
     this.#positionPriceLines.appendTo(parent, resizeData);
+    this.#liquidationPriceLines.appendTo(parent, resizeData);
   }
 
   public resize = (resizeData: ResizeData): void => {
@@ -104,5 +116,6 @@ export default class Lines {
     this.#alertPriceLines.resize(resizeData);
     this.#orderPriceLines.resize(resizeData);
     this.#positionPriceLines.resize(resizeData);
+    this.#liquidationPriceLines.resize(resizeData);
   };
 }

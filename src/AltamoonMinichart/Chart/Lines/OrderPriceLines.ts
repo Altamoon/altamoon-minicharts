@@ -28,7 +28,7 @@ export default class OrderPriceLines extends PriceLines {
       ...orders
         .map((order): PriceLinesDatum => {
           const {
-            price, side, origQty, executedQty, symbol, type, isCanceled, clientOrderId,
+            price, side, origQty, executedQty, symbol, isCanceled, clientOrderId,
           } = order;
           const color = side === 'BUY' ? 'var(--altamoon-buy-color)' : 'var(--altamoon-sell-color)';
           return ({

@@ -120,6 +120,8 @@ export default class Chart {
     alerts?: number[];
     orders?: TradingOrder[] | null;
     position?: TradingPosition | null;
+    leverage?: number;
+    leverageBrackets?: api.FuturesLeverageBracket[];
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -167,6 +169,15 @@ export default class Chart {
 
     if (typeof data.position !== 'undefined') {
       this.#lines.update({ position: data.position });
+    }
+
+    if (
+      typeof data.orders !== 'undefined'
+      || typeof data.position !== 'undefined'
+      || typeof data.leverage !== 'undefined'
+      || typeof data.leverageBrackets !== 'undefined'
+    ) {
+      this.#lines.update(data);
     }
 
     if (typeof data.scaleType !== 'undefined') {
