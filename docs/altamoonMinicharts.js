@@ -54063,8 +54063,6 @@ var _allPositions = /*#__PURE__*/new WeakMap();
 
 var _allOrders = /*#__PURE__*/new WeakMap();
 
-var _allLeverages = /*#__PURE__*/new WeakMap();
-
 var _allLeverageBrackets = /*#__PURE__*/new WeakMap();
 
 var _priceChangePercents = /*#__PURE__*/new WeakMap();
@@ -54139,11 +54137,6 @@ var MinichartsStore = /*#__PURE__*/function () {
     });
 
     _classPrivateFieldInitSpec(this, _allOrders, {
-      writable: true,
-      value: {}
-    });
-
-    _classPrivateFieldInitSpec(this, _allLeverages, {
       writable: true,
       value: {}
     });
@@ -54480,11 +54473,6 @@ var MinichartsStore = /*#__PURE__*/function () {
       return _classPrivateFieldGet(this, _allOrders);
     }
   }, {
-    key: "allLeverages",
-    get: function get() {
-      return _classPrivateFieldGet(this, _allLeverages);
-    }
-  }, {
     key: "allLeverageBrackets",
     get: function get() {
       return _classPrivateFieldGet(this, _allLeverageBrackets);
@@ -54509,9 +54497,6 @@ var POSITIONS = function POSITIONS(store) {
 };
 var ORDERS = function ORDERS(store) {
   return store.allOrders;
-};
-var LEVERAGES = function LEVERAGES(store) {
-  return store.allLeverages;
 };
 var LEVERAGE_BRACKETS = function LEVERAGE_BRACKETS(store) {
   return store.allLeverageBrackets;
@@ -64320,11 +64305,24 @@ var LiquidationPriceLines = /*#__PURE__*/function (_PriceLines) {
     _defineProperty(_assertThisInitialized(_this), "updateLiquidationLines", function (_ref2) {
       var orders = _ref2.orders,
           position = _ref2.position,
-          leverage = _ref2.leverage,
           leverageBrackets = _ref2.leverageBrackets;
-      if (typeof orders !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _orders, orders);
-      if (typeof position !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _position, position);
-      if (typeof leverage !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _leverage, leverage);
+
+      if (typeof orders !== 'undefined') {
+        var _orders$0$leverage;
+
+        _classPrivateFieldSet(_assertThisInitialized(_this), _orders, orders);
+
+        _classPrivateFieldSet(_assertThisInitialized(_this), _leverage, (_orders$0$leverage = orders === null || orders === void 0 ? void 0 : orders[0].leverage) !== null && _orders$0$leverage !== void 0 ? _orders$0$leverage : _classPrivateFieldGet(_assertThisInitialized(_this), _leverage));
+      }
+
+      if (typeof position !== 'undefined') {
+        var _position$leverage;
+
+        _classPrivateFieldSet(_assertThisInitialized(_this), _position, position);
+
+        _classPrivateFieldSet(_assertThisInitialized(_this), _leverage, (_position$leverage = position === null || position === void 0 ? void 0 : position.leverage) !== null && _position$leverage !== void 0 ? _position$leverage : _classPrivateFieldGet(_assertThisInitialized(_this), _leverage));
+      }
+
       if (typeof leverageBrackets !== 'undefined') _classPrivateFieldSet(_assertThisInitialized(_this), _leverageBrackets, leverageBrackets);
 
       var buyValue = _classPrivateFieldGet(_assertThisInitialized(_this), _getLiquidationPrice).call(_assertThisInitialized(_this), 'BUY');
@@ -72285,7 +72283,6 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       initialAlerts = _ref.initialAlerts,
       orders = _ref.orders,
       position = _ref.position,
-      leverage = _ref.leverage,
       leverageBrackets = _ref.leverageBrackets,
       baseAsset = _ref.baseAsset,
       quoteAsset = _ref.quoteAsset,
@@ -72339,11 +72336,6 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
       position: position
     });
   }, [chartInstance, position, scaleType]);
-  (0,react.useEffect)(function () {
-    chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
-      leverage: leverage
-    });
-  }, [chartInstance, leverage, scaleType]);
   (0,react.useEffect)(function () {
     chartInstance === null || chartInstance === void 0 ? void 0 : chartInstance.update({
       leverageBrackets: leverageBrackets
@@ -72418,7 +72410,6 @@ var Minichart = function Minichart(_ref) {
   var candles = (0,dist.useValue)(CANDLES, symbol);
   var position = (0,dist.useValue)(POSITIONS, symbol);
   var orders = (0,dist.useValue)(ORDERS, symbol);
-  var leverage = (0,dist.useValue)(LEVERAGES, symbol);
   var leverageBrackets = (0,dist.useValue)(LEVERAGE_BRACKETS, symbol);
   var realTimeCandles = (0,dist.useValue)(ROOT, 'realTimeCandles');
   var interval = (0,dist.useValue)(ROOT, 'interval');
@@ -72450,7 +72441,6 @@ var Minichart = function Minichart(_ref) {
     initialAlerts: (_getSymbolAlerts$symb = getSymbolAlerts()[symbol]) !== null && _getSymbolAlerts$symb !== void 0 ? _getSymbolAlerts$symb : [],
     position: position,
     orders: orders,
-    leverage: leverage,
     leverageBrackets: leverageBrackets,
     baseAsset: (_symbolInfo$baseAsset = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.baseAsset) !== null && _symbolInfo$baseAsset !== void 0 ? _symbolInfo$baseAsset : 'UNKNOWN',
     quoteAsset: (_symbolInfo$quoteAsse = symbolInfo === null || symbolInfo === void 0 ? void 0 : symbolInfo.quoteAsset) !== null && _symbolInfo$quoteAsse !== void 0 ? _symbolInfo$quoteAsse : 'UNKNOWN',
