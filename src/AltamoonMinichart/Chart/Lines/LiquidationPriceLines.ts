@@ -37,16 +37,20 @@ export default class LiquidationPriceLines extends PriceLines {
   }
 
   public updateLiquidationLines = ({
-    orders, position, leverage, leverageBrackets,
+    orders, position, leverageBrackets,
   }: {
     orders?: TradingOrder[] | null;
     position?: TradingPosition | null;
-    leverage?: number;
     leverageBrackets?: api.FuturesLeverageBracket[];
   }): void => {
-    if (typeof orders !== 'undefined') this.#orders = orders;
-    if (typeof position !== 'undefined') this.#position = position;
-    if (typeof leverage !== 'undefined') this.#leverage = leverage;
+    if (typeof orders !== 'undefined') {
+      this.#orders = orders;
+      this.#leverage = orders?.[0].leverage ?? this.#leverage;
+    }
+    if (typeof position !== 'undefined') {
+      this.#position = position;
+      this.#leverage = position?.leverage ?? this.#leverage;
+    }
     if (typeof leverageBrackets !== 'undefined') this.#leverageBrackets = leverageBrackets;
 
     const buyValue = this.#getLiquidationPrice('BUY');

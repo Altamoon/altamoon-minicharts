@@ -68,10 +68,6 @@ export class MinichartsStore {
 
   #allOrders: Record<string, TradingOrder[] | null> = {};
 
-  public get allLeverages() { return this.#allLeverages; }
-
-  #allLeverages: Record<string, number> = {};
-
   public get allLeverageBrackets() { return this.#allLeverageBrackets; }
 
   #allLeverageBrackets: Record<string, api.FuturesLeverageBracket[]> = {};
@@ -281,7 +277,6 @@ export const ROOT = (store: MinichartsStore): MinichartsStore => store;
 export const CANDLES = (store: MinichartsStore): typeof store.allCandles => store.allCandles;
 export const POSITIONS = (store: MinichartsStore): typeof store.allPositions => store.allPositions;
 export const ORDERS = (store: MinichartsStore): typeof store.allOrders => store.allOrders;
-export const LEVERAGES = (store: MinichartsStore): typeof store.allLeverages => store.allLeverages;
 export const LEVERAGE_BRACKETS = (
   store: MinichartsStore,
 ): typeof store.allLeverageBrackets => store.allLeverageBrackets;

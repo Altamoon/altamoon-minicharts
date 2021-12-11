@@ -5,7 +5,7 @@ import {
   useGet, useSet, useSilent, useValue,
 } from 'use-change';
 import {
-  CANDLES, LEVERAGES, LEVERAGE_BRACKETS, ORDERS, POSITIONS, PRICE_CHANGE, ROOT, VOLUMES,
+  CANDLES, LEVERAGE_BRACKETS, ORDERS, POSITIONS, PRICE_CHANGE, ROOT, VOLUMES,
 } from '../store';
 import AltamoonMinichart from '../AltamoonMinichart';
 
@@ -18,7 +18,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const candles = useValue(CANDLES, symbol);
   const position = useValue(POSITIONS, symbol);
   const orders = useValue(ORDERS, symbol);
-  const leverage = useValue(LEVERAGES, symbol);
   const leverageBrackets = useValue(LEVERAGE_BRACKETS, symbol);
   const realTimeCandles = useValue(ROOT, 'realTimeCandles');
   const interval = useValue(ROOT, 'interval');
@@ -51,7 +50,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       initialAlerts={getSymbolAlerts()[symbol] ?? []}
       position={position}
       orders={orders}
-      leverage={leverage}
       leverageBrackets={leverageBrackets}
       baseAsset={symbolInfo?.baseAsset ?? 'UNKNOWN'}
       quoteAsset={symbolInfo?.quoteAsset ?? 'UNKNOWN'}
