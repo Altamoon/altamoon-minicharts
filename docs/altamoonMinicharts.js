@@ -64067,7 +64067,8 @@ var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
       value: {}
     });
 
-    _defineProperty(_assertThisInitialized(_this), "updateOrderLines", function (orders) {
+    _defineProperty(_assertThisInitialized(_this), "updateOrderLines", function (givenOrders) {
+      var orders = givenOrders !== null && givenOrders !== void 0 ? givenOrders : [];
       var items = [].concat(_toConsumableArray(orders.map(function (order) {
         var _classPrivateFieldGet2;
 
