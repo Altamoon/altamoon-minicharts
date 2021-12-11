@@ -72,6 +72,8 @@ export default class LiquidationPriceLines extends PriceLines {
     const position = this.#position;
     const orders = this.#orders ?? [];
 
+    if (!orders.length) return [];
+
     if (position?.side === side) {
       sizes.push({
         type: 'POSITION',
