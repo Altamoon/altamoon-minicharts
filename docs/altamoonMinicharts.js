@@ -64271,6 +64271,10 @@ var Lines = /*#__PURE__*/function () {
       _classPrivateFieldGet(_this, _crosshairPriceLines).resize(resizeData);
 
       _classPrivateFieldGet(_this, _alertPriceLines).resize(resizeData);
+
+      _classPrivateFieldGet(_this, _orderPriceLines).resize(resizeData);
+
+      _classPrivateFieldGet(_this, _positionPriceLines).resize(resizeData);
     });
 
     _classPrivateFieldSet(this, _currentPriceLines, new CurrentPriceLines({
@@ -64357,6 +64361,10 @@ var Lines = /*#__PURE__*/function () {
       _classPrivateFieldGet(this, _crosshairPriceLines).appendTo(parent, resizeData);
 
       _classPrivateFieldGet(this, _alertPriceLines).appendTo(parent, resizeData);
+
+      _classPrivateFieldGet(this, _orderPriceLines).appendTo(parent, resizeData);
+
+      _classPrivateFieldGet(this, _positionPriceLines).appendTo(parent, resizeData);
     }
   }]);
 
