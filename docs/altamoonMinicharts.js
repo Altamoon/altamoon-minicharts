@@ -54276,10 +54276,19 @@ var MinichartsStore = /*#__PURE__*/function () {
     _classPrivateFieldInitSpec(this, _sortSymbols, {
       writable: true,
       value: function value() {
+        var positionSymbols = Object.values(_this.allPositions).filter(function (pos) {
+          return !!pos;
+        }).map(function (_ref3) {
+          var symbol = _ref3.symbol;
+          return symbol;
+        });
+
         switch (_this.sortBy) {
           case 'alphabetically':
             _this.symbols = _this.symbols.sort(function (a, b) {
-              return a > b ? _this.sortDirection : -_this.sortDirection;
+              return (// eslint-disable-next-line no-nested-ternary
+                positionSymbols.includes(a) ? -1 : a > b ? _this.sortDirection : -_this.sortDirection
+              );
             }).slice();
             break;
 
@@ -54287,10 +54296,12 @@ var MinichartsStore = /*#__PURE__*/function () {
             _this.symbols = _this.symbols.map(function (symbol) {
               return [symbol, +_classPrivateFieldGet(_this, _volumes)[symbol] || 0];
             }).sort(function (a, b) {
-              return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref3) {
-              var _ref4 = _slicedToArray(_ref3, 1),
-                  symbol = _ref4[0];
+              return (// eslint-disable-next-line no-nested-ternary
+                positionSymbols.includes(a[0]) ? -1 : a[1] > b[1] ? _this.sortDirection : -_this.sortDirection
+              );
+            }).map(function (_ref4) {
+              var _ref5 = _slicedToArray(_ref4, 1),
+                  symbol = _ref5[0];
 
               return symbol;
             });
@@ -54300,10 +54311,12 @@ var MinichartsStore = /*#__PURE__*/function () {
             _this.symbols = _this.symbols.map(function (symbol) {
               return [symbol, +_classPrivateFieldGet(_this, _priceChangePercents)[symbol] || 0];
             }).sort(function (a, b) {
-              return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref5) {
-              var _ref6 = _slicedToArray(_ref5, 1),
-                  symbol = _ref6[0];
+              return (// eslint-disable-next-line no-nested-ternary
+                positionSymbols.includes(a[0]) ? -1 : a[1] > b[1] ? _this.sortDirection : -_this.sortDirection
+              );
+            }).map(function (_ref6) {
+              var _ref7 = _slicedToArray(_ref6, 1),
+                  symbol = _ref7[0];
 
               return symbol;
             });
@@ -54425,12 +54438,12 @@ var MinichartsStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         futuresTickerStream(function (ticker) {
-          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref7) {
-            var quoteVolume = _ref7.quoteVolume;
+          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
+            var quoteVolume = _ref8.quoteVolume;
             return quoteVolume;
           }));
-          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
-            var priceChangePercent = _ref8.priceChangePercent;
+          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
+            var priceChangePercent = _ref9.priceChangePercent;
             return priceChangePercent;
           }));
 
