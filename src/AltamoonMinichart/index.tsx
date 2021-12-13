@@ -30,13 +30,13 @@ const SymbolName = styled.div`
   }
 `;
 
-const Container = styled.div<{ position: TradingPosition }>`
+const Container = styled.div<{ position?: TradingPosition | null; }>`
   border-top: 1px solid rgba(100,100,100,0.5);
   border-left: 1px solid rgba(100,100,100,0.5);
   display: inline-block;
   position: relative;
-  ${({ position }) => (position?.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
-  ${({ position }) => (position?.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '')}
+  ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
+  ${({ position }) => (position && position.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '')}
 `;
 
 interface Props {
