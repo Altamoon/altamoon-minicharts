@@ -72311,29 +72311,35 @@ var AltamoonMinichart_templateObject, _templateObject2, _templateObject3;
 
 var ChartInfo = styled_components_browser_esm.div(AltamoonMinichart_templateObject || (AltamoonMinichart_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: calc(100% - 55px);\n  padding: 0.25rem 0.5rem;\n  pointer-events: none;\n"])));
 var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["\n  color: #fff;\n  display: inline;\n  cursor: pointer;\n  pointer-events: auto;\n\n  &:hover {\n    text-decoration: underline;\n  }\n"])));
-var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n"])));
+var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n  ", "\n  ", "\n"])), function (_ref) {
+  var position = _ref.position;
+  return position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '';
+}, function (_ref2) {
+  var position = _ref2.position;
+  return position && position.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '';
+});
 
-var AltamoonMinichart = function AltamoonMinichart(_ref) {
-  var candles = _ref.candles,
-      realTimeCandles = _ref.realTimeCandles,
-      interval = _ref.interval,
-      width = _ref.width,
-      height = _ref.height,
-      chartType = _ref.chartType,
-      scaleType = _ref.scaleType,
-      pricePrecision = _ref.pricePrecision,
-      symbol = _ref.symbol,
-      initialAlerts = _ref.initialAlerts,
-      orders = _ref.orders,
-      position = _ref.position,
-      leverageBrackets = _ref.leverageBrackets,
-      baseAsset = _ref.baseAsset,
-      quoteAsset = _ref.quoteAsset,
-      volume = _ref.volume,
-      priceChangePercent = _ref.priceChangePercent,
-      onSymbolSelect = _ref.onSymbolSelect,
-      onAlert = _ref.onAlert,
-      onUpdateAlerts = _ref.onUpdateAlerts;
+var AltamoonMinichart = function AltamoonMinichart(_ref3) {
+  var candles = _ref3.candles,
+      realTimeCandles = _ref3.realTimeCandles,
+      interval = _ref3.interval,
+      width = _ref3.width,
+      height = _ref3.height,
+      chartType = _ref3.chartType,
+      scaleType = _ref3.scaleType,
+      pricePrecision = _ref3.pricePrecision,
+      symbol = _ref3.symbol,
+      initialAlerts = _ref3.initialAlerts,
+      orders = _ref3.orders,
+      position = _ref3.position,
+      leverageBrackets = _ref3.leverageBrackets,
+      baseAsset = _ref3.baseAsset,
+      quoteAsset = _ref3.quoteAsset,
+      volume = _ref3.volume,
+      priceChangePercent = _ref3.priceChangePercent,
+      onSymbolSelect = _ref3.onSymbolSelect,
+      onAlert = _ref3.onAlert,
+      onUpdateAlerts = _ref3.onUpdateAlerts;
   var ref = (0,react.useRef)(null);
 
   var _useState = (0,react.useState)(null),
@@ -72411,7 +72417,8 @@ var AltamoonMinichart = function AltamoonMinichart(_ref) {
     style: {
       width: width
     },
-    "data-minichart-symbol": symbol
+    "data-minichart-symbol": symbol,
+    position: position
   }, /*#__PURE__*/react.createElement(ChartInfo, null, /*#__PURE__*/react.createElement(SymbolName, {
     onClick: function onClick() {
       return onSymbolNameClick === null || onSymbolNameClick === void 0 ? void 0 : onSymbolNameClick(symbol);
