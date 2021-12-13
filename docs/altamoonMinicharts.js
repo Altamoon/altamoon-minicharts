@@ -72302,7 +72302,7 @@ additionalInfoCandlesLengths.map(([period, candleLength]) => {
 
 
 
-var AltamoonMinichart_templateObject, _templateObject2, _templateObject3, _templateObject4;
+var AltamoonMinichart_templateObject, _templateObject2, _templateObject3;
 
 
 
@@ -72311,13 +72311,12 @@ var AltamoonMinichart_templateObject, _templateObject2, _templateObject3, _templ
 
 var ChartInfo = styled_components_browser_esm.div(AltamoonMinichart_templateObject || (AltamoonMinichart_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: calc(100% - 55px);\n  padding: 0.25rem 0.5rem;\n  pointer-events: none;\n"])));
 var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["\n  color: #fff;\n  display: inline;\n  cursor: pointer;\n  pointer-events: auto;\n\n  &:hover {\n    text-decoration: underline;\n  }\n"])));
-var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n"])));
-var ChartContainer = styled_components_browser_esm.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["\n  height: 100%;\n  ", "\n  ", "\n"])), function (_ref) {
+var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n\n  &::before {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    ", "\n    ", "\n  }\n"])), function (_ref) {
   var position = _ref.position;
-  return position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '';
+  return position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '';
 }, function (_ref2) {
   var position = _ref2.position;
-  return position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '';
+  return position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '';
 });
 
 var AltamoonMinichart = function AltamoonMinichart(_ref3) {
@@ -72416,10 +72415,10 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
   });
   return /*#__PURE__*/react.createElement(Container, {
     style: {
-      width: width,
-      height: height
+      width: width
     },
-    "data-minichart-symbol": symbol
+    "data-minichart-symbol": symbol,
+    position: position
   }, /*#__PURE__*/react.createElement(ChartInfo, null, /*#__PURE__*/react.createElement(SymbolName, {
     onClick: function onClick() {
       return onSymbolNameClick === null || onSymbolNameClick === void 0 ? void 0 : onSymbolNameClick(symbol);
@@ -72432,9 +72431,11 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
   }, !(candles !== null && candles !== void 0 && candles.length) || candles[0].interval !== interval ? "Loading ".concat(interval, "...") : /*#__PURE__*/react.createElement(AltamoonMinichart_TextIndicators, {
     volume: volume,
     priceChangePercent: priceChangePercent
-  }))), /*#__PURE__*/react.createElement(ChartContainer, {
-    ref: setRefs,
-    position: position
+  }))), /*#__PURE__*/react.createElement("div", {
+    style: {
+      height: height
+    },
+    ref: setRefs
   }));
 };
 
@@ -80564,7 +80565,7 @@ function useOnClickOutside(ref, handler, _temp) {
 
 
 
-var AlertLog_templateObject, AlertLog_templateObject2, AlertLog_templateObject3, AlertLog_templateObject4;
+var AlertLog_templateObject, AlertLog_templateObject2, AlertLog_templateObject3, _templateObject4;
 
 
 
@@ -80577,7 +80578,7 @@ var AlertLog_templateObject, AlertLog_templateObject2, AlertLog_templateObject3,
 var AlertLogWrapper = styled_components_browser_esm.div(AlertLog_templateObject || (AlertLog_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  bottom: 24px;\n  right: 32px;\n  border-radius: 50%;\n  z-index: 1;\n"])));
 var BellWrapper = styled_components_browser_esm.div(AlertLog_templateObject2 || (AlertLog_templateObject2 = _taggedTemplateLiteral(["\n  position: absolute;\n  bottom: 0;\n  right: 0;\n"])));
 var AlertLog_Badge = styled_components_browser_esm.div(AlertLog_templateObject3 || (AlertLog_templateObject3 = _taggedTemplateLiteral(["\n  position: absolute;\n  top: -16px;\n  right: -18px;\n"])));
-var AlertList = styled_components_browser_esm.ul(AlertLog_templateObject4 || (AlertLog_templateObject4 = _taggedTemplateLiteral(["\n  right: 32px;\n  bottom: 0;\n  max-height: 240px;\n  overflow: auto;\n"])));
+var AlertList = styled_components_browser_esm.ul(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["\n  right: 32px;\n  bottom: 0;\n  max-height: 240px;\n  overflow: auto;\n"])));
 var BADGE_SEEN_TTL = 2 * 60 * 60 * 1000;
 var ignoreAlertsBeforeISO = new Date(Date.now() - BADGE_SEEN_TTL).toISOString();
 
