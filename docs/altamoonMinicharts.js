@@ -52348,47 +52348,6 @@ var bala_umd_default = /*#__PURE__*/__webpack_require__.n(bala_umd);
 // EXTERNAL MODULE: ./node_modules/use-change/dist/index.js
 var dist = __webpack_require__(9451);
 var dist_default = /*#__PURE__*/__webpack_require__.n(dist);
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayLikeToArray.js
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-
-  for (var i = 0, arr2 = new Array(len); i < len; i++) {
-    arr2[i] = arr[i];
-  }
-
-  return arr2;
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithoutHoles.js
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/iterableToArray.js
-function _iterableToArray(iter) {
-  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/unsupportedIterableToArray.js
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableSpread.js
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toConsumableArray.js
-
-
-
-
-function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-}
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/taggedTemplateLiteral.js
 function _taggedTemplateLiteral(strings, raw) {
   if (!raw) {
@@ -53161,6 +53120,26 @@ function _iterableToArrayLimit(arr, i) {
 
   return _arr;
 }
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayLikeToArray.js
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) {
+    arr2[i] = arr[i];
+  }
+
+  return arr2;
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/unsupportedIterableToArray.js
+
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableRest.js
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
@@ -53208,6 +53187,27 @@ function _asyncToGenerator(fn) {
       _next(undefined);
     });
   };
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithoutHoles.js
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/iterableToArray.js
+function _iterableToArray(iter) {
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableSpread.js
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toConsumableArray.js
+
+
+
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
 }
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
 function _classCallCheck(instance, Constructor) {
@@ -54276,37 +54276,60 @@ var MinichartsStore = /*#__PURE__*/function () {
     _classPrivateFieldInitSpec(this, _sortSymbols, {
       writable: true,
       value: function value() {
+        var positionSymbols = Object.values(_this.allPositions).filter(function (pos) {
+          return !!pos;
+        }).map(function (_ref3) {
+          var symbol = _ref3.symbol;
+          return symbol;
+        });
+
+        var symbols = _this.symbols.filter(function (symbol) {
+          return !positionSymbols.includes(symbol);
+        });
+
+        var alphabetically = function alphabetically(s) {
+          return s.sort(function (a, b) {
+            return a > b ? _this.sortDirection : -_this.sortDirection;
+          }).slice();
+        };
+
+        var byVolume = function byVolume(s) {
+          return s.map(function (symbol) {
+            return [symbol, +_classPrivateFieldGet(_this, _volumes)[symbol] || 0];
+          }).sort(function (a, b) {
+            return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
+          }).map(function (_ref4) {
+            var _ref5 = _slicedToArray(_ref4, 1),
+                symbol = _ref5[0];
+
+            return symbol;
+          });
+        };
+
+        var byVolumeChange = function byVolumeChange(s) {
+          return s.map(function (symbol) {
+            return [symbol, +_classPrivateFieldGet(_this, _priceChangePercents)[symbol] || 0];
+          }).sort(function (a, b) {
+            return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
+          }).map(function (_ref6) {
+            var _ref7 = _slicedToArray(_ref6, 1),
+                symbol = _ref7[0];
+
+            return symbol;
+          });
+        };
+
         switch (_this.sortBy) {
           case 'alphabetically':
-            _this.symbols = _this.symbols.sort(function (a, b) {
-              return a > b ? _this.sortDirection : -_this.sortDirection;
-            }).slice();
+            _this.symbols = [].concat(_toConsumableArray(alphabetically(positionSymbols)), _toConsumableArray(alphabetically(symbols)));
             break;
 
           case 'volume':
-            _this.symbols = _this.symbols.map(function (symbol) {
-              return [symbol, +_classPrivateFieldGet(_this, _volumes)[symbol] || 0];
-            }).sort(function (a, b) {
-              return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref3) {
-              var _ref4 = _slicedToArray(_ref3, 1),
-                  symbol = _ref4[0];
-
-              return symbol;
-            });
+            _this.symbols = [].concat(_toConsumableArray(byVolume(positionSymbols)), _toConsumableArray(byVolume(symbols)));
             break;
 
           case 'volume_change':
-            _this.symbols = _this.symbols.map(function (symbol) {
-              return [symbol, +_classPrivateFieldGet(_this, _priceChangePercents)[symbol] || 0];
-            }).sort(function (a, b) {
-              return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-            }).map(function (_ref5) {
-              var _ref6 = _slicedToArray(_ref5, 1),
-                  symbol = _ref6[0];
-
-              return symbol;
-            });
+            _this.symbols = [].concat(_toConsumableArray(byVolumeChange(positionSymbols)), _toConsumableArray(byVolumeChange(symbols)));
             break;
 
           default:
@@ -54425,12 +54448,12 @@ var MinichartsStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         futuresTickerStream(function (ticker) {
-          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref7) {
-            var quoteVolume = _ref7.quoteVolume;
+          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
+            var quoteVolume = _ref8.quoteVolume;
             return quoteVolume;
           }));
-          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
-            var priceChangePercent = _ref8.priceChangePercent;
+          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
+            var priceChangePercent = _ref9.priceChangePercent;
             return priceChangePercent;
           }));
 
@@ -80697,7 +80720,6 @@ var AlertLog = function AlertLog() {
 ;// CONCATENATED MODULE: ./src/Grid/index.tsx
 
 
-
 var Grid_templateObject;
 
 
@@ -80716,26 +80738,12 @@ var MinichartGrid = function MinichartGrid(_ref) {
       alertLogContainer = _ref.alertLogContainer,
       onSymbolSelect = _ref.onSymbolSelect;
   var futuresExchangeSymbolsMap = (0,dist.useValue)(ROOT, 'futuresExchangeSymbolsMap');
-  var originalSymbols = (0,dist.useValue)(ROOT, 'symbols');
+  var symbols = (0,dist.useValue)(ROOT, 'symbols');
   var maxChartsLength = (0,dist.useValue)(ROOT, 'maxChartsLength');
-  var allPositions = (0,dist.useValue)(ROOT, 'allPositions');
-  var symbols = (0,react.useMemo)(function () {
-    var positionSymbols = Object.values(allPositions).filter(function (pos) {
-      return !!pos;
-    }).map(function (_ref2) {
-      var symbol = _ref2.symbol;
-      return symbol;
-    });
-    console.log('positionSymbols', positionSymbols); // show positions first
-
-    return [].concat(_toConsumableArray(positionSymbols), _toConsumableArray(originalSymbols.filter(function (symbol) {
-      return !positionSymbols.includes(symbol);
-    })));
-  }, [allPositions, originalSymbols]);
   return /*#__PURE__*/react.createElement(react.Fragment, null, alertLogContainer ? /*#__PURE__*/(0,react_dom.createPortal)( /*#__PURE__*/react.createElement(Grid_AlertLog, null), alertLogContainer) : /*#__PURE__*/react.createElement(Grid_AlertLog, null), settingsContainer ? /*#__PURE__*/(0,react_dom.createPortal)( /*#__PURE__*/react.createElement(Grid_Settings, null), settingsContainer) : /*#__PURE__*/react.createElement(Grid_Settings, null), /*#__PURE__*/react.createElement(Charts, null, symbols.slice(0, maxChartsLength !== null && maxChartsLength !== void 0 ? maxChartsLength : symbols.length).map(function (symbol) {
     return futuresExchangeSymbolsMap[symbol];
-  }).map(function (_ref3) {
-    var symbol = _ref3.symbol;
+  }).map(function (_ref2) {
+    var symbol = _ref2.symbol;
     return /*#__PURE__*/react.createElement(Grid_Minichart, {
       key: symbol,
       symbol: symbol,
