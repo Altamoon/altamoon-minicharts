@@ -164,24 +164,40 @@ export class MinichartsStore {
   };
 
   #sortSymbols = () => {
+    const positionSymbols = Object.values(this.allPositions as Record<string, TradingPosition>)
+      .filter((pos) => !!pos)
+      .map(({ symbol }) => symbol);
+    const symbols: string[] = this.symbols.filter((symbol) => !positionSymbols.includes(symbol));
+
+    const alphabetically = (s: string[]) => s.sort(
+      (a, b) => (a > b ? this.sortDirection : -this.sortDirection),
+    ).slice();
+
+    const byVolume = (s: string[]) => s
+      .map((symbol) => [symbol, +this.#volumes[symbol] || 0] as const)
+      .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
+      .map(([symbol]) => symbol);
+
+    const byVolumeChange = (s: string[]) => s
+      .map((symbol) => [symbol, +this.#priceChangePercents[symbol] || 0] as const)
+      .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
+      .map(([symbol]) => symbol);
+
     switch (this.sortBy) {
       case 'alphabetically':
-        this.symbols = this.symbols
-          .sort(
-            (a, b) => (a > b ? this.sortDirection : -this.sortDirection),
-          ).slice();
+        this.symbols = [
+          ...alphabetically(positionSymbols), ...alphabetically(symbols),
+        ];
         break;
       case 'volume':
-        this.symbols = this.symbols
-          .map((symbol) => [symbol, +this.#volumes[symbol] || 0] as const)
-          .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
-          .map(([symbol]) => symbol);
+        this.symbols = [
+          ...byVolume(positionSymbols), ...byVolume(symbols),
+        ];
         break;
       case 'volume_change':
-        this.symbols = this.symbols
-          .map((symbol) => [symbol, +this.#priceChangePercents[symbol] || 0] as const)
-          .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
-          .map(([symbol]) => symbol);
+        this.symbols = [
+          ...byVolumeChange(positionSymbols), ...byVolumeChange(symbols),
+        ];
         break;
       default:
         throw new Error(`sortBy ${String(this.sortBy)} is not supported`);
