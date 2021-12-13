@@ -30,11 +30,14 @@ const SymbolName = styled.div`
   }
 `;
 
-const Container = styled.div<{ position?: TradingPosition | null; }>`
+const Container = styled.div`
   border-top: 1px solid rgba(100,100,100,0.5);
   border-left: 1px solid rgba(100,100,100,0.5);
   display: inline-block;
   position: relative;
+`;
+
+const ChartContainer = styled.div<{ position?: TradingPosition | null; }>`
   ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
   ${({ position }) => (position && position.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '')}
 `;
@@ -131,7 +134,7 @@ const AltamoonMinichart = ({
   });
 
   return (
-    <Container style={{ width }} data-minichart-symbol={symbol} position={position}>
+    <Container style={{ width }} data-minichart-symbol={symbol}>
       <ChartInfo>
         <SymbolName onClick={() => onSymbolNameClick?.(symbol)}>
           {baseAsset}
@@ -145,7 +148,7 @@ const AltamoonMinichart = ({
             )}
         </div>
       </ChartInfo>
-      <div style={{ height }} ref={setRefs} />
+      <ChartContainer style={{ height }} ref={setRefs} />
     </Container>
   );
 };
