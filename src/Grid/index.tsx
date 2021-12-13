@@ -42,7 +42,7 @@ const MinichartGrid = ({
     ];
   }, [allPositions, originalSymbols]);
 
-  console.log('symbols', symbols);
+  console.log('symbols', symbols, originalSymbols);
 
   return (
     <>
