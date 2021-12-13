@@ -46,8 +46,8 @@ const Container = styled.div<{ position?: TradingPosition | null }>`
     width: 100%;
     height: 100%;
     pointer-events: none;
-    ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
-    ${({ position }) => (position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '')}
+    ${({ position }) => (position && position.pnl > 0 ? 'border: 1px solid var(--bs-success);' : '')}
+    ${({ position }) => (position && position.pnl < 0 ? 'border: 1px solid var(--bs-danger);' : '')}
   }
 `;
 
