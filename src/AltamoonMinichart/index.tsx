@@ -38,8 +38,8 @@ const Container = styled.div`
 `;
 
 const ChartContainer = styled.div<{ position?: TradingPosition | null; }>`
-  ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
-  ${({ position }) => (position && position.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '')}
+  ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
+  ${({ position }) => (position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '')}
 `;
 
 interface Props {
