@@ -34,6 +34,7 @@ const MinichartGrid = ({
     const positionSymbols = Object.values(allPositions as Record<string, TradingPosition>)
       .filter((pos) => !!pos)
       .map(({ symbol }) => symbol);
+    console.log('positionSymbols', positionSymbols);
 
     // show positions first
     return [
@@ -41,6 +42,7 @@ const MinichartGrid = ({
       ...originalSymbols.filter((symbol) => !positionSymbols.includes(symbol)),
     ];
   }, [allPositions, originalSymbols]);
+  
 
   return (
     <>
