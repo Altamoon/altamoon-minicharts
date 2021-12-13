@@ -30,17 +30,22 @@ const SymbolName = styled.div`
   }
 `;
 
-const Container = styled.div`
+const Container = styled.div<{ position?: TradingPosition | null }>`
   border-top: 1px solid rgba(100,100,100,0.5);
   border-left: 1px solid rgba(100,100,100,0.5);
   display: inline-block;
   position: relative;
-`;
 
-const ChartContainer = styled.div<{ position?: TradingPosition | null; }>`
-  height: 100%;
-  ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
-  ${({ position }) => (position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '')}
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
+    ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
+  }
 `;
 
 interface Props {
@@ -135,7 +140,7 @@ const AltamoonMinichart = ({
   });
 
   return (
-    <Container style={{ width, height }} data-minichart-symbol={symbol}>
+    <Container style={{ width }} data-minichart-symbol={symbol} position={position}>
       <ChartInfo>
         <SymbolName onClick={() => onSymbolNameClick?.(symbol)}>
           {baseAsset}
@@ -149,7 +154,7 @@ const AltamoonMinichart = ({
             )}
         </div>
       </ChartInfo>
-      <ChartContainer ref={setRefs} position={position} />
+      <div style={{ height }} ref={setRefs} />
     </Container>
   );
 };
