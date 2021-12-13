@@ -51849,37 +51849,6 @@ exports["default"] = weakMap;
 
 /***/ }),
 
-/***/ 2532:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const react_1 = __webpack_require__(7294);
-const Context_1 = __importDefault(__webpack_require__(8284));
-function getSlice(storeSlice) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const store = (0, react_1.useContext)(Context_1.default);
-    let slice;
-    if (typeof storeSlice === 'object') {
-        slice = storeSlice;
-    }
-    else if (typeof storeSlice === 'function') {
-        slice = storeSlice(store);
-    }
-    else {
-        throw new Error('Unknown store slice');
-    }
-    return slice;
-}
-exports["default"] = getSlice;
-
-
-/***/ }),
-
 /***/ 9451:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -51992,9 +51961,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const react_1 = __webpack_require__(7294);
 const listenChange_1 = __importDefault(__webpack_require__(2173));
-const getSlice_1 = __importDefault(__webpack_require__(2532));
+const useStoreSlice_1 = __importDefault(__webpack_require__(6111));
 function useChange(storeSlice, key) {
-    const slice = (0, getSlice_1.default)(storeSlice);
+    const slice = (0, useStoreSlice_1.default)(storeSlice);
     const [stateValue, setStateValue] = (0, react_1.useState)(slice[key]);
     const setValue = (0, react_1.useCallback)((value) => {
         if (typeof value === 'function') {
@@ -52031,9 +52000,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const react_1 = __webpack_require__(7294);
-const getSlice_1 = __importDefault(__webpack_require__(2532));
+const useStoreSlice_1 = __importDefault(__webpack_require__(6111));
 function useGet(storeSlice, key) {
-    const slice = (0, getSlice_1.default)(storeSlice);
+    const slice = (0, useStoreSlice_1.default)(storeSlice);
     return (0, react_1.useCallback)(() => slice[key], [slice, key]);
 }
 exports["default"] = useGet;
@@ -52051,9 +52020,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const react_1 = __webpack_require__(7294);
-const getSlice_1 = __importDefault(__webpack_require__(2532));
+const useStoreSlice_1 = __importDefault(__webpack_require__(6111));
 function useSet(storeSlice, key) {
-    const slice = (0, getSlice_1.default)(storeSlice);
+    const slice = (0, useStoreSlice_1.default)(storeSlice);
     return (0, react_1.useCallback)((value) => {
         if (typeof value === 'function') {
             const valueFunction = value;
@@ -52078,12 +52047,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const getSlice_1 = __importDefault(__webpack_require__(2532));
+const useStoreSlice_1 = __importDefault(__webpack_require__(6111));
 function useSilent(storeSlice, key) {
-    const slice = (0, getSlice_1.default)(storeSlice);
+    const slice = (0, useStoreSlice_1.default)(storeSlice);
     return slice[key];
 }
 exports["default"] = useSilent;
+
+
+/***/ }),
+
+/***/ 6111:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const react_1 = __webpack_require__(7294);
+const Context_1 = __importDefault(__webpack_require__(8284));
+function useStoreSlice(storeSlice) {
+    const store = (0, react_1.useContext)(Context_1.default);
+    let slice;
+    if (typeof storeSlice === 'object') {
+        slice = storeSlice;
+    }
+    else if (typeof storeSlice === 'function') {
+        slice = storeSlice(store);
+    }
+    else {
+        throw new Error('Unknown store slice');
+    }
+    return slice;
+}
+exports["default"] = useStoreSlice;
 
 
 /***/ }),
@@ -53382,7 +53381,7 @@ async function promiseRequest_promiseRequest(url, givenData = {}, flags = {}) {
         timeDiffPromise = timeDiffPromise || promiseRequest_promiseRequest('v3/time', {}, { method: 'GET', baseURL: 'https://api.binance.com/api/' }).then(({ serverTime }) => Date.now() - serverTime);
         if (!api_options.apiSecret)
             throw new Error('Invalid API credentials!');
-        data.timestamp = Date.now() - await timeDiffPromise;
+        data.timestamp = Date.now(); // - await timeDiffPromise;
         query = lib_default().stringify(data);
         const signature = (0,crypto_js.HmacSHA256)(query, api_options.apiSecret);
         resource = `${baseURL}${url}?${query}&signature=${signature.toString()}`;
