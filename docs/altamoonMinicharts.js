@@ -54287,6 +54287,8 @@ var MinichartsStore = /*#__PURE__*/function () {
           return !positionSymbols.includes(symbol);
         });
 
+        console.log(positionSymbols, symbols);
+
         var alphabetically = function alphabetically(s) {
           return s.sort(function (a, b) {
             return a > b ? _this.sortDirection : -_this.sortDirection;
