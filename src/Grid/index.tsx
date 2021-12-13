@@ -38,11 +38,9 @@ const MinichartGrid = ({
     // show positions first
     return [
       ...positionSymbols,
-      ...originalSymbols.filter((symbol) => !originalSymbols.includes(symbol)),
+      ...originalSymbols.filter((symbol) => !positionSymbols.includes(symbol)),
     ];
   }, [allPositions, originalSymbols]);
-
-  console.log('symbols', symbols, originalSymbols);
 
   return (
     <>
