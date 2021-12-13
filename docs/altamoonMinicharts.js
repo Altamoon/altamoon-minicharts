@@ -80725,7 +80725,8 @@ var MinichartGrid = function MinichartGrid(_ref) {
     }).map(function (_ref2) {
       var symbol = _ref2.symbol;
       return symbol;
-    }); // show positions first
+    });
+    console.log('positionSymbols', positionSymbols); // show positions first
 
     return [].concat(_toConsumableArray(positionSymbols), _toConsumableArray(originalSymbols.filter(function (symbol) {
       return !positionSymbols.includes(symbol);
