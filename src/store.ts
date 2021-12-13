@@ -60,17 +60,19 @@ export class MinichartsStore {
 
   #volumes: Record<string, string> = {};
 
-  public get allPositions() { return this.#allPositions; }
+  public get allPositions() { return this.#allPositions; } // set by Altamoon
 
-  #allPositions: Record<string, TradingPosition | null> = {};
+  #allPositions: Record<string, TradingPosition | null> = {}; // set by Altamoon
 
-  public get allOrders() { return this.#allOrders; }
+  public get allOrders() { return this.#allOrders; } // set by Altamoon
 
-  #allOrders: Record<string, TradingOrder[] | null> = {};
+  public positionSymbols: string[] = []; // set by Altamoon
 
-  public get allLeverageBrackets() { return this.#allLeverageBrackets; }
+  #allOrders: Record<string, TradingOrder[] | null> = {}; // set by Altamoon
 
-  #allLeverageBrackets: Record<string, api.FuturesLeverageBracket[]> = {};
+  public get allLeverageBrackets() { return this.#allLeverageBrackets; } // set by Altamoon
+
+  #allLeverageBrackets: Record<string, api.FuturesLeverageBracket[]> = {}; // set by Altamoon
 
   public get priceChangePercents(): Record<string, string> { return this.#priceChangePercents; }
 
@@ -110,6 +112,7 @@ export class MinichartsStore {
 
     listenChange(this, 'sortBy', this.#sortSymbols);
     listenChange(this, 'sortDirection', this.#sortSymbols);
+    listenChange(this, 'positionSymbols', this.#sortSymbols);
   }
 
   public triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
@@ -164,12 +167,8 @@ export class MinichartsStore {
   };
 
   #sortSymbols = () => {
-    const positionSymbols = Object.values(this.allPositions as Record<string, TradingPosition>)
-      .filter((pos) => !!pos)
-      .map(({ symbol }) => symbol);
+    const { positionSymbols } = this;
     const symbols: string[] = this.symbols.filter((symbol) => !positionSymbols.includes(symbol));
-
-    console.log(positionSymbols, symbols);
 
     const alphabetically = (s: string[]) => s.sort(
       (a, b) => (a > b ? this.sortDirection : -this.sortDirection),
