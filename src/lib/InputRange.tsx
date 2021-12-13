@@ -50,6 +50,7 @@ const InputRange = ({
           onChange={({ target }) => setCurrentValue(+target.value)}
           onMouseUp={() => onChange(currentValue)}
           onKeyDown={() => onChange(currentValue)}
+          onTouchEnd={() => onChange(currentValue)}
         />
         <RangeEdgeLabel className="min text-muted">{min}</RangeEdgeLabel>
         <RangeEdgeLabel className="max text-muted">{max}</RangeEdgeLabel>
