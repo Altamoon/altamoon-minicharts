@@ -72312,7 +72312,7 @@ var AltamoonMinichart_templateObject, _templateObject2, _templateObject3, _templ
 var ChartInfo = styled_components_browser_esm.div(AltamoonMinichart_templateObject || (AltamoonMinichart_templateObject = _taggedTemplateLiteral(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: calc(100% - 55px);\n  padding: 0.25rem 0.5rem;\n  pointer-events: none;\n"])));
 var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["\n  color: #fff;\n  display: inline;\n  cursor: pointer;\n  pointer-events: auto;\n\n  &:hover {\n    text-decoration: underline;\n  }\n"])));
 var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n"])));
-var ChartContainer = styled_components_browser_esm.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["\n  ", "\n  ", "\n"])), function (_ref) {
+var ChartContainer = styled_components_browser_esm.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["\n  height: 100%;\n  ", "\n  ", "\n"])), function (_ref) {
   var position = _ref.position;
   return position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '';
 }, function (_ref2) {
@@ -72416,7 +72416,8 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
   });
   return /*#__PURE__*/react.createElement(Container, {
     style: {
-      width: width
+      width: width,
+      height: height
     },
     "data-minichart-symbol": symbol
   }, /*#__PURE__*/react.createElement(ChartInfo, null, /*#__PURE__*/react.createElement(SymbolName, {
@@ -72432,9 +72433,6 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
     volume: volume,
     priceChangePercent: priceChangePercent
   }))), /*#__PURE__*/react.createElement(ChartContainer, {
-    style: {
-      height: height
-    },
     ref: setRefs,
     position: position
   }));
