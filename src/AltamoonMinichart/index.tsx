@@ -148,7 +148,7 @@ const AltamoonMinichart = ({
             )}
         </div>
       </ChartInfo>
-      <ChartContainer style={{ height }} ref={setRefs} />
+      <ChartContainer style={{ height }} ref={setRefs} position={position} />
     </Container>
   );
 };
