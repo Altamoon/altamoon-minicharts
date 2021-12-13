@@ -72435,7 +72435,8 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
     style: {
       height: height
     },
-    ref: setRefs
+    ref: setRefs,
+    position: position
   }));
 };
 
