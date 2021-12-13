@@ -38,6 +38,7 @@ const Container = styled.div`
 `;
 
 const ChartContainer = styled.div<{ position?: TradingPosition | null; }>`
+  height: 100%;
   ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
   ${({ position }) => (position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '')}
 `;
@@ -134,7 +135,7 @@ const AltamoonMinichart = ({
   });
 
   return (
-    <Container style={{ width }} data-minichart-symbol={symbol}>
+    <Container style={{ width, height }} data-minichart-symbol={symbol}>
       <ChartInfo>
         <SymbolName onClick={() => onSymbolNameClick?.(symbol)}>
           {baseAsset}
@@ -148,7 +149,7 @@ const AltamoonMinichart = ({
             )}
         </div>
       </ChartInfo>
-      <ChartContainer style={{ height }} ref={setRefs} position={position} />
+      <ChartContainer ref={setRefs} position={position} />
     </Container>
   );
 };
