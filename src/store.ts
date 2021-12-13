@@ -169,6 +169,8 @@ export class MinichartsStore {
       .map(({ symbol }) => symbol);
     const symbols: string[] = this.symbols.filter((symbol) => !positionSymbols.includes(symbol));
 
+    console.log(positionSymbols, symbols);
+
     const alphabetically = (s: string[]) => s.sort(
       (a, b) => (a > b ? this.sortDirection : -this.sortDirection),
     ).slice();
