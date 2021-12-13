@@ -72313,10 +72313,10 @@ var ChartInfo = styled_components_browser_esm.div(AltamoonMinichart_templateObje
 var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templateObject2 = _taggedTemplateLiteral(["\n  color: #fff;\n  display: inline;\n  cursor: pointer;\n  pointer-events: auto;\n\n  &:hover {\n    text-decoration: underline;\n  }\n"])));
 var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n\n  /* border rendered as a separate element */\n  &::before {\n    content: '';\n    position: absolute;\n    z-index: 1;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    pointer-events: none;\n    ", "\n    ", "\n  }\n"])), function (_ref) {
   var position = _ref.position;
-  return position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '';
+  return position && position.pnl > 0 ? 'border: 1px solid var(--bs-success);' : '';
 }, function (_ref2) {
   var position = _ref2.position;
-  return position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '';
+  return position && position.pnl < 0 ? 'border: 1px solid var(--bs-danger);' : '';
 });
 
 var AltamoonMinichart = function AltamoonMinichart(_ref3) {
