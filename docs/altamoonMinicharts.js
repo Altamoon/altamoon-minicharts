@@ -80728,10 +80728,9 @@ var MinichartGrid = function MinichartGrid(_ref) {
     }); // show positions first
 
     return [].concat(_toConsumableArray(positionSymbols), _toConsumableArray(originalSymbols.filter(function (symbol) {
-      return !originalSymbols.includes(symbol);
+      return !positionSymbols.includes(symbol);
     })));
   }, [allPositions, originalSymbols]);
-  console.log('symbols', symbols, originalSymbols);
   return /*#__PURE__*/react.createElement(react.Fragment, null, alertLogContainer ? /*#__PURE__*/(0,react_dom.createPortal)( /*#__PURE__*/react.createElement(Grid_AlertLog, null), alertLogContainer) : /*#__PURE__*/react.createElement(Grid_AlertLog, null), settingsContainer ? /*#__PURE__*/(0,react_dom.createPortal)( /*#__PURE__*/react.createElement(Grid_Settings, null), settingsContainer) : /*#__PURE__*/react.createElement(Grid_Settings, null), /*#__PURE__*/react.createElement(Charts, null, symbols.slice(0, maxChartsLength !== null && maxChartsLength !== void 0 ? maxChartsLength : symbols.length).map(function (symbol) {
     return futuresExchangeSymbolsMap[symbol];
   }).map(function (_ref3) {
