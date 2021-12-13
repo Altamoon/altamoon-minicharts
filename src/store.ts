@@ -164,42 +164,23 @@ export class MinichartsStore {
   };
 
   #sortSymbols = () => {
-    const positionSymbols = Object.values(this.allPositions as Record<string, TradingPosition>)
-      .filter((pos) => !!pos)
-      .map(({ symbol }) => symbol);
-
     switch (this.sortBy) {
       case 'alphabetically':
         this.symbols = this.symbols
           .sort(
-            (a, b) => (
-              // eslint-disable-next-line no-nested-ternary
-              positionSymbols.includes(a)
-                ? -1
-                : (a > b ? this.sortDirection : -this.sortDirection)
-            ),
+            (a, b) => (a > b ? this.sortDirection : -this.sortDirection),
           ).slice();
         break;
       case 'volume':
         this.symbols = this.symbols
           .map((symbol) => [symbol, +this.#volumes[symbol] || 0] as const)
-          .sort((a, b) => (
-            // eslint-disable-next-line no-nested-ternary
-            positionSymbols.includes(a[0])
-              ? -1
-              : (a[1] > b[1] ? this.sortDirection : -this.sortDirection)
-          ))
+          .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
           .map(([symbol]) => symbol);
         break;
       case 'volume_change':
         this.symbols = this.symbols
           .map((symbol) => [symbol, +this.#priceChangePercents[symbol] || 0] as const)
-          .sort((a, b) => (
-            // eslint-disable-next-line no-nested-ternary
-            positionSymbols.includes(a[0])
-              ? -1
-              : (a[1] > b[1] ? this.sortDirection : -this.sortDirection)
-          ))
+          .sort((a, b) => (a[1] > b[1] ? this.sortDirection : -this.sortDirection))
           .map(([symbol]) => symbol);
         break;
       default:

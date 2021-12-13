@@ -1,9 +1,10 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { hot } from 'react-hot-loader/root';
 import { useValue } from 'use-change';
 import styled from 'styled-components';
 
+import { TradingPosition } from 'altamoon-types';
 import Minichart from './Minichart';
 import Settings from './Settings';
 import AlertLog from './AlertLog';
@@ -26,8 +27,20 @@ const MinichartGrid = ({
   onSymbolSelect,
 }: Props): ReactElement => {
   const futuresExchangeSymbolsMap = useValue(ROOT, 'futuresExchangeSymbolsMap');
-  const symbols = useValue(ROOT, 'symbols');
+  const originalSymbols = useValue(ROOT, 'symbols');
   const maxChartsLength = useValue(ROOT, 'maxChartsLength');
+  const allPositions = useValue(ROOT, 'allPositions');
+  const symbols: string[] = useMemo(() => {
+    const positionSymbols = Object.values(allPositions as Record<string, TradingPosition>)
+      .filter((pos) => !!pos)
+      .map(({ symbol }) => symbol);
+
+    // show positions first
+    return [
+      ...positionSymbols,
+      ...originalSymbols.filter((symbol) => !originalSymbols.includes(symbol)),
+    ];
+  }, [allPositions, originalSymbols]);
 
   return (
     <>
