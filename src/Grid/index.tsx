@@ -42,6 +42,8 @@ const MinichartGrid = ({
     ];
   }, [allPositions, originalSymbols]);
 
+  console.log('symbols', symbols);
+
   return (
     <>
       {alertLogContainer ? createPortal(
