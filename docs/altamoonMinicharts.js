@@ -54136,6 +54136,8 @@ var MinichartsStore = /*#__PURE__*/function () {
       value: {}
     });
 
+    _defineProperty(this, "positionSymbols", []);
+
     _classPrivateFieldInitSpec(this, _allOrders, {
       writable: true,
       value: {}
@@ -54276,18 +54278,11 @@ var MinichartsStore = /*#__PURE__*/function () {
     _classPrivateFieldInitSpec(this, _sortSymbols, {
       writable: true,
       value: function value() {
-        var positionSymbols = Object.values(_this.allPositions).filter(function (pos) {
-          return !!pos;
-        }).map(function (_ref3) {
-          var symbol = _ref3.symbol;
-          return symbol;
-        });
+        var positionSymbols = _this.positionSymbols;
 
         var symbols = _this.symbols.filter(function (symbol) {
           return !positionSymbols.includes(symbol);
         });
-
-        console.log(positionSymbols, symbols);
 
         var alphabetically = function alphabetically(s) {
           return s.sort(function (a, b) {
@@ -54300,9 +54295,9 @@ var MinichartsStore = /*#__PURE__*/function () {
             return [symbol, +_classPrivateFieldGet(_this, _volumes)[symbol] || 0];
           }).sort(function (a, b) {
             return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-          }).map(function (_ref4) {
-            var _ref5 = _slicedToArray(_ref4, 1),
-                symbol = _ref5[0];
+          }).map(function (_ref3) {
+            var _ref4 = _slicedToArray(_ref3, 1),
+                symbol = _ref4[0];
 
             return symbol;
           });
@@ -54313,9 +54308,9 @@ var MinichartsStore = /*#__PURE__*/function () {
             return [symbol, +_classPrivateFieldGet(_this, _priceChangePercents)[symbol] || 0];
           }).sort(function (a, b) {
             return a[1] > b[1] ? _this.sortDirection : -_this.sortDirection;
-          }).map(function (_ref6) {
-            var _ref7 = _slicedToArray(_ref6, 1),
-                symbol = _ref7[0];
+          }).map(function (_ref5) {
+            var _ref6 = _slicedToArray(_ref5, 1),
+                symbol = _ref6[0];
 
             return symbol;
           });
@@ -54450,12 +54445,12 @@ var MinichartsStore = /*#__PURE__*/function () {
       writable: true,
       value: function value() {
         futuresTickerStream(function (ticker) {
-          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
-            var quoteVolume = _ref8.quoteVolume;
+          Object.assign(_classPrivateFieldGet(_this, _volumes), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref7) {
+            var quoteVolume = _ref7.quoteVolume;
             return quoteVolume;
           }));
-          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref9) {
-            var priceChangePercent = _ref9.priceChangePercent;
+          Object.assign(_classPrivateFieldGet(_this, _priceChangePercents), (0,lodash.mapValues)((0,lodash.keyBy)(ticker, 'symbol'), function (_ref8) {
+            var priceChangePercent = _ref8.priceChangePercent;
             return priceChangePercent;
           }));
 
@@ -54475,6 +54470,7 @@ var MinichartsStore = /*#__PURE__*/function () {
     void _classPrivateFieldGet(this, _init).call(this);
     (0,dist.listenChange)(this, 'sortBy', _classPrivateFieldGet(this, _sortSymbols));
     (0,dist.listenChange)(this, 'sortDirection', _classPrivateFieldGet(this, _sortSymbols));
+    (0,dist.listenChange)(this, 'positionSymbols', _classPrivateFieldGet(this, _sortSymbols));
   }
 
   _createClass(MinichartsStore, [{
@@ -54491,20 +54487,26 @@ var MinichartsStore = /*#__PURE__*/function () {
     key: "allPositions",
     get: function get() {
       return _classPrivateFieldGet(this, _allPositions);
-    }
+    } // set by Altamoon
+
   }, {
     key: "allOrders",
-    get: function get() {
+    get: // set by Altamoon
+    function get() {
       return _classPrivateFieldGet(this, _allOrders);
-    }
+    } // set by Altamoon
+
   }, {
     key: "allLeverageBrackets",
-    get: function get() {
+    get: // set by Altamoon
+    function get() {
       return _classPrivateFieldGet(this, _allLeverageBrackets);
-    }
+    } // set by Altamoon
+
   }, {
     key: "priceChangePercents",
-    get: function get() {
+    get: // set by Altamoon
+    function get() {
       return _classPrivateFieldGet(this, _priceChangePercents);
     }
   }]);
