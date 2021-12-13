@@ -36,15 +36,18 @@ const Container = styled.div<{ position?: TradingPosition | null }>`
   display: inline-block;
   position: relative;
 
+  /* border rendered as a separate element */
   &::before {
     content: '';
     position: absolute;
+    z-index: 1;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
-    ${({ position }) => (position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '')}
+    pointer-events: none;
+    ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
+    ${({ position }) => (position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '')}
   }
 `;
 
