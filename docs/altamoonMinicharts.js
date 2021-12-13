@@ -72314,10 +72314,10 @@ var SymbolName = styled_components_browser_esm.div(_templateObject2 || (_templat
 var Container = styled_components_browser_esm.div(_templateObject3 || (_templateObject3 = _taggedTemplateLiteral(["\n  border-top: 1px solid rgba(100,100,100,0.5);\n  border-left: 1px solid rgba(100,100,100,0.5);\n  display: inline-block;\n  position: relative;\n"])));
 var ChartContainer = styled_components_browser_esm.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteral(["\n  ", "\n  ", "\n"])), function (_ref) {
   var position = _ref.position;
-  return position && position.pnl > 0 ? 'outline: 2px solid var(--bs-success);' : '';
+  return position && position.pnl > 0 ? 'border: 2px solid var(--bs-success);' : '';
 }, function (_ref2) {
   var position = _ref2.position;
-  return position && position.pnl < 0 ? 'outline: 2px solid var(--bs-danger);' : '';
+  return position && position.pnl < 0 ? 'border: 2px solid var(--bs-danger);' : '';
 });
 
 var AltamoonMinichart = function AltamoonMinichart(_ref3) {
