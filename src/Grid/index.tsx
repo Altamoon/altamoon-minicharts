@@ -42,7 +42,6 @@ const MinichartGrid = ({
       ...originalSymbols.filter((symbol) => !positionSymbols.includes(symbol)),
     ];
   }, [allPositions, originalSymbols]);
-  
 
   return (
     <>
