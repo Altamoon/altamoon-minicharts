@@ -221,9 +221,40 @@ export class MinichartsStore {
   };
 
   #allSymbolsSubscribe = (): (() => void) => {
-    const allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
-
     const { interval, symbols } = this;
+    const allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
+    return api.futuresChartSingleSubscription({
+      interval,
+      callback: (symbol, candles) => {
+        if (!symbols.includes(symbol)) return;
+
+        const lastCandle = candles[candles.length - 1];
+        allCandlesData[symbol] = candles;
+
+        this.realTimeCandles[symbol] = candles;
+
+        this.#throttledListeners[symbol]?.(candles);
+
+        const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
+        if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
+          const anomakyKey: AnomalyKey = `${lastCandle.interval}_${lastCandle.time}`;
+          const lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
+
+          const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
+          const candlesToConsider = candles.slice(-lastCandlesSize, -1);
+          const avg = candlesToConsider
+            .reduce((p, c) => p + +c.volume, 0) / candlesToConsider.length;
+          const isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +lastCandle.volume;
+
+          if (isAnomaly) {
+            this.#volumeAnomalies[symbol] = anomakyKey;
+
+            this.triggerAlert('VOLUME_ANOMALY', symbol);
+          }
+        }
+      },
+    });
+    /*
 
     for (const symbol of symbols) {
       void api.futuresCandles({
@@ -256,29 +287,7 @@ export class MinichartsStore {
 
       const candlesData = [...data];
 
-      allCandlesData[symbol] = candlesData;
-
-      this.realTimeCandles[symbol] = candlesData;
-
-      this.#throttledListeners[symbol]?.(candlesData);
-
-      const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
-      if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
-        const anomakyKey: AnomalyKey = `${candle.interval}_${candle.time}`;
-        const lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
-
-        const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
-        const candlesToConsider = candlesData.slice(-lastCandlesSize, -1);
-        const avg = candlesToConsider.reduce((p, c) => p + +c.volume, 0) / candlesToConsider.length;
-        const isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +candle.volume;
-
-        if (isAnomaly) {
-          this.#volumeAnomalies[symbol] = anomakyKey;
-
-          this.triggerAlert('VOLUME_ANOMALY', symbol);
-        }
-      }
-    });
+    }); */
   };
 
   #volumeSubscribe = () => {
