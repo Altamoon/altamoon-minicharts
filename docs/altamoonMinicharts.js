@@ -19,6 +19,253 @@ module.exports = __webpack_require__(5666);
 
 /***/ }),
 
+/***/ 1877:
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_RESULT__;(function(factory, global) {
+  if (true) {
+    !(__WEBPACK_AMD_DEFINE_RESULT__ = (function() {
+      return factory(global, navigator)
+    }).call(exports, __webpack_require__, exports, module),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))
+  } else {}
+})(function(global, navigator) {
+
+  var RobustWebSocket = function(url, protocols, userOptions) {
+    var realWs = { close: function() {} },
+        connectTimeout,
+        self = this,
+        attempts = 0,
+        reconnects = -1,
+        reconnectWhenOnlineAgain = false,
+        explicitlyClosed = false,
+        pendingReconnect,
+        opts = Object.assign({},
+          RobustWebSocket.defaultOptions,
+          typeof userOptions === 'function' ? { shouldReconnect: userOptions } : userOptions
+        )
+
+    if (typeof opts.timeout !== 'number') {
+      throw new Error('timeout must be the number of milliseconds to timeout a connection attempt')
+    }
+
+    if (typeof opts.shouldReconnect !== 'function') {
+      throw new Error('shouldReconnect must be a function that returns the number of milliseconds to wait for a reconnect attempt, or null or undefined to not reconnect.')
+    }
+
+    ['bufferedAmount', 'url', 'readyState', 'protocol', 'extensions'].forEach(function(readOnlyProp) {
+      Object.defineProperty(self, readOnlyProp, {
+        get: function() { return realWs[readOnlyProp] }
+      })
+    })
+
+    function clearPendingReconnectIfNeeded() {
+      if (pendingReconnect) {
+        clearTimeout(pendingReconnect)
+        pendingReconnect = null
+      }
+    }
+
+    var ononline = function(event) {
+      if (reconnectWhenOnlineAgain) {
+        clearPendingReconnectIfNeeded()
+        reconnect(event)
+      }
+    },
+    onoffline = function() {
+      reconnectWhenOnlineAgain = true
+      realWs.close(1000)
+    },
+    connectivityEventsAttached = false
+
+    function detachConnectivityEvents() {
+      if (connectivityEventsAttached) {
+        global.removeEventListener('online', ononline)
+        global.removeEventListener('offline', onoffline)
+        connectivityEventsAttached = false
+      }
+    }
+
+    function attachConnectivityEvents() {
+      if (!connectivityEventsAttached) {
+        global.addEventListener('online', ononline)
+        global.addEventListener('offline', onoffline)
+        connectivityEventsAttached = true
+      }
+    }
+
+    self.send = function() {
+      return realWs.send.apply(realWs, arguments)
+    }
+
+    self.close = function(code, reason) {
+      if (typeof code !== 'number') {
+        reason = code
+        code = 1000
+      }
+
+      clearPendingReconnectIfNeeded()
+      reconnectWhenOnlineAgain = false
+      explicitlyClosed = true
+      detachConnectivityEvents()
+
+      return realWs.close(code, reason)
+    }
+
+    self.open = function() {
+      if (realWs.readyState !== WebSocket.OPEN && realWs.readyState !== WebSocket.CONNECTING) {
+        clearPendingReconnectIfNeeded()
+        reconnectWhenOnlineAgain = false
+        explicitlyClosed = false
+
+        newWebSocket()
+      }
+    }
+
+    function reconnect(event) {
+      if ((!opts.shouldReconnect.handle1000 && event.code === 1000) || explicitlyClosed) {
+        attempts = 0
+        return
+      }
+      if (navigator.onLine === false) {
+        reconnectWhenOnlineAgain = true
+        return
+      }
+
+      var delay = opts.shouldReconnect(event, self)
+      if (typeof delay === 'number') {
+        pendingReconnect = setTimeout(newWebSocket, delay)
+      }
+    }
+
+    Object.defineProperty(self, 'listeners', {
+      value: {
+        open: [function(event) {
+          if (connectTimeout) {
+            clearTimeout(connectTimeout)
+            connectTimeout = null
+          }
+          event.reconnects = ++reconnects
+          event.attempts = attempts
+          attempts = 0
+          reconnectWhenOnlineAgain = false
+        }],
+        close: [reconnect]
+      }
+    })
+
+    Object.defineProperty(self, 'attempts', {
+      get: function() { return attempts },
+      enumerable: true
+    })
+
+    Object.defineProperty(self, 'reconnects', {
+      get: function() { return reconnects },
+      enumerable: true
+    })
+
+    async function newWebSocket() {
+      var newUrl = (typeof url === 'function' ? await url(self) : url);
+      pendingReconnect = null
+      realWs = new WebSocket(newUrl, protocols || undefined)
+      realWs.binaryType = self.binaryType
+
+      attempts++
+      self.dispatchEvent(Object.assign(new CustomEvent('connecting'), {
+        attempts: attempts,
+        reconnects: reconnects
+      }))
+
+      connectTimeout = setTimeout(function() {
+        connectTimeout = null
+        detachConnectivityEvents()
+        self.dispatchEvent(Object.assign(new CustomEvent('timeout'), {
+          attempts: attempts,
+          reconnects: reconnects
+        }))
+      }, opts.timeout)
+
+      ;['open', 'close', 'message', 'error'].forEach(function(stdEvent) {
+        realWs.addEventListener(stdEvent, function(event) {
+          self.dispatchEvent(event)
+
+          var cb = self['on' + stdEvent]
+          if (typeof cb === 'function') {
+            return cb.apply(self, arguments)
+          }
+        })
+      })
+
+      if (!opts.ignoreConnectivityEvents) {
+        attachConnectivityEvents()
+      }
+    }
+
+    if (opts.automaticOpen) {
+      newWebSocket()
+    }
+  }
+
+  RobustWebSocket.defaultOptions = {
+    // the time to wait before a successful connection
+    // before the attempt is considered to have timed out
+    timeout: 4000,
+    // Given a CloseEvent or OnlineEvent and the RobustWebSocket state,
+    // should a reconnect be attempted? Return the number of milliseconds to wait
+    // to reconnect (or null or undefined to not), rather than true or false
+    shouldReconnect: function(event, ws) {
+      if (event.code === 1008 || event.code === 1011) return
+      return [0, 3000, 10000][ws.attempts]
+    },
+
+    // Flag to control whether attachement to navigator online/offline events
+    // should be disabled.
+    ignoreConnectivityEvents: false,
+
+    // Create and connect the WebSocket when the instance is instantiated.
+    // Defaults to true to match standard WebSocket behavior
+    automaticOpen: true
+  }
+
+  RobustWebSocket.prototype.binaryType = 'blob'
+
+  // Taken from MDN https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
+  RobustWebSocket.prototype.addEventListener = function(type, callback) {
+    if (!(type in this.listeners)) {
+      this.listeners[type] = []
+    }
+    this.listeners[type].push(callback)
+  }
+
+  RobustWebSocket.prototype.removeEventListener = function(type, callback) {
+    if (!(type in this.listeners)) {
+      return
+    }
+    var stack = this.listeners[type]
+    for (var i = 0, l = stack.length; i < l; i++) {
+      if (stack[i] === callback) {
+        stack.splice(i, 1)
+        return
+      }
+    }
+  }
+
+  RobustWebSocket.prototype.dispatchEvent = function(event) {
+    if (!(event.type in this.listeners)) {
+      return
+    }
+    var stack = this.listeners[event.type]
+    for (var i = 0, l = stack.length; i < l; i++) {
+      stack[i].call(this, event)
+    }
+  }
+
+  return RobustWebSocket
+}, typeof window != 'undefined' ? window : (typeof __webpack_require__.g != 'undefined' ? __webpack_require__.g : this));
+
+
+/***/ }),
+
 /***/ 8820:
 /***/ (function(module, exports) {
 
@@ -53259,6 +53506,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classApplyDescriptorSet.js
@@ -53324,6 +53574,9 @@ function setOptions(opts) {
     Object.assign(options, opts);
 }
 
+// EXTERNAL MODULE: ./node_modules/altamoon-robust-websocket/robust-websocket.js
+var robust_websocket = __webpack_require__(1877);
+var robust_websocket_default = /*#__PURE__*/__webpack_require__.n(robust_websocket);
 ;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/emitError.js
 function emitError(error) {
     window.dispatchEvent(new CustomEvent('binance-api-error', {
@@ -53334,10 +53587,11 @@ function emitError(error) {
 ;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/futuresSubscribe.js
 
 
+
 function futuresSubscribe_futuresSubscribe(streams, callback) {
     const streamsStr = streams.join('/');
     const url = `${api_options.wsURL}?streams=${streamsStr}`;
-    let webSocket = new WebSocket(url);
+    let webSocket = new (robust_websocket_default())(url);
     let isClosed = false;
     const addEvents = (ws) => {
         ws.addEventListener('error', (event) => {
@@ -53662,11 +53916,12 @@ async function futuresLeverageBracket(symbol) {
  * Start a new user data stream. The stream will close after 60 minutes unless a keepalive is sent.
  * If the account has an active listenKey, that listenKey will be returned
  * and its validity will be extended for 60 minutes.
+ * @param method - Request method (GET, POST or PUT)
  * @see {@link https://binance-docs.github.io/apidocs/futures/en/#start-user-data-stream-user_stream}
  * @returns Data stream key
  */
-async function futuresGetDataStream() {
-    return promiseRequest('v1/listenKey', {}, { type: 'SIGNED', method: 'POST' });
+async function futuresUserDataStream(method) {
+    return promiseRequest('v1/listenKey', {}, { type: 'SIGNED', method });
 }
 /**
  * Account Information V2 (USER_DATA)
@@ -53705,12 +53960,18 @@ async function futuresUserTrades({ symbol, startTime, endTime, fromId, limit, })
 async function futuresDepth(symbol) {
     return promiseRequest('v1/depth', { symbol });
 }
+let exchangeInfoPromise;
 /**
  * Get exchange Information
  * @remarks Current exchange trading rules and symbol information
  */
 async function futuresExchangeInfo() {
-    return promiseRequest_promiseRequest('v1/exchangeInfo');
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    if (!exchangeInfoPromise) {
+        // make the request run only once
+        exchangeInfoPromise = promiseRequest_promiseRequest('v1/exchangeInfo');
+    }
+    return exchangeInfoPromise;
 }
 /**
  * New Order (TRADE)
@@ -54016,6 +54277,96 @@ function futuresChartSubscribe({ symbol, interval, callback, limit, firstTickFro
     });
 }
 
+;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/futuresChartSingleSubscription.js
+
+
+
+
+// define those variables globally so they can be used by plugins
+globalThis.singleSubscriptionCallbacks = globalThis.singleSubscriptionCallbacks
+    ?? {};
+globalThis.singleSubscriptionTo = globalThis.singleSubscriptionTo
+    ?? {};
+globalThis.singleSubscriptionAllCandles = globalThis.singleSubscriptionAllCandles
+    ?? {};
+function futuresChartSingleSubscription({ interval, symbol: givenSymbol = null, callback: givenCallback, }) {
+    const callbacks = globalThis.singleSubscriptionCallbacks;
+    const subscribedTo = globalThis.singleSubscriptionTo;
+    const allCandles = globalThis.singleSubscriptionAllCandles;
+    const unsubscribe = () => {
+        callbacks[interval] = callbacks[interval]
+            .filter(({ callback }) => givenCallback !== callback);
+    };
+    // add handler
+    callbacks[interval] = callbacks[interval] || [];
+    callbacks[interval].push({ callback: givenCallback, symbol: givenSymbol });
+    void futuresExchangeInfo().then(({ symbols }) => {
+        // retrieve all symbols
+        // if subscription exists
+        if (subscribedTo[interval]) {
+            // call the callback if the subscription already made a tick
+            if (allCandles[interval]) {
+                for (const { symbol } of symbols) {
+                    if (allCandles[interval]?.[symbol]) {
+                        if (!givenSymbol || givenSymbol === symbol) {
+                            givenCallback(symbol, allCandles[interval][symbol]);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        subscribedTo[interval] = true;
+        let symbolList = symbols.map(({ symbol }) => symbol);
+        const loadCandles = (symbol) => futuresCandles_futuresCandles({
+            symbol, interval, limit: 1000,
+        }).then((candles) => {
+            allCandles[interval] = allCandles[interval] || {};
+            allCandles[interval][symbol] = candles;
+            callbacks[interval].forEach((c) => {
+                if (!c.symbol || c.symbol === symbol) {
+                    c.callback(symbol, allCandles[interval][symbol]);
+                }
+            });
+        });
+        // load candles for givenSymbol first
+        if (givenSymbol) {
+            void loadCandles(givenSymbol).then(() => {
+                // then load rest
+                symbolList = symbolList.filter((symbol) => symbol !== givenSymbol);
+                for (const symbol of symbolList) {
+                    void loadCandles(symbol);
+                }
+            });
+        }
+        else {
+            // then load rest
+            for (const symbol of symbolList) {
+                void loadCandles(symbol);
+            }
+        }
+        const subscriptionPairs = symbols.map(({ symbol }) => [symbol, interval]);
+        futuresCandlesSubscribe(subscriptionPairs, (candle) => {
+            const { symbol } = candle;
+            const candles = allCandles[interval]?.[symbol];
+            if (!candles)
+                return;
+            if (candle.time === candles[candles.length - 1]?.time) {
+                Object.assign(candles[candles.length - 1], candle);
+            }
+            else {
+                candles.push(candle);
+            }
+            callbacks[interval].forEach((c) => {
+                if (!c.symbol || c.symbol === symbol) {
+                    c.callback(symbol, [...allCandles[interval][symbol]]);
+                }
+            });
+        });
+    });
+    return unsubscribe;
+}
+
 ;// CONCATENATED MODULE: ./node_modules/altamoon-binance-api/api/spot.js
 
 const api = 'https://api.binance.com/api/';
@@ -54043,6 +54394,7 @@ async function transfer({ asset, amount, isFromSpotToFutures, }) {
 
 
 
+
 // EXTERNAL MODULE: ./node_modules/lodash/lodash.js
 var lodash = __webpack_require__(6486);
 ;// CONCATENATED MODULE: ./src/alertSounds.ts
@@ -54057,13 +54409,6 @@ var alertVolumeUri = 'data:audio/mpeg;base64,//PkZAAf+gTuBmtMXhkJFgQUwZBYCKx3jRm
 
 
 
-
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = store_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function store_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return store_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return store_arrayLikeToArray(o, minLen); }
-
-function store_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 
 
@@ -54392,82 +54737,66 @@ var MinichartsStore = /*#__PURE__*/function () {
     _classPrivateFieldInitSpec(this, _allSymbolsSubscribe, {
       writable: true,
       value: function value() {
-        var allCandlesData = {};
         var interval = _this.interval,
             symbols = _this.symbols;
+        var allCandlesData = {};
+        return futuresChartSingleSubscription({
+          interval: interval,
+          callback: function callback(symbol, candles) {
+            var _classPrivateFieldGet3, _classPrivateFieldGet4;
 
-        var _iterator = _createForOfIteratorHelper(symbols),
-            _step;
+            if (!symbols.includes(symbol)) return;
+            var lastCandle = candles[candles.length - 1];
+            allCandlesData[symbol] = candles;
+            _this.realTimeCandles[symbol] = candles;
+            (_classPrivateFieldGet3 = (_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _throttledListeners))[symbol]) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.call(_classPrivateFieldGet4, candles);
+            var anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
 
-        try {
-          var _loop = function _loop() {
-            var symbol = _step.value;
-            void futuresCandles_futuresCandles({
-              // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
-              symbol: symbol,
-              interval: interval,
-              limit: 499,
-              lastCandleFromCache: true
-            }).then(function (candles) {
-              var _classPrivateFieldGet5, _classPrivateFieldGet6;
+            if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
+              var anomakyKey = "".concat(lastCandle.interval, "_").concat(lastCandle.time);
+              var lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
+              var currentCandleIsAnomaly = _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] === anomakyKey;
+              var candlesToConsider = candles.slice(-lastCandlesSize, -1);
+              var avg = candlesToConsider.reduce(function (p, c) {
+                return p + +c.volume;
+              }, 0) / candlesToConsider.length;
+              var isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +lastCandle.volume;
 
-              allCandlesData[symbol] = candles;
-              (_classPrivateFieldGet5 = (_classPrivateFieldGet6 = _classPrivateFieldGet(_this, _throttledListeners))[symbol]) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.call(_classPrivateFieldGet6, candles);
-            })["catch"](function (e) {
-              // eslint-disable-next-line no-console
-              console.error(e);
-            });
-          };
+              if (isAnomaly) {
+                _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] = anomakyKey;
 
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            _loop();
+                _this.triggerAlert('VOLUME_ANOMALY', symbol);
+              }
+            }
           }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-
-        var subscriptionPairs = symbols.map(function (symbol) {
-          return [symbol, interval];
         });
-        return futuresCandlesSubscribe(subscriptionPairs, function (candle) {
-          var _classPrivateFieldGet3, _classPrivateFieldGet4;
-
-          var symbol = candle.symbol;
-          var data = allCandlesData[symbol];
-          if (!data) return;
-
-          if (candle.time === data[data.length - 1].time) {
+        /*
+         for (const symbol of symbols) {
+          void api.futuresCandles({
+            // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+            symbol, interval, limit: 499, lastCandleFromCache: true,
+          }).then((candles) => {
+            allCandlesData[symbol] = candles;
+            this.#throttledListeners[symbol]?.(candles);
+          }).catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error(e);
+          });
+        }
+         const subscriptionPairs = symbols.map(
+          (symbol) => [symbol, interval] as [string, api.CandlestickChartInterval],
+        );
+         return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
+          const { symbol } = candle;
+          const data = allCandlesData[symbol];
+           if (!data) return;
+           if (candle.time === data[data.length - 1].time) {
             Object.assign(data[data.length - 1], candle);
           } else {
             data.push(candle);
           }
-
-          var candlesData = _toConsumableArray(data);
-
-          allCandlesData[symbol] = candlesData;
-          _this.realTimeCandles[symbol] = candlesData;
-          (_classPrivateFieldGet3 = (_classPrivateFieldGet4 = _classPrivateFieldGet(_this, _throttledListeners))[symbol]) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.call(_classPrivateFieldGet4, candlesData);
-          var anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
-
-          if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
-            var anomakyKey = "".concat(candle.interval, "_").concat(candle.time);
-            var lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
-            var currentCandleIsAnomaly = _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] === anomakyKey;
-            var candlesToConsider = candlesData.slice(-lastCandlesSize, -1);
-            var avg = candlesToConsider.reduce(function (p, c) {
-              return p + +c.volume;
-            }, 0) / candlesToConsider.length;
-            var isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +candle.volume;
-
-            if (isAnomaly) {
-              _classPrivateFieldGet(_this, _volumeAnomalies)[symbol] = anomakyKey;
-
-              _this.triggerAlert('VOLUME_ANOMALY', symbol);
-            }
-          }
-        });
+           const candlesData = [...data];
+         }); */
       }
     });
 
@@ -62134,11 +62463,11 @@ function defaultConstrain(transform, extent, translateExtent) {
 
 
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
-function Plot_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = Plot_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = Plot_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 function Plot_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return Plot_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return Plot_arrayLikeToArray(o, minLen); }
 
@@ -62358,7 +62687,7 @@ var Plot = /*#__PURE__*/function () {
         var width = _this.bodyWidth;
         var string = '';
 
-        var _iterator = Plot_createForOfIteratorHelper(candles),
+        var _iterator = _createForOfIteratorHelper(candles),
             _step;
 
         try {
@@ -62404,7 +62733,7 @@ var Plot = /*#__PURE__*/function () {
       value: function value(candles) {
         var string = '';
 
-        var _iterator2 = Plot_createForOfIteratorHelper(candles),
+        var _iterator2 = _createForOfIteratorHelper(candles),
             _step2;
 
         try {
@@ -62539,6 +62868,7 @@ _defineProperty(Plot, "candlesToHeikinAshi", function (candles) {
 
 
 
+
 function Svg_classPrivateFieldInitSpec(obj, privateMap, value) { Svg_checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
 
 function Svg_checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
@@ -62549,7 +62879,7 @@ var _svg = /*#__PURE__*/new WeakMap();
 
 var _groupSelection = /*#__PURE__*/new WeakMap();
 
-var Svg = function Svg() {
+var Svg = /*#__PURE__*/_createClass(function Svg() {
   var _this = this;
 
   _classCallCheck(this, Svg);
@@ -62589,10 +62919,11 @@ var Svg = function Svg() {
 
     return (_classPrivateFieldGet4 = (_classPrivateFieldGet5 = _classPrivateFieldGet(_this, _svg)) === null || _classPrivateFieldGet5 === void 0 ? void 0 : _classPrivateFieldGet5.node()) !== null && _classPrivateFieldGet4 !== void 0 ? _classPrivateFieldGet4 : null;
   });
-};
+});
 
 
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/ClipPath.ts
+
 
 
 
@@ -62608,7 +62939,7 @@ var _clipChart = /*#__PURE__*/new WeakMap();
 
 var _plotMouseEventsArea = /*#__PURE__*/new WeakMap();
 
-var ClipPath = function ClipPath() {
+var ClipPath = /*#__PURE__*/_createClass(function ClipPath() {
   var _this = this;
 
   _classCallCheck(this, ClipPath);
@@ -62639,7 +62970,7 @@ var ClipPath = function ClipPath() {
     (_classPrivateFieldGet2 = _classPrivateFieldGet(_this, _clipChart)) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.attr('x', 0).attr('y', 0).attr('width', width).attr('height', height);
     (_classPrivateFieldGet3 = _classPrivateFieldGet(_this, _plotMouseEventsArea)) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.attr('x', 0).attr('y', 0).attr('width', width).attr('height', height);
   });
-};
+});
 
 
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Axes.ts
@@ -62898,12 +63229,15 @@ function _inherits(subClass, superClass) {
     throw new TypeError("Super expression must either be null or a function");
   }
 
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      writable: true,
-      configurable: true
-    }
+  Object.defineProperty(subClass, "prototype", {
+    value: Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    }),
+    writable: false
   });
   if (superClass) setPrototypeOf_setPrototypeOf(subClass, superClass);
 }
@@ -62911,17 +63245,11 @@ function _inherits(subClass, superClass) {
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function _typeof(obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, _typeof(obj);
 }
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/assertThisInitialized.js
 function _assertThisInitialized(self) {
@@ -63698,6 +64026,7 @@ function _get() {
 
 
 
+
 function CrosshairPriceLines_createSuper(Derived) { var hasNativeReflectConstruct = CrosshairPriceLines_isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function CrosshairPriceLines_isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
@@ -63786,7 +64115,7 @@ var CrosshairPriceLines = /*#__PURE__*/function (_PriceLines) {
     return _this;
   }
 
-  return CrosshairPriceLines;
+  return _createClass(CrosshairPriceLines);
 }(PriceLines);
 
 
@@ -64101,6 +64430,7 @@ _defineProperty(AlertPriceLines, "createAlertLine", function (yValue) {
 
 
 
+
 function OrderPriceLines_createSuper(Derived) { var hasNativeReflectConstruct = OrderPriceLines_isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
 function OrderPriceLines_isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
@@ -64193,11 +64523,12 @@ var OrderPriceLines = /*#__PURE__*/function (_PriceLines) {
     return _this;
   }
 
-  return OrderPriceLines;
+  return _createClass(OrderPriceLines);
 }(PriceLines);
 
 
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/PositionPriceLines.ts
+
 
 
 
@@ -64268,11 +64599,12 @@ var PositionPriceLines = /*#__PURE__*/function (_PriceLines) {
     return _this;
   }
 
-  return PositionPriceLines;
+  return _createClass(PositionPriceLines);
 }(PriceLines);
 
 
 ;// CONCATENATED MODULE: ./src/AltamoonMinichart/Chart/Lines/LiquidationPriceLines.ts
+
 
 
 
@@ -64496,7 +64828,7 @@ var LiquidationPriceLines = /*#__PURE__*/function (_PriceLines) {
     return _this;
   }
 
-  return LiquidationPriceLines;
+  return _createClass(LiquidationPriceLines);
 }(PriceLines);
 
 
@@ -64702,6 +65034,7 @@ var Lines = /*#__PURE__*/function () {
 
 
 
+
 function Chart_classPrivateFieldInitSpec(obj, privateMap, value) { Chart_checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
 
 function Chart_checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
@@ -64767,7 +65100,7 @@ var _calcXDomain = /*#__PURE__*/new WeakMap();
 
 var _calcYDomain = /*#__PURE__*/new WeakMap();
 
-var Chart = function Chart(container, _ref) {
+var Chart = /*#__PURE__*/_createClass(function Chart(container, _ref) {
   var _this = this;
 
   var scaleType = _ref.scaleType,
@@ -65200,7 +65533,7 @@ var Chart = function Chart(container, _ref) {
   _classPrivateFieldGet(this, _zoom).filter(function (evt) {
     return evt.shiftKey || evt.type !== 'wheel';
   });
-};
+});
 
 
 // EXTERNAL MODULE: ./node_modules/prop-types/index.js
@@ -72285,9 +72618,9 @@ defineJQueryPlugin(Toast);
 ;// CONCATENATED MODULE: ./src/lib/tooltipRef.ts
 
 
-function tooltipRef_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function tooltipRef_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function tooltipRef_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { tooltipRef_ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { tooltipRef_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function tooltipRef_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? tooltipRef_ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : tooltipRef_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 
 function tooltipRef(options) {
@@ -72501,9 +72834,9 @@ var AltamoonMinichart = function AltamoonMinichart(_ref3) {
 ;// CONCATENATED MODULE: ./src/Grid/Minichart.tsx
 
 
-function Minichart_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+function Minichart_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 
-function Minichart_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { Minichart_ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { Minichart_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function Minichart_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? Minichart_ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : Minichart_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 
 
