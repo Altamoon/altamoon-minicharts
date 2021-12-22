@@ -231,7 +231,7 @@ export class MinichartsStore {
     }).altamoonFuturesChartWorkerSubscribe
       ?? api.futuresChartWorkerSubscribe;
     return futuresChartWorkerSubscribe({
-      delay: 50,
+      frequency: 50,
       symbols: 'PERPETUAL',
       interval,
       callback: (symbol, candles) => {
