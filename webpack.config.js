@@ -18,7 +18,7 @@ module.exports = {
       },
       {
         test: /\.worker\.js$/,
-        use: 'worker-loader', // charts listener uses worker
+        use: { loader: 'worker-loader', options: {} }, // charts listener uses worker
       },
     ],
   },
