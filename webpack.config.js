@@ -28,7 +28,7 @@ module.exports = {
   output: {
     library: 'altamoonMinicharts',
     libraryTarget: 'umd',
-    filename: 'altamoonMinicharts.min.js',
+    filename: 'altamoonMinicharts.js',
     chunkFilename: '[id].[chunkhash].js',
     libraryExport: 'default',
     path: path.resolve(__dirname, 'docs'),
