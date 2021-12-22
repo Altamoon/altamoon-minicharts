@@ -5,7 +5,6 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
-const UnminifiedWebpackPlugin = require('unminified-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
@@ -30,6 +29,7 @@ module.exports = {
     library: 'altamoonMinicharts',
     libraryTarget: 'umd',
     filename: 'altamoonMinicharts.min.js',
+    chunkFilename: '[id].[chunkhash].js',
     libraryExport: 'default',
     path: path.resolve(__dirname, 'docs'),
   },
@@ -41,9 +41,6 @@ module.exports = {
       ],
     }),
     new webpack.EnvironmentPlugin(['NODE_ENV', 'SKIP_RUNTIME_TESTS']),
-    new UnminifiedWebpackPlugin({
-      exclude: /.*.css/,
-    }),
   ],
   devServer: {
     hot: true,
