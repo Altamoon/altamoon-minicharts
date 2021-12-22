@@ -17,6 +17,10 @@ module.exports = {
         use: 'babel-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.worker\.js$/,
+        use: 'worker-loader', // charts listener uses worker
+      },
     ],
   },
   resolve: {

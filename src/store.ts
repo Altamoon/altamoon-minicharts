@@ -222,14 +222,14 @@ export class MinichartsStore {
 
   #allSymbolsSubscribe = (): (() => void) => {
     const { interval, symbols } = this;
-    const allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
-    return api.futuresChartSingleSubscription({
+    return api.futuresChartWorkerSubscribe({
+      delay: 50,
+      symbols: 'PERPETUAL',
       interval,
       callback: (symbol, candles) => {
         if (!symbols.includes(symbol)) return;
 
         const lastCandle = candles[candles.length - 1];
-        allCandlesData[symbol] = candles;
 
         this.realTimeCandles[symbol] = candles;
 
