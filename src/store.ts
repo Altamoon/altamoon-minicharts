@@ -222,7 +222,15 @@ export class MinichartsStore {
 
   #allSymbolsSubscribe = (): (() => void) => {
     const { interval, symbols } = this;
-    return api.futuresChartWorkerSubscribe({
+    // altamoonFuturesChartWorkerSubscribe is defined globally at Altamoon
+    // to fix of issues with worker + webpack;
+    // the function is used when minicharts is Altamoon widget
+    // but standalone version is  going to use  api.futuresChartWorkerSubscribe
+    const futuresChartWorkerSubscribe = (window as unknown as {
+      altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
+    }).altamoonFuturesChartWorkerSubscribe
+      ?? api.futuresChartWorkerSubscribe;
+    return futuresChartWorkerSubscribe({
       delay: 50,
       symbols: 'PERPETUAL',
       interval,
