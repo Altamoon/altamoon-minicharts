@@ -71,8 +71,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.5",
-    "altamoon-binance-api": "^0.0.269",
-    "altamoon-types": "^0.0.269",
+    "altamoon-binance-api": "^0.0.270",
+    "altamoon-types": "^0.0.270",
     "balajs": "^1.0.10",
     "bootstrap": "^5.1.3",
     "buffer": "^6.0.3",
