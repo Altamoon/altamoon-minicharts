@@ -1,13 +1,12 @@
 import React, {
   memo, ReactElement, useCallback,
 } from 'react';
-import {
-  useGet, useSet, useSilent, useValue,
-} from 'use-change';
+import useChange, { useValue } from 'use-change';
 import {
   CANDLES, LEVERAGE_BRACKETS, ORDERS, POSITIONS, PRICE_CHANGE, ROOT, VOLUMES,
 } from '../store';
 import AltamoonMinichart from '../AltamoonMinichart';
+import { AlertItem } from '../AltamoonMinichart/types';
 
 interface Props {
   symbol: string;
@@ -19,7 +18,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const position = useValue(POSITIONS, symbol);
   const orders = useValue(ORDERS, symbol);
   const leverageBrackets = useValue(LEVERAGE_BRACKETS, symbol);
-  const realTimeCandles = useValue(ROOT, 'realTimeCandles');
   const interval = useValue(ROOT, 'interval');
   const chartHeight = useValue(ROOT, 'chartHeight');
   const gridColumns = useValue(ROOT, 'gridColumns');
@@ -28,18 +26,17 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const volume = useValue(VOLUMES, symbol);
   const priceChangePercent = useValue(PRICE_CHANGE, symbol);
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
-  const setSymbolAlerts = useSet(ROOT, 'symbolAlerts');
-  const getSymbolAlerts = useGet(ROOT, 'symbolAlerts');
-  const triggerAlert = useSilent(ROOT, 'triggerAlert');
-  const onUpdateAlerts = useCallback((d: number[]) => setSymbolAlerts((v) => ({
-    ...v,
-    [symbol]: d,
-  })), [setSymbolAlerts, symbol]);
+  const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
+  const onUpdateAlerts = useCallback((d: AlertItem[]) => {
+    setSymbolAlerts((v) => ({
+      ...v,
+      [symbol]: d,
+    }));
+  }, [setSymbolAlerts, symbol]);
 
   return (
     <AltamoonMinichart
       candles={candles ?? []}
-      realTimeCandles={realTimeCandles}
       interval={interval}
       width={`${100 / gridColumns}%`}
       height={`${chartHeight}px`}
@@ -47,7 +44,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       scaleType={scaleType}
       pricePrecision={symbolInfo?.pricePrecision ?? 0}
       symbol={symbol}
-      initialAlerts={getSymbolAlerts()[symbol] ?? []}
+      alerts={symbolAlerts[symbol]}
       position={position}
       orders={orders}
       leverageBrackets={leverageBrackets}
@@ -56,7 +53,6 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       volume={volume}
       priceChangePercent={priceChangePercent}
       onSymbolSelect={onSymbolSelect}
-      onAlert={triggerAlert}
       onUpdateAlerts={onUpdateAlerts}
     />
   );

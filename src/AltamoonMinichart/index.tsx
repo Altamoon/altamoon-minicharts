@@ -8,7 +8,7 @@ import { TradingOrder, TradingPosition } from 'altamoon-types';
 
 import Chart from './Chart';
 import TextIndicators from './TextIndicators';
-import { AlertType, ChartType, ScaleType } from './types';
+import { AlertItem, ChartType, ScaleType } from './types';
 
 const ChartInfo = styled.div`
   position: absolute;
@@ -53,7 +53,6 @@ const Container = styled.div<{ position?: TradingPosition | null }>`
 
 interface Props {
   candles: api.FuturesChartCandle[];
-  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
   interval: api.CandlestickChartInterval;
   width: string;
   height: string;
@@ -61,7 +60,7 @@ interface Props {
   scaleType: ScaleType;
   pricePrecision: number;
   symbol: string;
-  initialAlerts: number[];
+  alerts: AlertItem[];
   orders?: TradingOrder[] | null;
   position?: TradingPosition | null;
   leverageBrackets?: api.FuturesLeverageBracket[];
@@ -70,13 +69,11 @@ interface Props {
   volume: string;
   priceChangePercent: string;
   onSymbolSelect?: (symbol: string) => void;
-  onAlert: (type: AlertType, symbol: string) => void;
-  onUpdateAlerts: (d: number[]) => void;
+  onUpdateAlerts: (d: AlertItem[]) => void;
 }
 
 const AltamoonMinichart = ({
   candles,
-  realTimeCandles,
   interval,
   width,
   height,
@@ -84,7 +81,7 @@ const AltamoonMinichart = ({
   scaleType,
   pricePrecision,
   symbol,
-  initialAlerts,
+  alerts,
   orders,
   position,
   leverageBrackets,
@@ -93,7 +90,6 @@ const AltamoonMinichart = ({
   volume,
   priceChangePercent,
   onSymbolSelect,
-  onAlert,
   onUpdateAlerts,
 }: Props): ReactElement | null => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -116,6 +112,7 @@ const AltamoonMinichart = ({
   useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
   useEffect(() => { chartInstance?.update({ orders }); }, [chartInstance, orders, scaleType]);
   useEffect(() => { chartInstance?.update({ position }); }, [chartInstance, position, scaleType]);
+  useEffect(() => { chartInstance?.update({ alerts }); }, [chartInstance, alerts, scaleType]);
   useEffect(() => {
     chartInstance?.update({ leverageBrackets });
   }, [chartInstance, leverageBrackets, scaleType]);
@@ -126,16 +123,13 @@ const AltamoonMinichart = ({
     if (ref.current && !chartInstance) {
       const instance = new Chart(ref.current, {
         scaleType,
-        triggerAlert: onAlert,
-        realTimeCandles,
-        symbol,
         onUpdateAlerts,
       });
 
       instance.update({
         candles,
         chartType,
-        alerts: initialAlerts,
+        alerts,
       });
 
       setChartInstance(instance);

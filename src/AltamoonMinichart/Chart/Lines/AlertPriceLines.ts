@@ -1,26 +1,16 @@
 import * as d3 from 'd3';
 import moment from 'moment';
-import { listenChange } from 'use-change';
-import * as api from 'altamoon-binance-api';
-
 import { ChartAxis, PriceLinesDatum, ResizeData } from '../types';
 import PriceLines from './PriceLines';
-import { AlertLogItem } from '../../types';
+import { AlertItem } from '../../types';
 
 interface Params {
   axis: ChartAxis;
-  symbol: string;
-  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
-  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
-  onUpdateAlerts: (d: number[]) => void;
-}
-
-interface CustomData {
-  triggerTime?: number;
+  onUpdateAlerts: (d: AlertItem[]) => void;
 }
 
 interface AlertLinesDatum extends PriceLinesDatum {
-  customData: CustomData;
+  customData: AlertItem;
 }
 
 moment.relativeTimeThreshold('ss', 0);
@@ -33,33 +23,39 @@ const bellIconStr = `<svg style="transform: scale(0.7) translate(0, -3px);" xmln
 let counter = 0;
 
 export default class AlertPriceLines extends PriceLines {
-  private static createAlertLine = (yValue: number): AlertLinesDatum => ({
-    yValue,
-    title: bellIconStr,
-    isDraggable: true,
-    isTitleVisible: 'hover',
-    customData: {},
+  private static createAlertLine = (d: AlertItem): AlertLinesDatum => ({
+    yValue: d.price,
+    title: d.triggeredTimeISO ? this.getTriggeredAlertTitle(d.triggeredTimeISO) : bellIconStr,
+    isDraggable: !d.triggeredTimeISO,
+    isTitleVisible: d.triggeredTimeISO ? true : 'hover',
+    customData: d,
     color: '#828282',
     // eslint-disable-next-line no-plusplus
     id: `alert_${new Date().toISOString()}_${counter++}`,
   });
 
-  #realTimePrice: number | null = null;
+  private static getTriggeredAlertTitle = (triggeredTimeISO: string) => {
+    const diff = Date.now() - new Date(triggeredTimeISO).getTime();
+    let msec = diff;
+    const hh = Math.floor(msec / 1000 / 60 / 60);
+    msec -= hh * 1000 * 60 * 60;
+    const mm = Math.floor(msec / 1000 / 60);
+    msec -= mm * 1000 * 60;
+    const ss = Math.floor(msec / 1000);
+    msec -= ss * 1000;
 
-  #triggerAlert: Params['triggerAlert'];
+    return `<span class="triggered-alert-indicator">${bellIconStr}</span> ${hh ? `${hh}h ` : ''}${mm ? `${mm}m ` : ''}${ss}s ago`;
+  };
 
   #handleUpdate: Params['onUpdateAlerts'];
 
-  #symbol: string;
+  #alertItems: AlertItem[] = [];
 
-  constructor({
-    axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
-  }: Params) {
+  constructor({ axis, onUpdateAlerts }: Params) {
     super({
       axis,
       items: [],
       isTitleVisible: true,
-
       lineStyle: 'dashed',
       onDragEnd: () => this.#triggerUpdate(),
       onAdd: () => this.#triggerUpdate(),
@@ -69,92 +65,40 @@ export default class AlertPriceLines extends PriceLines {
       },
     });
 
-    this.#triggerAlert = triggerAlert;
-
     this.#handleUpdate = onUpdateAlerts;
 
-    this.#symbol = symbol;
-
     setInterval(() => {
-      const items = this.#getTriggeredItems();
+      const items = this.getItems()
+        .filter(({ customData }) => !!customData.triggeredTimeISO);
 
       if (!items.length) return;
 
       const now = Date.now();
 
       for (const item of items) {
-        const { triggerTime } = item.customData;
+        const { triggeredTimeISO } = item.customData;
         const index = this.getItems().indexOf(item);
-        if (triggerTime) {
-          if (triggerTime < now - 2 * 60 * 60_000) {
+        if (triggeredTimeISO) {
+          if (new Date(triggeredTimeISO).getTime() < now - 2 * 60 * 60_000) {
             this.removeItem(index);
           } else {
-            const diff = Date.now() - triggerTime;
-            let msec = diff;
-            const hh = Math.floor(msec / 1000 / 60 / 60);
-            msec -= hh * 1000 * 60 * 60;
-            const mm = Math.floor(msec / 1000 / 60);
-            msec -= mm * 1000 * 60;
-            const ss = Math.floor(msec / 1000);
-            msec -= ss * 1000;
-
             this.updateItem(index, {
               isTitleVisible: true,
-              title: `<span class="triggered-alert-indicator">${bellIconStr}</span> ${hh ? `${hh}h ` : ''}${mm ? `${mm}m ` : ''}${ss}s ago`,
+              title: AlertPriceLines.getTriggeredAlertTitle(triggeredTimeISO),
             });
           }
         }
       }
     }, 1000);
-
-    listenChange(realTimeCandles, symbol, this.#checkAlerts);
   }
 
-  #checkAlerts = (realTimeCandles: api.FuturesChartCandle[]): void => {
-    const realTimePrice = realTimeCandles[realTimeCandles.length - 1]?.close ?? 0;
-    const previousPrice = this.#realTimePrice;
-    const items = this.getItems();
-    const triggerAlert = (datum: AlertLinesDatum, type: AlertLogItem['type']) => {
-      if (datum.customData.triggerTime) return;
-
-      // update alert item on the chart
-      this.updateItem(this.getItems().indexOf(datum), {
-        isDraggable: false,
-        pointerEventsNone: true,
-        customData: { triggerTime: Date.now() },
+  public updateAlertLines = (alerts: AlertItem[]): void => {
+    if (JSON.stringify(this.#alertItems) !== JSON.stringify(alerts)) {
+      this.#alertItems = alerts;
+      this.update({
+        items: alerts.map(AlertPriceLines.createAlertLine),
       });
-
-      // save updated list of alerts
-      this.#triggerUpdate();
-
-      // play sound and create log entry
-      this.#triggerAlert(type, this.#symbol);
-    };
-
-    if (realTimePrice && previousPrice) {
-      const up = items.find(
-        ({ yValue }) => yValue && realTimePrice >= yValue && previousPrice < yValue,
-      );
-      const down = items.find(
-        ({ yValue }) => yValue && realTimePrice <= yValue && previousPrice > yValue,
-      );
-      if (up) {
-        triggerAlert(up, 'PRICE_UP');
-      } else if (down) {
-        triggerAlert(down, 'PRICE_DOWN');
-      }
     }
-
-    this.#realTimePrice = realTimePrice;
-  };
-
-  public updateAlertLines = (alerts: number[]): void => {
-    this.update({
-      items: [
-        ...alerts.map(AlertPriceLines.createAlertLine),
-        ...this.#getTriggeredItems(),
-      ],
-    });
   };
 
   public appendTo = (
@@ -171,7 +115,12 @@ export default class AlertPriceLines extends PriceLines {
   }
 
   #triggerUpdate = (): void => {
-    this.#handleUpdate(this.#getActualItems().map(({ yValue }) => yValue ?? -1));
+    const alertItems = this.getItems().map(({ yValue, customData }) => ({
+      ...customData, price: yValue ?? 0,
+    }));
+
+    this.#alertItems = alertItems;
+    this.#handleUpdate(alertItems);
   };
 
   #onRightClick = (evt: MouseEvent): void => {
@@ -180,12 +129,15 @@ export default class AlertPriceLines extends PriceLines {
 
     const coords = d3.pointer(evt);
 
-    this.addItem(AlertPriceLines.createAlertLine(this.invertY(coords[1])));
+    this.addItem(AlertPriceLines.createAlertLine({
+      price: this.invertY(coords[1]),
+      triggeredTimeISO: null,
+    }));
   };
 
-  #getActualItems = (): AlertLinesDatum[] => this.getItems()
-    .filter(({ customData }) => !customData.triggerTime);
+  /* #getActualItems = (): AlertLinesDatum[] => this.getItems()
+    .filter(({ customData }) => !customData.triggeredTimeISO);
 
   #getTriggeredItems = (): AlertLinesDatum[] => this.getItems()
-    .filter(({ customData }) => !!customData.triggerTime);
+    .filter(({ customData }) => !!customData.triggeredTimeISO); */
 }

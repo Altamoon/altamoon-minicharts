@@ -4,7 +4,7 @@ import { listenChange } from 'use-change';
 
 import { TradingOrder, TradingPosition } from 'altamoon-types';
 import {
-  ChartType, SortDirection, SortBy, AlertLogItem, ScaleType,
+  ChartType, SortDirection, SortBy, AlertLogItem, ScaleType, AlertItem,
 } from './AltamoonMinichart/types';
 import { alertUpUri, alertDownUri, alertVolumeUri } from './alertSounds';
 
@@ -42,7 +42,7 @@ export class MinichartsStore {
 
   public scaleType = persistent<ScaleType>('scaleType', 'log');
 
-  public symbolAlerts = persistent<Record<string, number[]>>('symbolAlerts', {});
+  public symbolAlerts = persistent<Record<string, AlertItem[]>>('symbolAlerts', {});
 
   public alertLog = persistent<AlertLogItem[]>('alertLog', []);
 
@@ -115,7 +115,7 @@ export class MinichartsStore {
     listenChange(this, 'positionSymbols', this.#sortSymbols);
   }
 
-  public triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
+  #triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
     const candles = this.realTimeCandles[symbol] ?? [];
     const { close: price, volume } = candles[candles.length - 1] ?? { close: 0, volume: 0 };
 
@@ -239,7 +239,7 @@ export class MinichartsStore {
 
         const lastCandle = candles[candles.length - 1];
 
-        this.realTimeCandles[symbol] = candles;
+        this.#checkAlerts(symbol, candles);
 
         this.#throttledListeners[symbol]?.(candles);
 
@@ -257,45 +257,41 @@ export class MinichartsStore {
           if (isAnomaly) {
             this.#volumeAnomalies[symbol] = anomakyKey;
 
-            this.triggerAlert('VOLUME_ANOMALY', symbol);
+            this.#triggerAlert('VOLUME_ANOMALY', symbol);
           }
         }
       },
     });
-    /*
+  };
 
-    for (const symbol of symbols) {
-      void api.futuresCandles({
-        // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
-        symbol, interval, limit: 499, lastCandleFromCache: true,
-      }).then((candles) => {
-        allCandlesData[symbol] = candles;
-        this.#throttledListeners[symbol]?.(candles);
-      }).catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      });
-    }
+  #checkAlerts = (symbol: string, candles: api.FuturesChartCandle[]): void => {
+    const prevCandles = this.realTimeCandles[symbol];
+    const alerts = this.symbolAlerts[symbol];
+    this.realTimeCandles[symbol] = candles;
+    if (!prevCandles || !alerts?.length) return;
+    const prevPrice = prevCandles[prevCandles.length - 1].close;
+    const price = candles[candles.length - 1].close;
+    const nowIso = new Date().toISOString();
 
-    const subscriptionPairs = symbols.map(
-      (symbol) => [symbol, interval] as [string, api.CandlestickChartInterval],
-    );
-
-    return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
-      const { symbol } = candle;
-      const data = allCandlesData[symbol];
-
-      if (!data) return;
-
-      if (candle.time === data[data.length - 1].time) {
-        Object.assign(data[data.length - 1], candle);
-      } else {
-        data.push(candle);
-      }
-
-      const candlesData = [...data];
-
-    }); */
+    this.symbolAlerts = {
+      ...this.symbolAlerts,
+      [symbol]: alerts
+        .map((alert) => {
+          if (alert.triggeredTimeISO) return alert;
+          let triggeredTimeISO: null | string = null;
+          if (price >= alert.price && prevPrice < alert.price) {
+            this.#triggerAlert('PRICE_UP', symbol);
+            triggeredTimeISO = nowIso;
+          } else if (price <= alert.price && prevPrice > alert.price) {
+            this.#triggerAlert('PRICE_DOWN', symbol);
+            triggeredTimeISO = nowIso;
+          }
+          return {
+            ...alert,
+            triggeredTimeISO,
+          };
+        }),
+    };
   };
 
   #volumeSubscribe = () => {

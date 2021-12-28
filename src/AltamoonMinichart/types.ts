@@ -11,3 +11,8 @@ export interface AlertLogItem {
   volume: number;
   timeISO: string;
 }
+
+export interface AlertItem {
+  price: number;
+  triggeredTimeISO: string | null;
+}

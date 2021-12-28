@@ -12,13 +12,10 @@ import ClipPath from './ClipPath';
 import Axes from './Axes';
 import GridLines from './GridLines';
 import Lines from './Lines';
-import { AlertLogItem, ChartType, ScaleType } from '../types';
+import { AlertItem, ChartType, ScaleType } from '../types';
 
 interface Params {
-  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
-  onUpdateAlerts: (d: number[]) => void;
-  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
-  symbol: string;
+  onUpdateAlerts: (d: AlertItem[]) => void;
   scaleType: ScaleType;
 }
 export default class Chart {
@@ -66,9 +63,7 @@ export default class Chart {
 
   constructor(
     container: HTMLDivElement,
-    {
-      scaleType, realTimeCandles, symbol, triggerAlert, onUpdateAlerts,
-    }: Params,
+    { scaleType, onUpdateAlerts }: Params,
   ) {
     const x = d3.scaleTime().range([0, 0]);
     const y = scaleType === 'linear' ? d3.scaleLinear().range([0, 0]) : d3.scaleSymlog().range([0, 0]);
@@ -83,9 +78,6 @@ export default class Chart {
     this.#gridLines = new GridLines({ scales });
     this.#lines = new Lines({
       axis: this.#axes.getAxis(),
-      realTimeCandles,
-      symbol,
-      triggerAlert,
       onUpdateAlerts,
     });
 
@@ -119,7 +111,7 @@ export default class Chart {
     pricePrecision?: number;
     chartType?: ChartType;
     scaleType?: ScaleType;
-    alerts?: number[];
+    alerts?: AlertItem[];
     orders?: TradingOrder[] | null;
     position?: TradingPosition | null;
     leverage?: number;

@@ -9,14 +9,11 @@ import AlertPriceLines from './AlertPriceLines';
 import OrderPriceLines from './OrderPriceLines';
 import PositionPriceLines from './PositionPriceLines';
 import LiquidationPriceLines from './LiquidationPriceLines';
-import { AlertLogItem } from '../../types';
+import { AlertItem } from '../../types';
 
 interface Params {
   axis: { x: d3.Axis<d3.NumberValue>; yRight: d3.Axis<d3.NumberValue>; };
-  realTimeCandles: Record<string, api.FuturesChartCandle[]>;
-  symbol: string;
-  triggerAlert: (type: AlertLogItem['type'], symbol: string) => void;
-  onUpdateAlerts: (d: number[]) => void;
+  onUpdateAlerts: (d: AlertItem[]) => void;
 }
 
 export default class Lines {
@@ -32,16 +29,11 @@ export default class Lines {
 
   #liquidationPriceLines: LiquidationPriceLines;
 
-  constructor({
-    axis, symbol, realTimeCandles, triggerAlert, onUpdateAlerts,
-  }: Params) {
+  constructor({ axis, onUpdateAlerts }: Params) {
     this.#currentPriceLines = new CurrentPriceLines({ axis });
     this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
     this.#alertPriceLines = new AlertPriceLines({
       axis,
-      realTimeCandles,
-      symbol,
-      triggerAlert,
       onUpdateAlerts,
     });
     this.#crosshairPriceLines = new CrosshairPriceLines({ axis });
@@ -53,7 +45,7 @@ export default class Lines {
   update(data: {
     pricePrecision?: number;
     lastPrice?: number;
-    alerts?: number[];
+    alerts?: AlertItem[];
     orders?: TradingOrder[] | null;
     position?: TradingPosition | null;
     leverage?: number;
