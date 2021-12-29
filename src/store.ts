@@ -1,5 +1,5 @@
 import * as api from 'altamoon-binance-api';
-import { keyBy, mapValues } from 'lodash';
+import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 
 import { TradingOrder, TradingPosition } from 'altamoon-types';
@@ -82,6 +82,8 @@ export class MinichartsStore {
 
   #allSymbolsUnsubscribe?: () => void;
 
+  #throttledListeners: Record<string, (candles: api.FuturesChartCandle[]) => void> = {};
+
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
   #setAlerts?: ReturnType<typeof api.futuresChartWorkerSubscribe>['setAlerts'];
@@ -161,7 +163,9 @@ export class MinichartsStore {
 
     listenChange(this, 'interval', () => this.#createSubscription());
     listenChange(this, 'throttleDelay', () => this.#createSubscription());
+    listenChange(this, 'throttleDelay', () => this.#createThrottledListeners());
 
+    this.#createThrottledListeners();
     void this.#createSubscription();
     this.#volumeSubscribe();
   };
@@ -205,6 +209,16 @@ export class MinichartsStore {
     }
   };
 
+  #createThrottledListeners = () => {
+    const { symbols } = this;
+    this.#throttledListeners = Object.fromEntries(symbols.map((symbol) => [
+      symbol,
+      throttle((candles: api.FuturesChartCandle[]) => {
+        this.#allCandles[symbol] = candles;
+      }, this.throttleDelay),
+    ]));
+  };
+
   #createSubscription = async () => {
     this.#allSymbolsUnsubscribe?.();
     this.#allSymbolsUnsubscribe = await this.#allSymbolsSubscribe();
@@ -223,6 +237,7 @@ export class MinichartsStore {
 
       return acc;
     }, [] as { symbol: string; price: number }[]);
+
     this.#setAlerts?.(workerAlerts);
   };
 
@@ -265,7 +280,8 @@ export class MinichartsStore {
         if (!symbols.includes(symbol)) return;
 
         const lastCandle = candles[candles.length - 1];
-        this.#allCandles[symbol] = candles;
+
+        this.#throttledListeners[symbol]?.(candles);
 
         const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
         if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
@@ -293,6 +309,36 @@ export class MinichartsStore {
 
     return unsubscribe;
   };
+  /*
+  #checkAlerts = (symbol: string, candles: api.FuturesChartCandle[]): void => {
+    const prevCandles = this.realTimeCandles[symbol];
+    const alerts = this.symbolAlerts[symbol];
+    this.realTimeCandles[symbol] = candles;
+    if (!prevCandles || !alerts?.length) return;
+    const prevPrice = prevCandles[prevCandles.length - 1].close;
+    const price = candles[candles.length - 1].close;
+    const nowIso = new Date().toISOString();
+
+    this.symbolAlerts = {
+      ...this.symbolAlerts,
+      [symbol]: alerts
+        .map((alert) => {
+          if (alert.triggeredTimeISO) return alert;
+          let triggeredTimeISO: null | string = null;
+          if (price >= alert.price && prevPrice < alert.price) {
+            this.#triggerAlert('PRICE_UP', symbol);
+            triggeredTimeISO = nowIso;
+          } else if (price <= alert.price && prevPrice > alert.price) {
+            this.#triggerAlert('PRICE_DOWN', symbol);
+            triggeredTimeISO = nowIso;
+          }
+          return {
+            ...alert,
+            triggeredTimeISO,
+          };
+        }),
+    };
+  }; */
 
   #volumeSubscribe = () => {
     api.futuresTickerStream((ticker) => {

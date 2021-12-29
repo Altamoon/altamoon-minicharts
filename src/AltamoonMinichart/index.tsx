@@ -1,13 +1,10 @@
-import React, {
-  memo, ReactElement, useCallback, useEffect, useRef, useState,
-} from 'react';
+import React, { memo, ReactElement } from 'react';
 import styled from 'styled-components';
-import { useInView } from 'react-intersection-observer';
 import * as api from 'altamoon-binance-api';
 import { TradingOrder, TradingPosition } from 'altamoon-types';
 
-import Chart from './Chart';
 import TextIndicators from './TextIndicators';
+import MinichartBody from './MinichartBody';
 import { AlertItem, ChartType, ScaleType } from './types';
 
 const ChartInfo = styled.div`
@@ -92,49 +89,7 @@ const AltamoonMinichart = ({
   onSymbolSelect,
   onUpdateAlerts,
 }: Props): ReactElement | null => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [chartInstance, setChartInstance] = useState<Chart | null>(null);
   const onSymbolNameClick = onSymbolSelect ?? ((sym: string) => window.open(`https://www.binance.com/en/futures/${sym}`));
-  const [inViewRef, inView] = useInView();
-
-  const setRefs = useCallback(
-    (node: HTMLDivElement) => {
-      ref.current = node;
-      inViewRef(node);
-    },
-    [inViewRef],
-  );
-
-  useEffect(() => {
-    if (inView) chartInstance?.update({ candles: candles || [] });
-  }, [candles, chartInstance, inView]);
-  useEffect(() => { chartInstance?.update({ pricePrecision }); }, [chartInstance, pricePrecision]);
-  useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
-  useEffect(() => { chartInstance?.update({ orders }); }, [chartInstance, orders, scaleType]);
-  useEffect(() => { chartInstance?.update({ position }); }, [chartInstance, position, scaleType]);
-  useEffect(() => { chartInstance?.update({ alerts }); }, [chartInstance, alerts, scaleType]);
-  useEffect(() => {
-    chartInstance?.update({ leverageBrackets });
-  }, [chartInstance, leverageBrackets, scaleType]);
-  useEffect(() => { chartInstance?.update({ scaleType }); }, [chartInstance, scaleType]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (ref.current && !chartInstance) {
-      const instance = new Chart(ref.current, {
-        scaleType,
-        onUpdateAlerts,
-      });
-
-      instance.update({
-        candles,
-        chartType,
-        alerts,
-      });
-
-      setChartInstance(instance);
-    }
-  });
 
   return (
     <Container style={{ width }} data-minichart-symbol={symbol} position={position}>
@@ -151,7 +106,20 @@ const AltamoonMinichart = ({
             )}
         </div>
       </ChartInfo>
-      <div style={{ height }} ref={setRefs} />
+      <MinichartBody
+        {...{
+          candles,
+          height,
+          chartType,
+          scaleType,
+          pricePrecision,
+          alerts,
+          orders,
+          position,
+          leverageBrackets,
+          onUpdateAlerts,
+        }}
+      />
     </Container>
   );
 };
