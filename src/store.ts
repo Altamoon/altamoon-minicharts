@@ -82,8 +82,6 @@ export class MinichartsStore {
 
   #allSymbolsUnsubscribe?: () => void;
 
-  #throttledListeners: Record<string, (candles: api.FuturesChartCandle[]) => void> = {};
-
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
   #setAlerts?: ReturnType<typeof api.futuresChartWorkerSubscribe>['setAlerts'];
@@ -225,7 +223,6 @@ export class MinichartsStore {
 
       return acc;
     }, [] as { symbol: string; price: number }[]);
-
     this.#setAlerts?.(workerAlerts);
   };
 
@@ -295,36 +292,6 @@ export class MinichartsStore {
     this.#setWorkerAlerts();
 
     return unsubscribe;
-  };
-
-  #checkAlerts = (symbol: string, candles: api.FuturesChartCandle[]): void => {
-    const prevCandles = this.realTimeCandles[symbol];
-    const alerts = this.symbolAlerts[symbol];
-    this.realTimeCandles[symbol] = candles;
-    if (!prevCandles || !alerts?.length) return;
-    const prevPrice = prevCandles[prevCandles.length - 1].close;
-    const price = candles[candles.length - 1].close;
-    const nowIso = new Date().toISOString();
-
-    this.symbolAlerts = {
-      ...this.symbolAlerts,
-      [symbol]: alerts
-        .map((alert) => {
-          if (alert.triggeredTimeISO) return alert;
-          let triggeredTimeISO: null | string = null;
-          if (price >= alert.price && prevPrice < alert.price) {
-            this.#triggerAlert('PRICE_UP', symbol);
-            triggeredTimeISO = nowIso;
-          } else if (price <= alert.price && prevPrice > alert.price) {
-            this.#triggerAlert('PRICE_DOWN', symbol);
-            triggeredTimeISO = nowIso;
-          }
-          return {
-            ...alert,
-            triggeredTimeISO,
-          };
-        }),
-    };
   };
 
   #volumeSubscribe = () => {
