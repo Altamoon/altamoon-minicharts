@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import moment from 'moment';
 import { ChartAxis, PriceLinesDatum, ResizeData } from '../types';
 import PriceLines from './PriceLines';
 import { AlertItem } from '../../types';
@@ -12,8 +11,6 @@ interface Params {
 interface AlertLinesDatum extends PriceLinesDatum {
   customData: AlertItem;
 }
-
-moment.relativeTimeThreshold('ss', 0);
 
 // https://icons.getbootstrap.com/icons/bell-fill/
 const bellIconStr = `<svg style="transform: scale(0.7) translate(0, -3px);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
