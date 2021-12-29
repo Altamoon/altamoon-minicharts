@@ -1,5 +1,5 @@
 import * as api from 'altamoon-binance-api';
-import { keyBy, mapValues, throttle } from 'lodash';
+import { keyBy, mapValues } from 'lodash';
 import { listenChange } from 'use-change';
 
 import { TradingOrder, TradingPosition } from 'altamoon-types';
@@ -86,6 +86,8 @@ export class MinichartsStore {
 
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
+  #setAlerts?: ReturnType<typeof api.futuresChartWorkerSubscribe>['setAlerts'];
+
   constructor() {
     const keysToListen: (keyof MinichartsStore)[] = [
       'interval',
@@ -113,6 +115,7 @@ export class MinichartsStore {
     listenChange(this, 'sortBy', this.#sortSymbols);
     listenChange(this, 'sortDirection', this.#sortSymbols);
     listenChange(this, 'positionSymbols', this.#sortSymbols);
+    listenChange(this, 'symbolAlerts', this.#setWorkerAlerts);
   }
 
   #triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
@@ -159,10 +162,9 @@ export class MinichartsStore {
     }
 
     listenChange(this, 'interval', () => this.#createSubscription());
-    listenChange(this, 'throttleDelay', () => this.#createThrottledListeners());
+    listenChange(this, 'throttleDelay', () => this.#createSubscription());
 
-    this.#createThrottledListeners();
-    this.#createSubscription();
+    void this.#createSubscription();
     this.#volumeSubscribe();
   };
 
@@ -205,22 +207,29 @@ export class MinichartsStore {
     }
   };
 
-  #createThrottledListeners = () => {
-    const { symbols } = this;
-    this.#throttledListeners = Object.fromEntries(symbols.map((symbol) => [
-      symbol,
-      throttle((candles: api.FuturesChartCandle[]) => {
-        this.#allCandles[symbol] = candles;
-      }, this.throttleDelay),
-    ]));
-  };
-
-  #createSubscription = () => {
+  #createSubscription = async () => {
     this.#allSymbolsUnsubscribe?.();
-    this.#allSymbolsUnsubscribe = this.#allSymbolsSubscribe();
+    this.#allSymbolsUnsubscribe = await this.#allSymbolsSubscribe();
   };
 
-  #allSymbolsSubscribe = (): (() => void) => {
+  #setWorkerAlerts = () => {
+    const workerAlerts = Object.entries(this.symbolAlerts).reduce((acc, [symbol, alerts]) => {
+      if (alerts?.length) {
+        acc
+          .push(
+            ...alerts
+              .filter(({ triggeredTimeISO }) => !triggeredTimeISO)
+              .map(({ price }) => ({ symbol, price })),
+          );
+      }
+
+      return acc;
+    }, [] as { symbol: string; price: number }[]);
+
+    this.#setAlerts?.(workerAlerts);
+  };
+
+  #allSymbolsSubscribe = async (): Promise<(() => void)> => {
     const { interval, symbols } = this;
     // altamoonFuturesChartWorkerSubscribe is defined globally at Altamoon
     // to fix of issues with worker + webpack;
@@ -230,18 +239,36 @@ export class MinichartsStore {
       altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
     }).altamoonFuturesChartWorkerSubscribe
       ?? api.futuresChartWorkerSubscribe;
-    return futuresChartWorkerSubscribe({
-      frequency: 50,
+    const { unsubscribe, setAlerts } = futuresChartWorkerSubscribe({
+      frequency: this.throttleDelay,
       symbols: 'PERPETUAL',
       interval,
+
+      exchangeInfo: await api.futuresExchangeInfo(),
+      alertCallback: ({ symbol, direction, price }) => {
+        this.#triggerAlert(direction, symbol);
+
+        this.symbolAlerts = {
+          ...this.symbolAlerts,
+          [symbol]: this.symbolAlerts[symbol]
+            .map((alert) => {
+              if (alert.triggeredTimeISO) return alert;
+              let triggeredTimeISO: string | null = null;
+              if (alert.price === price) {
+                triggeredTimeISO = new Date().toISOString();
+              }
+              return {
+                ...alert,
+                triggeredTimeISO,
+              };
+            }),
+        };
+      },
       callback: (symbol, candles) => {
         if (!symbols.includes(symbol)) return;
 
         const lastCandle = candles[candles.length - 1];
-
-        this.#checkAlerts(symbol, candles);
-
-        this.#throttledListeners[symbol]?.(candles);
+        this.#allCandles[symbol] = candles;
 
         const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
         if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
@@ -262,6 +289,12 @@ export class MinichartsStore {
         }
       },
     });
+
+    this.#setAlerts = setAlerts;
+
+    this.#setWorkerAlerts();
+
+    return unsubscribe;
   };
 
   #checkAlerts = (symbol: string, candles: api.FuturesChartCandle[]): void => {
