@@ -113,13 +113,13 @@ const AlertLog = (): ReactElement => {
               onKeyDown={() => onClickItem(symbol)}
             >
               <span className={getIsActiveLogItem(timeISO) ? 'dropdown-item active' : 'dropdown-item-text text-nowrap'}>
-                {type === 'PRICE_UP' && <span className="text-success">↑</span>}
-                {type === 'PRICE_DOWN' && <span className="text-danger">↓</span>}
+                {type === 'ALERT_UP' && <span className="text-success">↑</span>}
+                {type === 'ALERT_DOWN' && <span className="text-danger">↓</span>}
                 {type === 'VOLUME_ANOMALY' && <span className="text-warning">•</span>}
                 {' '}
                 {secondaryAsset}
                 {' '}
-                {(type === 'PRICE_UP' || type === 'PRICE_DOWN') && (
+                {(type === 'ALERT_UP' || type === 'ALERT_DOWN') && (
                   <>
                     at price
                     {' '}
