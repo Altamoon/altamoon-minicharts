@@ -18,7 +18,13 @@ module.exports = {
       },
       {
         test: /\.worker\.js$/,
-        use: { loader: 'worker-loader', options: {} }, // charts listener uses worker
+        use: {
+          loader: 'worker-loader',
+          options: {
+            filename: '[name].[contenthash].worker.js',
+            chunkFilename: '[id].[contenthash].worker.js',
+          },
+        },
       },
     ],
   },

@@ -86,7 +86,7 @@ export class MinichartsStore {
 
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
-  #setAlerts?: ReturnType<typeof api.futuresChartWorkerSubscribe>['setAlerts'];
+  #setAlerts?: ReturnType<typeof api.futuresAlertsWorkerSubscribe>;
 
   constructor() {
     const keysToListen: (keyof MinichartsStore)[] = [
@@ -133,10 +133,10 @@ export class MinichartsStore {
     this.alertLog = [logItem, ...this.alertLog].slice(0, MAX_LOG_SIZE);
 
     switch (type) {
-      case 'PRICE_UP':
+      case 'ALERT_UP':
         void upSound.play();
         break;
-      case 'PRICE_DOWN':
+      case 'ALERT_DOWN':
         void downSound.play();
         break;
       case 'VOLUME_ANOMALY':
@@ -147,8 +147,9 @@ export class MinichartsStore {
   };
 
   #init = async () => {
+    const exchangeInfo = await api.futuresExchangeInfo();
     try {
-      const { symbols } = await api.futuresExchangeInfo();
+      const { symbols } = exchangeInfo;
 
       const futuresExchangeSymbols = symbols; // .slice(0, 10);
 
@@ -168,6 +169,38 @@ export class MinichartsStore {
     this.#createThrottledListeners();
     void this.#createSubscription();
     this.#volumeSubscribe();
+
+    // altamoonFuturesAlertsWorkerSubscribe is defined globally at Altamoon
+    // to fix of issues with worker + webpack;
+    // the function is used when minicharts is Altamoon widget
+    // but standalone version is going to use  api.futuresChartWorkerSubscribe
+    const futuresAlertsWorkerSubscribe = (window as unknown as {
+      altamoonFuturesAlertsWorkerSubscribe: typeof api.futuresAlertsWorkerSubscribe
+    }).altamoonFuturesAlertsWorkerSubscribe
+      ?? api.futuresAlertsWorkerSubscribe;
+
+    this.#setAlerts = futuresAlertsWorkerSubscribe({
+      callback: ({ symbol, type, price }) => {
+        this.#triggerAlert(type, symbol);
+
+        this.symbolAlerts = {
+          ...this.symbolAlerts,
+          [symbol]: this.symbolAlerts[symbol]
+            .map((alert) => {
+              if (alert.triggeredTimeISO) return alert;
+              let triggeredTimeISO: string | null = null;
+              if (alert.price === price) {
+                triggeredTimeISO = new Date().toISOString();
+              }
+              return {
+                ...alert,
+                triggeredTimeISO,
+              };
+            }),
+        };
+      },
+      exchangeInfo,
+    });
   };
 
   #sortSymbols = () => {
@@ -251,31 +284,12 @@ export class MinichartsStore {
       altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
     }).altamoonFuturesChartWorkerSubscribe
       ?? api.futuresChartWorkerSubscribe;
-    const { unsubscribe, setAlerts } = futuresChartWorkerSubscribe({
+    const { unsubscribe } = futuresChartWorkerSubscribe({
       frequency: this.throttleDelay,
       symbols: 'PERPETUAL',
       interval,
 
       exchangeInfo: await api.futuresExchangeInfo(),
-      alertCallback: ({ symbol, direction, price }) => {
-        this.#triggerAlert(direction, symbol);
-
-        this.symbolAlerts = {
-          ...this.symbolAlerts,
-          [symbol]: this.symbolAlerts[symbol]
-            .map((alert) => {
-              if (alert.triggeredTimeISO) return alert;
-              let triggeredTimeISO: string | null = null;
-              if (alert.price === price) {
-                triggeredTimeISO = new Date().toISOString();
-              }
-              return {
-                ...alert,
-                triggeredTimeISO,
-              };
-            }),
-        };
-      },
       callback: (symbol, candles) => {
         if (!symbols.includes(symbol)) return;
 
@@ -302,8 +316,6 @@ export class MinichartsStore {
         }
       },
     });
-
-    this.#setAlerts = setAlerts;
 
     this.#setWorkerAlerts();
 
