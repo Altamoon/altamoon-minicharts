@@ -284,7 +284,7 @@ export class MinichartsStore {
       altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
     }).altamoonFuturesChartWorkerSubscribe
       ?? api.futuresChartWorkerSubscribe;
-    const { unsubscribe } = futuresChartWorkerSubscribe({
+    const unsubscribe = futuresChartWorkerSubscribe({
       frequency: this.throttleDelay,
       symbols: 'PERPETUAL',
       interval,
