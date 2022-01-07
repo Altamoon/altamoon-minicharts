@@ -12,8 +12,8 @@
     "compile": "tsc --outDir npm --declaration",
     "start": "SKIP_RUNTIME_TESTS=true NODE_ENV=development webpack serve --mode=development --hot --port=8070",
     "upgrade": "npx npm-check-updates -u -x eslint-config-airbnb-typescript && npm i",
-    "patch": "npm t && npm version patch && npm run compile && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
-    "minor": "npm t && npm version minor && npm run compile && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
+    "patch": "npm t && npm version patch && npm run compile && npm run build && git add --all && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
+    "minor": "npm t && npm version minor && npm run compile && npm run build && git add --all (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
   "author": {
     "name": "Letiliel",
