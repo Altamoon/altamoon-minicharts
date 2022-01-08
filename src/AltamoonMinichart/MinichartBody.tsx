@@ -48,15 +48,27 @@ const MinichartBody = ({
   useEffect(() => {
     if (inView) chartInstance?.update({ candles: candles || [] });
   }, [candles, chartInstance, inView]);
-  useEffect(() => { chartInstance?.update({ pricePrecision }); }, [chartInstance, pricePrecision]);
-  useEffect(() => { chartInstance?.update({ chartType }); }, [chartInstance, chartType]);
-  useEffect(() => { chartInstance?.update({ orders }); }, [chartInstance, orders, scaleType]);
-  useEffect(() => { chartInstance?.update({ position }); }, [chartInstance, position, scaleType]);
-  useEffect(() => { chartInstance?.update({ alerts }); }, [chartInstance, alerts, scaleType]);
   useEffect(() => {
-    chartInstance?.update({ leverageBrackets });
-  }, [chartInstance, leverageBrackets, scaleType]);
-  useEffect(() => { chartInstance?.update({ scaleType }); }, [chartInstance, scaleType]);
+    if (inView) chartInstance?.update({ pricePrecision });
+  }, [chartInstance, inView, pricePrecision]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ chartType });
+  }, [chartInstance, chartType, inView]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ orders });
+  }, [chartInstance, inView, orders, scaleType]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ position });
+  }, [chartInstance, inView, position, scaleType]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ alerts });
+  }, [chartInstance, alerts, scaleType, inView]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ leverageBrackets });
+  }, [chartInstance, inView, leverageBrackets, scaleType]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ scaleType });
+  }, [chartInstance, inView, scaleType]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -66,11 +78,13 @@ const MinichartBody = ({
         onUpdateAlerts,
       });
 
-      instance.update({
-        candles,
-        chartType,
-        alerts,
-      });
+      if (inView) {
+        instance.update({
+          candles,
+          chartType,
+          alerts,
+        });
+      }
 
       setChartInstance(instance);
     }
