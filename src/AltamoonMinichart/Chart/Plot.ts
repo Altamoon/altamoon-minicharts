@@ -1,5 +1,8 @@
+/* eslint-disable prefer-object-spread */
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
+import thread from 'elegant-threading';
+import './elegant-threading.d';
 
 import { isEqual } from 'lodash';
 import {
@@ -60,16 +63,16 @@ export default class Plot {
     this.#pathLastWickDown = wrapper.append('path').attr('class', 'wick down');
   };
 
-  public draw = ({
+  public draw = async ({
     candles: givenCandles, resizeData, zoomTransform, chartType,
-  }: DrawData): void => {
+  }: DrawData): Promise<void> => {
     if (!givenCandles.length) return;
 
     let candles: api.FuturesChartCandle[];
     if (chartType === 'heikin_ashi') {
-      candles = Plot.candlesToHeikinAshi(givenCandles);
+      candles = await Plot.candlesToHeikinAshi(givenCandles);
     } else if (chartType === 'heikin_ashi_actual_price') {
-      candles = Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
+      candles = await Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
     } else {
       candles = givenCandles;
     }
@@ -188,16 +191,12 @@ export default class Plot {
 
   // This is a copy-pasted smoozCandles function from Biduul
   // see https://github.com/Altamoon/altamoon/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
-  private static candlesToHeikinAshiWithActualPrice = (
+  private static candlesToHeikinAshiWithActualPrice = thread((
     candles: api.FuturesChartCandle[],
-    prevSmooz: api.FuturesChartCandle[] = [], // If updating
-    startIndex = 0, // If updating
   ): api.FuturesChartCandle[] => {
-    const newCandles: api.FuturesChartCandle[] = [
-      ...prevSmooz.slice(0, startIndex),
-    ];
+    const newCandles: api.FuturesChartCandle[] = [];
 
-    for (let i = startIndex; i < candles.length; i += 1) {
+    for (let i = 0; i < candles.length; i += 1) {
       const {
         open, close, high, low,
       } = candles[i];
@@ -221,12 +220,11 @@ export default class Plot {
         newClose = +close;
       }
 
-      newCandles.push({
-        ...candles[i],
+      newCandles.push(Object.assign({}, candles[i], {
         direction: newDirection,
         open: newOpen,
         close: newClose,
-      });
+      }));
 
       // Adjust close/open of previous candle, we don't want gaps
       if (previous) {
@@ -243,9 +241,9 @@ export default class Plot {
     }
 
     return newCandles;
-  };
+  });
 
-  private static candlesToHeikinAshi = (candles: api.FuturesChartCandle[]) => {
+  private static candlesToHeikinAshi = thread((candles: api.FuturesChartCandle[]) => {
     const newCandles: api.FuturesChartCandle[] = [];
     for (let i = 0; i < candles.length; i += 1) {
       const {
@@ -260,16 +258,15 @@ export default class Plot {
       const newHigh = Math.max(high, newOpen, newClose);
       const newLow = Math.min(low, newOpen, newClose);
 
-      newCandles[i] = {
-        ...candles[i],
+      newCandles[i] = Object.assign({}, candles[i], {
         close: newClose,
         open: newOpen,
         high: newHigh,
         low: newLow,
         direction: +newOpen <= +newClose ? 'UP' : 'DOWN',
-      };
+      });
     }
 
     return newCandles;
-  };
+  });
 }

@@ -217,7 +217,7 @@ export default class Chart {
     this.#calcXDomain();
     const yDomain = this.#calcYDomain();
     this.#axes.draw(resizeData);
-    this.#plot.draw(drawData);
+    void this.#plot.draw(drawData);
     this.#gridLines.draw(resizeData);
 
     // fixes https://trello.com/c/tLjFqdCB/230-chart-order-and-alert-lines-are-not-redrawn-on-price-ath-atl
