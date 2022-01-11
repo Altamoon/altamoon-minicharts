@@ -1,7 +1,4 @@
 /* eslint-disable prefer-object-spread */
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path='./elegant-threading.d.ts' />
-
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
 import thread from 'elegant-threading';
@@ -74,6 +71,7 @@ export default class Plot {
     if (chartType === 'heikin_ashi') {
       candles = await Plot.candlesToHeikinAshi(givenCandles);
     } else if (chartType === 'heikin_ashi_actual_price') {
+      void Plot.candlesToHeikinAshiWithActualPrice.terminate();
       candles = await Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
     } else {
       candles = givenCandles;
