@@ -1,5 +1,5 @@
 import * as api from 'altamoon-binance-api';
-import { keyBy, mapValues, throttle } from 'lodash';
+import { keyBy, mapValues } from 'lodash';
 import { listenChange } from 'use-change';
 
 import { TradingOrder, TradingPosition } from 'altamoon-types';
@@ -82,8 +82,6 @@ export class MinichartsStore {
 
   #allSymbolsUnsubscribe?: () => void;
 
-  #throttledListeners: Record<string, (candles: api.FuturesChartCandle[]) => void> = {};
-
   #volumeAnomalies: Record<string, AnomalyKey> = {};
 
   #setAlerts?: ReturnType<typeof api.futuresAlertsWorkerSubscribe>;
@@ -164,9 +162,7 @@ export class MinichartsStore {
 
     listenChange(this, 'interval', () => this.#createSubscription());
     listenChange(this, 'throttleDelay', () => this.#createSubscription());
-    listenChange(this, 'throttleDelay', () => this.#createThrottledListeners());
 
-    this.#createThrottledListeners();
     void this.#createSubscription();
     this.#volumeSubscribe();
 
@@ -242,16 +238,6 @@ export class MinichartsStore {
     }
   };
 
-  #createThrottledListeners = () => {
-    const { symbols } = this;
-    this.#throttledListeners = Object.fromEntries(symbols.map((symbol) => [
-      symbol,
-      throttle((candles: api.FuturesChartCandle[]) => {
-        this.#allCandles[symbol] = candles;
-      }, this.throttleDelay),
-    ]));
-  };
-
   #createSubscription = async () => {
     this.#allSymbolsUnsubscribe?.();
     this.#allSymbolsUnsubscribe = await this.#allSymbolsSubscribe();
@@ -295,7 +281,7 @@ export class MinichartsStore {
 
         const lastCandle = candles[candles.length - 1];
 
-        this.#throttledListeners[symbol]?.(candles);
+        this.#allCandles[symbol] = candles;
 
         const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
         if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
