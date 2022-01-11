@@ -71,7 +71,6 @@ export default class Plot {
     if (chartType === 'heikin_ashi') {
       candles = await Plot.candlesToHeikinAshi(givenCandles);
     } else if (chartType === 'heikin_ashi_actual_price') {
-      void Plot.candlesToHeikinAshiWithActualPrice.terminate();
       candles = await Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
     } else {
       candles = givenCandles;
