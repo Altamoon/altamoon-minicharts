@@ -1,8 +1,10 @@
 /* eslint-disable prefer-object-spread */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path='./elegant-threading.d.ts' />
+
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
 import thread from 'elegant-threading';
-import './elegant-threading.d';
 
 import { isEqual } from 'lodash';
 import {
