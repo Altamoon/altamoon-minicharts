@@ -51,6 +51,7 @@ const Settings = (): ReactElement => {
   const [sortDirection, setSortDirection] = useChange(ROOT, 'sortDirection');
   const symbols = useValue(ROOT, 'symbols');
   const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
+  const [usePerfBooster, setUsePerfBooster] = useChange(ROOT, 'usePerfBooster');
 
   return (
     <>
@@ -160,7 +161,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={12}>
+        <Col xs={8}>
           <Intervals className="nav nav-pills">
             {api.futuresIntervals.map((intervalsItem, index) => (
               <IntervalItem
@@ -177,6 +178,18 @@ const Settings = (): ReactElement => {
               </IntervalItem>
             ))}
           </Intervals>
+        </Col>
+        <Col xs={4} className="text-end pt-2">
+          <label htmlFor="minichartsUsePerfBooster">
+            <input
+              type="checkbox"
+              id="minichartsUsePerfBooster"
+              checked={usePerfBooster}
+              onChange={({ target }) => setUsePerfBooster(target.checked)}
+            />
+            {' '}
+            Use perf booster (experimental)
+          </label>
         </Col>
       </Row>
       <p>

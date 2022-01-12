@@ -52,6 +52,8 @@ export class MinichartsStore {
 
   public alertLogLastSeenISO = persistent<null | string>('alertLogLastSeenISO', null);
 
+  public usePerfBooster = persistent<boolean>('usePerfBooster', false);
+
   public get allCandles() { return this.#allCandles; }
 
   #allCandles: Record<string, api.FuturesChartCandle[]> = {};
@@ -102,6 +104,7 @@ export class MinichartsStore {
       'sortBy',
       'sortDirection',
       'alertLogLastSeenISO',
+      'usePerfBooster',
     ];
 
     keysToListen.forEach((key) => {
@@ -175,6 +178,7 @@ export class MinichartsStore {
       console.error(e);
     }
 
+    listenChange(this, 'usePerfBooster', () => this.#createSubscription());
     listenChange(this, 'interval', () => this.#createSubscription());
     listenChange(this, 'throttleDelay', () => this.#createSubscription());
 
@@ -254,8 +258,11 @@ export class MinichartsStore {
   };
 
   #createSubscription = async () => {
+    const subscribe = this.usePerfBooster
+      ? this.#allSymbolsSubscribePerfBooster
+      : this.#allSymbolsSubscribe;
     this.#allSymbolsUnsubscribe?.();
-    this.#allSymbolsUnsubscribe = await this.#allSymbolsSubscribe();
+    this.#allSymbolsUnsubscribe = await subscribe();
   };
 
   #setWorkerAlerts = () => {
@@ -276,6 +283,7 @@ export class MinichartsStore {
   };
 
   #allSymbolsSubscribe = async (): Promise<() => void> => {
+    console.log('allSymbolsSubscribe')
     const allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
     const exchangeInfo = await api.futuresExchangeInfo();
 
@@ -301,6 +309,7 @@ export class MinichartsStore {
     );
 
     return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
+      console.log('allSymbolsSubscribe tick')
       const { symbol } = candle;
       const data = allCandlesData[symbol];
 
@@ -340,6 +349,7 @@ export class MinichartsStore {
   };
 
   #allSymbolsSubscribePerfBooster = async (): Promise<() => void> => {
+    console.log('allSymbolsSubscribePerfBooster')
     const { interval, symbols } = this;
     // altamoonFuturesChartWorkerSubscribe is defined globally at Altamoon
     // to fix of issues with worker + webpack;
@@ -357,6 +367,7 @@ export class MinichartsStore {
       exchangeInfo: await api.futuresExchangeInfo(),
       callback: (symbol, candles) => {
         if (!symbols.includes(symbol)) return;
+        console.log('allSymbolsSubscribePerfBooster tick')
 
         const lastCandle = candles[candles.length - 1];
 
