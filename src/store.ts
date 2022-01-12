@@ -1,5 +1,5 @@
 import * as api from 'altamoon-binance-api';
-import { keyBy, mapValues } from 'lodash';
+import { keyBy, mapValues, throttle } from 'lodash';
 import { listenChange } from 'use-change';
 
 import { TradingOrder, TradingPosition } from 'altamoon-types';
@@ -86,6 +86,8 @@ export class MinichartsStore {
 
   #setAlerts?: ReturnType<typeof api.futuresAlertsWorkerSubscribe>;
 
+  #throttledListeners: Record<string, (candles: api.FuturesChartCandle[]) => void> = {};
+
   constructor() {
     const keysToListen: (keyof MinichartsStore)[] = [
       'interval',
@@ -114,6 +116,7 @@ export class MinichartsStore {
     listenChange(this, 'sortDirection', this.#sortSymbols);
     listenChange(this, 'positionSymbols', this.#sortSymbols);
     listenChange(this, 'symbolAlerts', this.#setWorkerAlerts);
+    listenChange(this, 'throttleDelay', () => this.#createThrottledListeners());
   }
 
   #triggerAlert = (type: AlertLogItem['type'], symbol: string) => {
@@ -144,6 +147,16 @@ export class MinichartsStore {
     }
   };
 
+  #createThrottledListeners = () => {
+    const { symbols } = this;
+    this.#throttledListeners = Object.fromEntries(symbols.map((symbol) => [
+      symbol,
+      throttle((candles: api.FuturesChartCandle[]) => {
+        this.#allCandles[symbol] = candles;
+      }, this.throttleDelay),
+    ]));
+  };
+
   #init = async () => {
     const exchangeInfo = await api.futuresExchangeInfo();
     try {
@@ -155,6 +168,8 @@ export class MinichartsStore {
       this.symbols = futuresExchangeSymbols.map(({ symbol }) => symbol);
 
       this.#sortSymbols();
+
+      this.#createThrottledListeners();
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -260,7 +275,71 @@ export class MinichartsStore {
     this.#setAlerts?.(workerAlerts);
   };
 
-  #allSymbolsSubscribe = async (): Promise<(() => void)> => {
+  #allSymbolsSubscribe = async (): Promise<() => void> => {
+    const allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
+    const exchangeInfo = await api.futuresExchangeInfo();
+
+    const symbols = exchangeInfo.symbols.filter(({ contractType }) => contractType === 'PERPETUAL').map(({ symbol }) => symbol);
+
+    const { interval } = this;
+
+    for (const symbol of symbols) {
+      void api.futuresCandles({
+        // 499 has weight 2 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        symbol, interval, limit: 499, lastCandleFromCache: true,
+      }).then((candles) => {
+        allCandlesData[symbol] = candles;
+        this.#throttledListeners[symbol]?.(candles);
+      }).catch((e) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      });
+    }
+
+    const subscriptionPairs = symbols.map(
+      (symbol) => [symbol, interval] as [string, api.CandlestickChartInterval],
+    );
+
+    return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
+      const { symbol } = candle;
+      const data = allCandlesData[symbol];
+
+      if (!data) return;
+
+      if (candle.time === data[data.length - 1].time) {
+        Object.assign(data[data.length - 1], candle);
+      } else {
+        data.push(candle);
+      }
+
+      const candlesData = [...data];
+
+      allCandlesData[symbol] = candlesData;
+
+      this.realTimeCandles[symbol] = candlesData;
+
+      this.#throttledListeners[symbol]?.(candlesData);
+
+      const anomalyRatio = +localStorage.minichartsVolumeAnomalyAlertsRatio;
+      if (!Number.isNaN(anomalyRatio) && anomalyRatio > 0) {
+        const anomakyKey: AnomalyKey = `${candle.interval}_${candle.time}`;
+        const lastCandlesSize = +localStorage.minichartsVolumeAnomalyAlertsCandlesSize || 0;
+
+        const currentCandleIsAnomaly = this.#volumeAnomalies[symbol] === anomakyKey;
+        const candlesToConsider = candlesData.slice(-lastCandlesSize, -1);
+        const avg = candlesToConsider.reduce((p, c) => p + +c.volume, 0) / candlesToConsider.length;
+        const isAnomaly = !currentCandleIsAnomaly && avg * anomalyRatio < +candle.volume;
+
+        if (isAnomaly) {
+          this.#volumeAnomalies[symbol] = anomakyKey;
+
+          this.#triggerAlert('VOLUME_ANOMALY', symbol);
+        }
+      }
+    });
+  };
+
+  #allSymbolsSubscribePerfBooster = async (): Promise<() => void> => {
     const { interval, symbols } = this;
     // altamoonFuturesChartWorkerSubscribe is defined globally at Altamoon
     // to fix of issues with worker + webpack;
