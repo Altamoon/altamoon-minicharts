@@ -1,7 +1,6 @@
 /* eslint-disable prefer-object-spread */
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
-import thread from 'elegant-threading';
 
 import { isEqual } from 'lodash';
 import {
@@ -40,6 +39,8 @@ export default class Plot {
 
   #wrapper?: D3Selection<SVGGElement>;
 
+  #candles: api.FuturesChartCandle[] = [];
+
   constructor({ scales }: { scales: Scales; }) {
     this.#scales = scales;
   }
@@ -62,16 +63,16 @@ export default class Plot {
     this.#pathLastWickDown = wrapper.append('path').attr('class', 'wick down');
   };
 
-  public draw = async ({
+  public draw = ({
     candles: givenCandles, resizeData, zoomTransform, chartType,
-  }: DrawData): Promise<void> => {
+  }: DrawData): void => {
     if (!givenCandles.length) return;
 
     let candles: api.FuturesChartCandle[];
     if (chartType === 'heikin_ashi') {
-      candles = await Plot.candlesToHeikinAshi(givenCandles);
+      candles = this.candlesToHeikinAshi(givenCandles);
     } else if (chartType === 'heikin_ashi_actual_price') {
-      candles = await Plot.candlesToHeikinAshiWithActualPrice(givenCandles);
+      candles = this.candlesToHeikinAshiWithActualPrice(givenCandles);
     } else {
       candles = givenCandles;
     }
@@ -115,6 +116,7 @@ export default class Plot {
     this.#zoomTransform = zoomTransform;
     this.#chartType = chartType;
     this.#resizeData = resizeData;
+    this.#candles = candles;
   };
 
   #getBodies = (candles: api.FuturesChartCandle[], direction: 'UP' | 'DOWN'): string => {
@@ -190,12 +192,15 @@ export default class Plot {
 
   // This is a copy-pasted smoozCandles function from Biduul
   // see https://github.com/Altamoon/altamoon/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
-  private static candlesToHeikinAshiWithActualPrice = thread((
+  candlesToHeikinAshiWithActualPrice = (
     candles: api.FuturesChartCandle[],
   ): api.FuturesChartCandle[] => {
-    const newCandles: api.FuturesChartCandle[] = [];
+    const isExisting = this.#chartType === 'heikin_ashi_actual_price' && candles[0].interval === this.#candles[0]?.interval;
+    const newCandles: api.FuturesChartCandle[] = isExisting ? this.#candles.slice(0, -1) : [];
 
-    for (let i = 0; i < candles.length; i += 1) {
+    const startIndex = isExisting ? newCandles.length - 1 : 0;
+
+    for (let i = startIndex; i < candles.length; i += 1) {
       const {
         open, close, high, low,
       } = candles[i];
@@ -240,11 +245,15 @@ export default class Plot {
     }
 
     return newCandles;
-  });
+  };
 
-  private static candlesToHeikinAshi = thread((candles: api.FuturesChartCandle[]) => {
-    const newCandles: api.FuturesChartCandle[] = [];
-    for (let i = 0; i < candles.length; i += 1) {
+  candlesToHeikinAshi = (candles: api.FuturesChartCandle[]) => {
+    const isExisting = this.#chartType === 'heikin_ashi' && candles[0].interval === this.#candles[0]?.interval;
+    const newCandles: api.FuturesChartCandle[] = isExisting ? this.#candles.slice(0, -1) : [];
+
+    const startIndex = isExisting ? newCandles.length - 1 : 0;
+
+    for (let i = startIndex; i < candles.length; i += 1) {
       const {
         open, close, high, low,
       } = candles[i];
@@ -267,5 +276,5 @@ export default class Plot {
     }
 
     return newCandles;
-  });
+  };
 }
