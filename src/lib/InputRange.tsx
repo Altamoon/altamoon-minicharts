@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { Row, Col } from 'reactstrap';
 import styled from 'styled-components';
 
@@ -30,6 +30,9 @@ const InputRange = ({
   onChange,
 }: Props): ReactElement => {
   const [currentValue, setCurrentValue] = useState(value);
+
+  useEffect(() => { setCurrentValue(value); }, [value]);
+
   return (
     <Row>
       <Col xs={9}>
