@@ -44,11 +44,11 @@ export class MinichartsStore {
 
   public symbolAlerts = persistent<Record<string, AlertItem[]>>('symbolAlerts', {});
 
-  public alertLog = persistent<AlertLogItem[]>('alertLog', []);
-
   public sortBy = persistent<SortBy>('sortBy', 'alphabetically');
 
   public sortDirection = persistent<SortDirection>('sortDirection', -1);
+
+  public alertLog = persistent<AlertLogItem[]>('alertLog', []);
 
   public alertLogLastSeenISO = persistent<null | string>('alertLogLastSeenISO', null);
 
