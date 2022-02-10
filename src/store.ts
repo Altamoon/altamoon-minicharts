@@ -161,7 +161,6 @@ export class MinichartsStore {
   };
 
   #init = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
     const exchangeInfo = await api.futuresExchangeInfo();
     try {
       const { symbols } = exchangeInfo;
@@ -259,7 +258,6 @@ export class MinichartsStore {
   };
 
   #createSubscription = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 100));
     const subscribe = this.usePerfBooster
       ? this.#allSymbolsSubscribePerfBooster
       : this.#allSymbolsSubscribe;
@@ -358,6 +356,10 @@ export class MinichartsStore {
       altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
     }).altamoonFuturesChartWorkerSubscribe
       ?? api.futuresChartWorkerSubscribe;
+
+    console.log('Worker', (window as unknown as {
+      altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
+    }).altamoonFuturesChartWorkerSubscribe);
     const unsubscribe = futuresChartWorkerSubscribe({
       frequency: this.throttleDelay,
       symbols: 'PERPETUAL',
