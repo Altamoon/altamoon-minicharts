@@ -189,10 +189,10 @@ export class MinichartsStore {
     // to fix of issues with worker + webpack;
     // the function is used when minicharts is Altamoon widget
     // but standalone version is going to use  api.futuresChartWorkerSubscribe
+
     const futuresAlertsWorkerSubscribe = (window as unknown as {
-      altamoonFuturesAlertsWorkerSubscribe: typeof api.futuresAlertsWorkerSubscribe
-    }).altamoonFuturesAlertsWorkerSubscribe
-      ?? api.futuresAlertsWorkerSubscribe;
+      altamoon?: { futuresAlertsWorkerSubscribe: typeof api.futuresAlertsWorkerSubscribe }
+    }).altamoon?.futuresAlertsWorkerSubscribe ?? api.futuresAlertsWorkerSubscribe;
 
     this.#setAlerts = futuresAlertsWorkerSubscribe({
       callback: ({ symbol, type, price }) => {
@@ -353,13 +353,9 @@ export class MinichartsStore {
     // the function is used when minicharts is Altamoon widget
     // but standalone version is  going to use  api.futuresChartWorkerSubscribe
     const futuresChartWorkerSubscribe = (window as unknown as {
-      altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
-    }).altamoonFuturesChartWorkerSubscribe
-      ?? api.futuresChartWorkerSubscribe;
+      altamoon?: { futuresChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe }
+    }).altamoon?.futuresChartWorkerSubscribe ?? api.futuresChartWorkerSubscribe;
 
-    console.log('Worker', (window as unknown as {
-      altamoonFuturesChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe
-    }).altamoonFuturesChartWorkerSubscribe);
     const unsubscribe = futuresChartWorkerSubscribe({
       frequency: this.throttleDelay,
       symbols: 'PERPETUAL',
