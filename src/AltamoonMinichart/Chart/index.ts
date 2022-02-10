@@ -137,6 +137,8 @@ export default class Chart {
       } else if (isNewCandle) {
         this.#translateBy(0);
       }
+
+      this.#axes.update({ candles: data.candles });
     }
 
     if (typeof data.pricePrecision !== 'undefined') {

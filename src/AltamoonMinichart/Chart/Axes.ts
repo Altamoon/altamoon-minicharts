@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import * as api from 'altamoon-binance-api';
 import {
   D3Selection, ResizeData, Scales,
 } from './types';
@@ -12,10 +13,16 @@ export default class Axes {
 
   #gYRight?: D3Selection<SVGGElement>;
 
+  #scales: Scales;
+
+  #candles: api.FuturesChartCandle[] = [];
+
   constructor({ scales }: { scales: Scales; }) {
     this.#x = d3.axisBottom(scales.x);
 
     this.#yRight = d3.axisRight(scales.y);
+
+    this.#scales = scales;
   }
 
   public getAxis = (): {
@@ -53,12 +60,30 @@ export default class Axes {
   public update = (data: {
     pricePrecision?: number,
     scales?: Scales,
+    candles?: api.FuturesChartCandle[];
   }): void => {
-    if (typeof data.pricePrecision !== 'undefined') {
-      const tickFormat = d3.format(`.${data.pricePrecision}f`);
-      this.#yRight.tickFormat(tickFormat);
+    if (typeof data.candles !== 'undefined') {
+      this.#candles = data.candles;
+    }
+
+    if (typeof data.pricePrecision !== 'undefined' || typeof data.candles !== 'undefined') {
+      // const tickFormat = d3.format(`.${data.pricePrecision}f`);
+      this.#yRight.tickFormat((yValue) => {
+        // const yDomain = this.#scales.y.domain();
+        // scaledX.domain();
+        const xDomain = this.#scales.scaledX.domain();
+        const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
+          && candle.time <= xDomain[1].getTime());
+
+        const yDomain: [number, number] = candles.length
+          ? [d3.min(candles, (d) => +d.low) as number, d3.max(candles, (d) => +d.high) as number]
+          : [0, 1];
+
+        return `${(((+yValue - yDomain[0]) / (yDomain[1] - yDomain[0])) * 100).toFixed(1)}%`;
+      });
     }
     if (typeof data.scales !== 'undefined') {
+      this.#scales = data.scales;
       this.#x.scale(data.scales.scaledX);
     }
   };
