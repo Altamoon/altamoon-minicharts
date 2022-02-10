@@ -161,6 +161,7 @@ export class MinichartsStore {
   };
 
   #init = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const exchangeInfo = await api.futuresExchangeInfo();
     try {
       const { symbols } = exchangeInfo;
