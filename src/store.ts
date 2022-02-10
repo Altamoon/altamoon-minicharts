@@ -258,6 +258,7 @@ export class MinichartsStore {
   };
 
   #createSubscription = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
     const subscribe = this.usePerfBooster
       ? this.#allSymbolsSubscribePerfBooster
       : this.#allSymbolsSubscribe;
