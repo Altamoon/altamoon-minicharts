@@ -23,10 +23,12 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const gridColumns = useValue(ROOT, 'gridColumns');
   const chartType = useValue(ROOT, 'chartType');
   const scaleType = useValue(ROOT, 'scaleType');
+  const usePercentageScale = useValue(ROOT, 'usePercentageScale');
   const volume = useValue(VOLUMES, symbol);
   const priceChangePercent = useValue(PRICE_CHANGE, symbol);
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
+
   const onUpdateAlerts = useCallback((d: AlertItem[]) => {
     setSymbolAlerts((v) => ({
       ...v,
@@ -52,6 +54,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       quoteAsset={symbolInfo?.quoteAsset ?? 'UNKNOWN'}
       volume={volume}
       priceChangePercent={priceChangePercent}
+      usePercentageScale={usePercentageScale}
       onSymbolSelect={onSymbolSelect}
       onUpdateAlerts={onUpdateAlerts}
     />

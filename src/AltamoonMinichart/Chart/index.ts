@@ -116,6 +116,7 @@ export default class Chart {
     position?: TradingPosition | null;
     leverage?: number;
     leverageBrackets?: api.FuturesLeverageBracket[];
+    usePercentageScale?: boolean;
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -149,6 +150,10 @@ export default class Chart {
       }
 
       this.#pricePrecision = pricePrecision;
+    }
+
+    if (typeof data.usePercentageScale !== 'undefined') {
+      this.#axes.update({ usePercentageScale: data.usePercentageScale });
     }
 
     if (typeof data.chartType !== 'undefined') {

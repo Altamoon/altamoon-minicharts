@@ -18,6 +18,7 @@ interface Props {
   orders?: TradingOrder[] | null;
   position?: TradingPosition | null;
   leverageBrackets?: api.FuturesLeverageBracket[];
+  usePercentageScale?: boolean;
   onUpdateAlerts: (d: AlertItem[]) => void;
 }
 
@@ -31,6 +32,7 @@ const MinichartBody = ({
   orders,
   position,
   leverageBrackets,
+  usePercentageScale,
   onUpdateAlerts,
 }: Props): ReactElement | null => {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -69,6 +71,9 @@ const MinichartBody = ({
   useEffect(() => {
     if (inView) chartInstance?.update({ scaleType });
   }, [chartInstance, inView, scaleType]);
+  useEffect(() => {
+    if (inView) chartInstance?.update({ usePercentageScale });
+  }, [chartInstance, inView, usePercentageScale]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {

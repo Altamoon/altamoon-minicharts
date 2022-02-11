@@ -54,6 +54,8 @@ export class MinichartsStore {
 
   public usePerfBooster = persistent<boolean>('usePerfBooster', false);
 
+  public usePercentageScale = persistent<boolean>('usePercentageScale', false);
+
   public get allCandles() { return this.#allCandles; }
 
   #allCandles: Record<string, api.FuturesChartCandle[]> = {};

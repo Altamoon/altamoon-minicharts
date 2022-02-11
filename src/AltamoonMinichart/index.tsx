@@ -65,6 +65,7 @@ interface Props {
   quoteAsset: string;
   volume: string;
   priceChangePercent: string;
+  usePercentageScale?: boolean;
   onSymbolSelect?: (symbol: string) => void;
   onUpdateAlerts: (d: AlertItem[]) => void;
 }
@@ -86,6 +87,7 @@ const AltamoonMinichart = ({
   quoteAsset,
   volume,
   priceChangePercent,
+  usePercentageScale,
   onSymbolSelect,
   onUpdateAlerts,
 }: Props): ReactElement | null => {
@@ -107,18 +109,17 @@ const AltamoonMinichart = ({
         </div>
       </ChartInfo>
       <MinichartBody
-        {...{
-          candles,
-          height,
-          chartType,
-          scaleType,
-          pricePrecision,
-          alerts,
-          orders,
-          position,
-          leverageBrackets,
-          onUpdateAlerts,
-        }}
+        candles={candles}
+        height={height}
+        chartType={chartType}
+        scaleType={scaleType}
+        pricePrecision={pricePrecision}
+        alerts={alerts}
+        orders={orders}
+        position={position}
+        leverageBrackets={leverageBrackets}
+        usePercentageScale={usePercentageScale}
+        onUpdateAlerts={onUpdateAlerts}
       />
     </Container>
   );

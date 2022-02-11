@@ -17,6 +17,10 @@ export default class Axes {
 
   #candles: api.FuturesChartCandle[] = [];
 
+  #pricePrecision = 1;
+
+  #usePercentageScale = false;
+
   constructor({ scales }: { scales: Scales; }) {
     this.#x = d3.axisBottom(scales.x);
 
@@ -61,16 +65,14 @@ export default class Axes {
     pricePrecision?: number,
     scales?: Scales,
     candles?: api.FuturesChartCandle[];
+    usePercentageScale?: boolean;
   }): void => {
-    if (typeof data.candles !== 'undefined') {
-      this.#candles = data.candles;
-    }
+    if (typeof data.candles !== 'undefined') this.#candles = data.candles;
+    if (typeof data.pricePrecision !== 'undefined') this.#pricePrecision = data.pricePrecision;
+    if (typeof data.usePercentageScale !== 'undefined') this.#usePercentageScale = data.usePercentageScale;
 
-    if (typeof data.pricePrecision !== 'undefined' || typeof data.candles !== 'undefined') {
-      // const tickFormat = d3.format(`.${data.pricePrecision}f`);
-      this.#yRight.tickFormat((yValue) => {
-        // const yDomain = this.#scales.y.domain();
-        // scaledX.domain();
+    if (typeof data.pricePrecision !== 'undefined' || typeof data.candles !== 'undefined' || typeof data.usePercentageScale !== 'undefined') {
+      this.#yRight.tickFormat(!this.#usePercentageScale ? d3.format(`.${this.#pricePrecision}f`) : (yValue) => {
         const xDomain = this.#scales.scaledX.domain();
         const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
           && candle.time <= xDomain[1].getTime());

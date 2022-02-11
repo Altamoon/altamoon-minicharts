@@ -52,6 +52,7 @@ const Settings = (): ReactElement => {
   const symbols = useValue(ROOT, 'symbols');
   const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
   const [usePerfBooster, setUsePerfBooster] = useChange(ROOT, 'usePerfBooster');
+  const [usePercentageScale, setUsePercentageScale] = useChange(ROOT, 'usePercentageScale');
 
   return (
     <>
@@ -161,7 +162,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={8}>
+        <Col xs={6}>
           <Intervals className="nav nav-pills">
             {api.futuresIntervals.map((intervalsItem, index) => (
               <IntervalItem
@@ -179,8 +180,8 @@ const Settings = (): ReactElement => {
             ))}
           </Intervals>
         </Col>
-        <Col xs={4} className="text-end pt-2">
-          <label htmlFor="minichartsUsePerfBooster">
+        <Col xs={6} className="text-end pt-2">
+          <label htmlFor="minichartsUsePerfBooster" className="me-4">
             <input
               type="checkbox"
               id="minichartsUsePerfBooster"
@@ -189,6 +190,16 @@ const Settings = (): ReactElement => {
             />
             {' '}
             Use perf booster (experimental)
+          </label>
+          <label htmlFor="minichartsUsePercentageScale">
+            <input
+              type="checkbox"
+              id="minichartsUsePercentageScale"
+              checked={usePercentageScale}
+              onChange={({ target }) => setUsePercentageScale(target.checked)}
+            />
+            {' '}
+            Use percentage scale
           </label>
         </Col>
       </Row>
