@@ -193,8 +193,8 @@ export class MinichartsStore {
     // but standalone version is going to use  api.futuresChartWorkerSubscribe
 
     const futuresAlertsWorkerSubscribe = (window as unknown as {
-      altamoon?: { futuresAlertsWorkerSubscribe: typeof api.futuresAlertsWorkerSubscribe }
-    }).altamoon?.futuresAlertsWorkerSubscribe ?? api.futuresAlertsWorkerSubscribe;
+      altamoonStore?: { futuresAlertsWorkerSubscribe: typeof api.futuresAlertsWorkerSubscribe }
+    }).altamoonStore?.futuresAlertsWorkerSubscribe ?? api.futuresAlertsWorkerSubscribe;
 
     this.#setAlerts = futuresAlertsWorkerSubscribe({
       callback: ({ symbol, type, price }) => {
@@ -355,8 +355,8 @@ export class MinichartsStore {
     // the function is used when minicharts is Altamoon widget
     // but standalone version is  going to use  api.futuresChartWorkerSubscribe
     const futuresChartWorkerSubscribe = (window as unknown as {
-      altamoon?: { futuresChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe }
-    }).altamoon?.futuresChartWorkerSubscribe ?? api.futuresChartWorkerSubscribe;
+      altamoonStore?: { futuresChartWorkerSubscribe: typeof api.futuresChartWorkerSubscribe }
+    }).altamoonStore?.futuresChartWorkerSubscribe ?? api.futuresChartWorkerSubscribe;
 
     const unsubscribe = futuresChartWorkerSubscribe({
       frequency: this.throttleDelay,
