@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
+import { times } from 'lodash';
 import {
   D3Selection, ResizeData, Scales,
 } from './types';
@@ -46,11 +47,28 @@ export default class Axes {
     this.#resizeContainers(resizeData);
   };
 
-  public draw({ scales, height, width }: ResizeData): void {
+  public draw({ height, width }: ResizeData): void {
     this.#gX?.call(this.#x.ticks(Math.round(width / 50)));
+    let ticksNum: number;
+
+    if (height > 250) {
+      ticksNum = 10;
+    } else if (height > 150) {
+      ticksNum = 5;
+    } else {
+      ticksNum = 3;
+    }
+
+    const yDomain = this.#getYDomain();
+
+    const ticks = times(ticksNum + 1, (index) => {
+      const diff = yDomain[1] - yDomain[0];
+
+      return (diff / ticksNum) * index + yDomain[0];
+    });
 
     this.#gYRight?.call(
-      this.#yRight.tickValues(d3.scaleLinear().domain(scales.y.domain()).ticks(height / 40)),
+      this.#yRight.tickValues(ticks),
     );
   }
 
@@ -73,13 +91,7 @@ export default class Axes {
 
     if (typeof data.pricePrecision !== 'undefined' || typeof data.candles !== 'undefined' || typeof data.usePercentageScale !== 'undefined') {
       this.#yRight.tickFormat(!this.#usePercentageScale ? d3.format(`.${this.#pricePrecision}f`) : (yValue) => {
-        const xDomain = this.#scales.scaledX.domain();
-        const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
-          && candle.time <= xDomain[1].getTime());
-
-        const yDomain: [number, number] = candles.length
-          ? [d3.min(candles, (d) => +d.low) as number, d3.max(candles, (d) => +d.high) as number]
-          : [0, 1];
+        const yDomain = this.#getYDomain();
 
         return `${(((+yValue - yDomain[0]) / (yDomain[1] - yDomain[0])) * 100).toFixed(1)}%`;
       });
@@ -88,6 +100,18 @@ export default class Axes {
       this.#scales = data.scales;
       this.#x.scale(data.scales.scaledX);
     }
+  };
+
+  #getYDomain = () => {
+    const xDomain = this.#scales.scaledX.domain();
+    const candles = this.#candles.filter((candle) => candle.time >= xDomain[0].getTime()
+      && candle.time <= xDomain[1].getTime());
+
+    const yDomain: [number, number] = candles.length
+      ? [d3.min(candles, (d) => +d.low) as number, d3.max(candles, (d) => +d.high) as number]
+      : [0, 1];
+
+    return yDomain;
   };
 
   #resizeContainers = ({ width, height }: ResizeData): void => {
