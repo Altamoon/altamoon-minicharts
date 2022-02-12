@@ -93,7 +93,9 @@ export default class Axes {
       this.#yRight.tickFormat(!this.#usePercentageScale ? d3.format(`.${this.#pricePrecision}f`) : (yValue) => {
         const yDomain = this.#getYDomain();
 
-        return `${(((+yValue - yDomain[0]) / (yDomain[1] - yDomain[0])) * 100).toFixed(1)}%`;
+        return `${(((+yValue - yDomain[0]) / yDomain[0]) * 100).toFixed(1)}%`;
+
+        // return `${(((+yValue - yDomain[0]) / (yDomain[1] - yDomain[0])) * 100).toFixed(1)}%`;
       });
     }
     if (typeof data.scales !== 'undefined') {
