@@ -54,7 +54,7 @@ export class MinichartsStore {
 
   public usePerfBooster = persistent<boolean>('usePerfBooster', false);
 
-  public usePercentageScale = persistent<boolean>('usePercentageScale', false);
+  public usePercentageScale = persistent<boolean>('usePercentageScale', true);
 
   public get allCandles() { return this.#allCandles; }
 
@@ -107,6 +107,7 @@ export class MinichartsStore {
       'sortDirection',
       'alertLogLastSeenISO',
       'usePerfBooster',
+      'usePercentageScale',
     ];
 
     keysToListen.forEach((key) => {
