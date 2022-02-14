@@ -61,7 +61,7 @@ export default class Axes {
 
     const yDomain = this.#getYDomain();
 
-    const ticks = times(ticksNum + 1, (index) => {
+    const ticks = times(ticksNum + 3, (index) => {
       const diff = yDomain[1] - yDomain[0];
 
       return (diff / ticksNum) * index + yDomain[0];
