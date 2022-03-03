@@ -19,7 +19,7 @@ function persistent<T>(key: keyof MinichartsStore, defaultValue: T): T {
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
 
-type AnomalyKey = `${api.CandlestickChartInterval | api.ExtendedCandlestickChartInterval}_${number}`;
+type AnomalyKey = `${api.CandlestickChartInterval | api.ExtendedCandlestickChartInterval | api.SubminutedCandlestickChartInterval}_${number}`;
 
 export class MinichartsStore {
   public candles: api.FuturesChartCandle[] = [];
