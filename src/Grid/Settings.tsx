@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { LegacyRef, ReactElement } from 'react';
 import styled from 'styled-components';
 import * as api from 'altamoon-binance-api';
 import useChange, { useValue } from 'use-change';
@@ -8,6 +8,7 @@ import { ROOT } from '../store';
 import { ChartType, ScaleType, SortBy } from '../AltamoonMinichart/types';
 import isType from '../lib/isType';
 import InputRange from '../lib/InputRange';
+import useSizeBreakpoint from '../lib/useSizeBreakpoint';
 
 const Intervals = styled.div`
   padding-bottom: 1rem;
@@ -53,11 +54,12 @@ const Settings = (): ReactElement => {
   const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
   const [usePerfBooster, setUsePerfBooster] = useChange(ROOT, 'usePerfBooster');
   const [usePercentageScale, setUsePercentageScale] = useChange(ROOT, 'usePercentageScale');
+  const [isWide, ref] = useSizeBreakpoint('lg');
 
   return (
-    <>
+    <div ref={ref as LegacyRef<HTMLDivElement>}>
       <Row>
-        <Col xs={12} md={4}>
+        <Col xs={isWide ? 4 : 12}>
           <InputRange
             label="Columns"
             min={MIN_GRID_COLUMNS}
@@ -67,7 +69,7 @@ const Settings = (): ReactElement => {
             onChange={setGridColumns}
           />
         </Col>
-        <Col xs={12} md={4}>
+        <Col xs={isWide ? 4 : 12}>
           <InputRange
             label="Charts"
             min={1}
@@ -77,7 +79,7 @@ const Settings = (): ReactElement => {
             onChange={setMaxChartsLength}
           />
         </Col>
-        <Col xs={12} md={4}>
+        <Col xs={isWide ? 4 : 12}>
           <InputRange
             label="Chart height"
             min={MIN_HEIGHT}
@@ -89,7 +91,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={12} md={3}>
+        <Col xs={isWide ? 3 : 12}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <SortLabel
@@ -113,7 +115,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} md={3}>
+        <Col xs={isWide ? 3 : 12}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_throttleDelay">Refresh</label>
@@ -129,7 +131,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} md={3}>
+        <Col xs={isWide ? 3 : 12}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_chartType">Candle Type</label>
@@ -145,7 +147,7 @@ const Settings = (): ReactElement => {
             </select>
           </div>
         </Col>
-        <Col xs={12} md={3}>
+        <Col xs={isWide ? 3 : 12}>
           <div className="input-group mb-3">
             {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
             <label className="input-group-text" htmlFor="minichart_scaleType">Scale</label>
@@ -162,7 +164,7 @@ const Settings = (): ReactElement => {
         </Col>
       </Row>
       <Row>
-        <Col xs={6}>
+        <Col xs={isWide ? 6 : 12}>
           <Intervals className="nav nav-pills">
             {api.futuresIntervals.map((intervalsItem, index) => (
               <IntervalItem
@@ -180,7 +182,7 @@ const Settings = (): ReactElement => {
             ))}
           </Intervals>
         </Col>
-        <Col xs={6} className="text-end pt-2">
+        <Col xs={isWide ? 6 : 12} className="text-end pt-2">
           <label htmlFor="minichartsUsePerfBooster" className="me-4">
             <input
               type="checkbox"
@@ -209,7 +211,7 @@ const Settings = (): ReactElement => {
           Use Right click to create an alert.
         </sub>
       </p>
-    </>
+    </div>
   );
 };
 
