@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { LegacyRef, ReactElement } from 'react';
 import styled from 'styled-components';
 import * as api from 'altamoon-binance-api';
@@ -54,163 +55,166 @@ const Settings = (): ReactElement => {
   const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
   const [usePerfBooster, setUsePerfBooster] = useChange(ROOT, 'usePerfBooster');
   const [usePercentageScale, setUsePercentageScale] = useChange(ROOT, 'usePercentageScale');
-  const [isLg, ref] = useSizeBreakpoint('lg');
+  const [isLg, lgRef] = useSizeBreakpoint('lg');
+  const [isMd, mdRef] = useSizeBreakpoint('md');
 
   return (
-    <div ref={ref as LegacyRef<HTMLDivElement>}>
-      <Row>
-        <Col xs={isLg ? 4 : 12}>
-          <InputRange
-            label="Columns"
-            min={MIN_GRID_COLUMNS}
-            max={MAX_GRID_COLUMNS}
-            id="minichart_columns"
-            value={gridColumns}
-            onChange={setGridColumns}
-          />
-        </Col>
-        <Col xs={isLg ? 4 : 12}>
-          <InputRange
-            label="Charts"
-            min={1}
-            max={symbols.length}
-            id="minichart_max_charts"
-            value={maxChartsLength ?? symbols.length}
-            onChange={setMaxChartsLength}
-          />
-        </Col>
-        <Col xs={isLg ? 4 : 12}>
-          <InputRange
-            label="Chart height"
-            min={MIN_HEIGHT}
-            max={MAX_HEIGHT}
-            id="minichart_height"
-            value={chartHeight}
-            onChange={setChartHeight}
-          />
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={isLg ? 3 : 12}>
-          <div className="input-group mb-3">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <SortLabel
-              className="input-group-text"
-              htmlFor="minichart_sort"
-              onClick={() => setSortDirection((v) => (v === 1 ? -1 : 1))}
-            >
-              Sort
-              {' '}
-              {sortDirection === 1 ? '▲' : '▼'}
-            </SortLabel>
-            <select
-              className="form-select bg-white"
-              id="minichart_sort"
-              value={sortBy}
-              onChange={({ target }) => setSortBy(target.value as SortBy)}
-            >
-              <option value={isType<SortBy>('alphabetically')}>Alphabetically</option>
-              <option value={isType<SortBy>('volume')}>Volume (24h)</option>
-              <option value={isType<SortBy>('volume_change')}>% change (24h)</option>
-            </select>
-          </div>
-        </Col>
-        <Col xs={isLg ? 3 : 12}>
-          <div className="input-group mb-3">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_throttleDelay">Refresh</label>
-            <select
-              className="form-select bg-white"
-              id="minichart_throttleDelay"
-              value={throttleDelay}
-              onChange={({ target }) => setThrottleDelay(+target.value)}
-            >
-              {Object.entries(THROTTLE_DELAY_VALUES).map(([label, value]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </div>
-        </Col>
-        <Col xs={isLg ? 3 : 12}>
-          <div className="input-group mb-3">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_chartType">Candle Type</label>
-            <select
-              className="form-select bg-white"
-              id="minichart_chartType"
-              value={chartType}
-              onChange={({ target }) => setChartType(target.value as ChartType)}
-            >
-              <option value={isType<ChartType>('candlestick')}>Candles</option>
-              <option value={isType<ChartType>('heikin_ashi')}>Heikin-Ashi</option>
-              <option value={isType<ChartType>('heikin_ashi_actual_price')}>Heikin-Ashi (actual price)</option>
-            </select>
-          </div>
-        </Col>
-        <Col xs={isLg ? 3 : 12}>
-          <div className="input-group mb-3">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-            <label className="input-group-text" htmlFor="minichart_scaleType">Scale</label>
-            <select
-              className="form-select bg-white"
-              id="minichart_scaleType"
-              value={scaleType}
-              onChange={({ target }) => setScaleType(target.value as ScaleType)}
-            >
-              <option value={isType<ScaleType>('linear')}>Linear</option>
-              <option value={isType<ScaleType>('log')}>Logarithmic</option>
-            </select>
-          </div>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={isLg ? 6 : 12}>
-          <Intervals className="nav nav-pills">
-            {api.futuresIntervals.map((intervalsItem, index) => (
-              <IntervalItem
-                role="button"
-                tabIndex={index}
-                className="nav-item cursor-pointer"
-                key={intervalsItem}
-                onClick={() => { setChartInterval(intervalsItem); }}
-                onKeyDown={() => { setChartInterval(intervalsItem); }}
+    <div ref={mdRef as LegacyRef<HTMLDivElement>}>
+      <div ref={lgRef as LegacyRef<HTMLDivElement>}>
+        <Row>
+          <Col xs={isMd ? 4 : 12}>
+            <InputRange
+              label="Columns"
+              min={MIN_GRID_COLUMNS}
+              max={MAX_GRID_COLUMNS}
+              id="minichart_columns"
+              value={gridColumns}
+              onChange={setGridColumns}
+            />
+          </Col>
+          <Col xs={isMd ? 4 : 12}>
+            <InputRange
+              label="Charts"
+              min={1}
+              max={symbols.length}
+              id="minichart_max_charts"
+              value={maxChartsLength ?? symbols.length}
+              onChange={setMaxChartsLength}
+            />
+          </Col>
+          <Col xs={isMd ? 4 : 12}>
+            <InputRange
+              label="Chart height"
+              min={MIN_HEIGHT}
+              max={MAX_HEIGHT}
+              id="minichart_height"
+              value={chartHeight}
+              onChange={setChartHeight}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={isLg ? 3 : (isMd ? 6 : 12)}>
+            <div className="input-group mb-3">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+              <SortLabel
+                className="input-group-text"
+                htmlFor="minichart_sort"
+                onClick={() => setSortDirection((v) => (v === 1 ? -1 : 1))}
               >
-                <span className={`nav-link ${interval === intervalsItem ? 'active' : ''}`}>
-                  {intervalsItem}
-                </span>
-              </IntervalItem>
-            ))}
-          </Intervals>
-        </Col>
-        <Col xs={isLg ? 6 : 12} className="text-end pt-2">
-          <label htmlFor="minichartsUsePerfBooster" className="me-4">
-            <input
-              type="checkbox"
-              id="minichartsUsePerfBooster"
-              checked={usePerfBooster}
-              onChange={({ target }) => setUsePerfBooster(target.checked)}
-            />
-            {' '}
-            Use perf booster (experimental)
-          </label>
-          <label htmlFor="minichartsUsePercentageScale">
-            <input
-              type="checkbox"
-              id="minichartsUsePercentageScale"
-              checked={usePercentageScale}
-              onChange={({ target }) => setUsePercentageScale(target.checked)}
-            />
-            {' '}
-            Use percentage scale
-          </label>
-        </Col>
-      </Row>
-      <p>
-        <sub>
-          * Use Shift button + Mousewheel to zoom specific chart.
-          Use Right click to create an alert.
-        </sub>
-      </p>
+                Sort
+                {' '}
+                {sortDirection === 1 ? '▲' : '▼'}
+              </SortLabel>
+              <select
+                className="form-select bg-white"
+                id="minichart_sort"
+                value={sortBy}
+                onChange={({ target }) => setSortBy(target.value as SortBy)}
+              >
+                <option value={isType<SortBy>('alphabetically')}>Alphabetically</option>
+                <option value={isType<SortBy>('volume')}>Volume (24h)</option>
+                <option value={isType<SortBy>('volume_change')}>% change (24h)</option>
+              </select>
+            </div>
+          </Col>
+          <Col xs={isLg ? 3 : (isMd ? 6 : 12)}>
+            <div className="input-group mb-3">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+              <label className="input-group-text" htmlFor="minichart_throttleDelay">Refresh</label>
+              <select
+                className="form-select bg-white"
+                id="minichart_throttleDelay"
+                value={throttleDelay}
+                onChange={({ target }) => setThrottleDelay(+target.value)}
+              >
+                {Object.entries(THROTTLE_DELAY_VALUES).map(([label, value]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+          </Col>
+          <Col xs={isLg ? 3 : (isMd ? 6 : 12)}>
+            <div className="input-group mb-3">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+              <label className="input-group-text" htmlFor="minichart_chartType">Candle Type</label>
+              <select
+                className="form-select bg-white"
+                id="minichart_chartType"
+                value={chartType}
+                onChange={({ target }) => setChartType(target.value as ChartType)}
+              >
+                <option value={isType<ChartType>('candlestick')}>Candles</option>
+                <option value={isType<ChartType>('heikin_ashi')}>Heikin-Ashi</option>
+                <option value={isType<ChartType>('heikin_ashi_actual_price')}>Heikin-Ashi (actual price)</option>
+              </select>
+            </div>
+          </Col>
+          <Col xs={isLg ? 3 : (isMd ? 6 : 12)}>
+            <div className="input-group mb-3">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
+              <label className="input-group-text" htmlFor="minichart_scaleType">Scale</label>
+              <select
+                className="form-select bg-white"
+                id="minichart_scaleType"
+                value={scaleType}
+                onChange={({ target }) => setScaleType(target.value as ScaleType)}
+              >
+                <option value={isType<ScaleType>('linear')}>Linear</option>
+                <option value={isType<ScaleType>('log')}>Logarithmic</option>
+              </select>
+            </div>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={isLg ? 6 : 12}>
+            <Intervals className="nav nav-pills">
+              {api.futuresIntervals.map((intervalsItem, index) => (
+                <IntervalItem
+                  role="button"
+                  tabIndex={index}
+                  className="nav-item cursor-pointer"
+                  key={intervalsItem}
+                  onClick={() => { setChartInterval(intervalsItem); }}
+                  onKeyDown={() => { setChartInterval(intervalsItem); }}
+                >
+                  <span className={`nav-link ${interval === intervalsItem ? 'active' : ''}`}>
+                    {intervalsItem}
+                  </span>
+                </IntervalItem>
+              ))}
+            </Intervals>
+          </Col>
+          <Col xs={isLg ? 6 : 12} className="text-end pt-2">
+            <label htmlFor="minichartsUsePerfBooster">
+              <input
+                type="checkbox"
+                id="minichartsUsePerfBooster"
+                checked={usePerfBooster}
+                onChange={({ target }) => setUsePerfBooster(target.checked)}
+              />
+              {' '}
+              Use perf booster (experimental)
+            </label>
+            <label htmlFor="minichartsUsePercentageScale" className="ms-4">
+              <input
+                type="checkbox"
+                id="minichartsUsePercentageScale"
+                checked={usePercentageScale}
+                onChange={({ target }) => setUsePercentageScale(target.checked)}
+              />
+              {' '}
+              Use percentage scale
+            </label>
+          </Col>
+        </Row>
+        <p>
+          <sub>
+            * Use Shift button + Mousewheel to zoom specific chart.
+            Use Right click to create an alert.
+          </sub>
+        </p>
+      </div>
     </div>
   );
 };
