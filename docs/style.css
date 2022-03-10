@@ -18,19 +18,22 @@ svg.minichart .axis path, svg.minichart .axis line {
 }
 
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
-/*   Candles
+/*   Candles and Volume
 /* –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+svg.minichart .volume {
+  opacity: 0.5;
+}
 svg.minichart .plot .wick {
   stroke-width: 1px;
 }
-svg.minichart .plot .up.body {
+svg.minichart .plot .up.body, svg.minichart .volume .up.body {
   fill: var(--altamoon-chart-plot-up-body-fill, var(--bs-green));
   stroke: var(--altamoon-chart-plot-up-body-stroke, var(--bs-green));
 }
 svg.minichart .plot .up.wick {
   stroke: var(--altamoon-chart-plot-up-wick-stroke, var(--bs-green));
 }
-svg.minichart .plot .down.body {
+svg.minichart .plot .down.body, svg.minichart .volume .down.body {
   fill: var(--altamoon-chart-plot-down-body-fill, var(--bs-red));
   stroke: var(--altamoon-chart-plot-down-body-stroke, var(--bs-red));
 }
