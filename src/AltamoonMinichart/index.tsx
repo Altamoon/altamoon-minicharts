@@ -66,6 +66,7 @@ interface Props {
   volume: string;
   priceChangePercent: string;
   usePercentageScale?: boolean;
+  shouldShowVolume?: boolean;
   onSymbolSelect?: (symbol: string) => void;
   onUpdateAlerts: (d: AlertItem[]) => void;
 }
@@ -88,6 +89,7 @@ const AltamoonMinichart = ({
   volume,
   priceChangePercent,
   usePercentageScale,
+  shouldShowVolume,
   onSymbolSelect,
   onUpdateAlerts,
 }: Props): ReactElement | null => {
@@ -119,6 +121,7 @@ const AltamoonMinichart = ({
         position={position}
         leverageBrackets={leverageBrackets}
         usePercentageScale={usePercentageScale}
+        shouldShowVolume={shouldShowVolume}
         onUpdateAlerts={onUpdateAlerts}
       />
     </Container>

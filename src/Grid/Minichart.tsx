@@ -28,6 +28,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
   const priceChangePercent = useValue(PRICE_CHANGE, symbol);
   const symbolInfo = useValue(ROOT, 'futuresExchangeSymbolsMap')[symbol];
   const [symbolAlerts, setSymbolAlerts] = useChange(ROOT, 'symbolAlerts');
+  const shouldShowVolume = useValue(ROOT, 'shouldShowVolume');
 
   const onUpdateAlerts = useCallback((d: AlertItem[]) => {
     setSymbolAlerts((v) => ({
@@ -55,6 +56,7 @@ const Minichart = ({ symbol, onSymbolSelect }: Props): ReactElement | null => {
       volume={volume}
       priceChangePercent={priceChangePercent}
       usePercentageScale={usePercentageScale}
+      shouldShowVolume={shouldShowVolume}
       onSymbolSelect={onSymbolSelect}
       onUpdateAlerts={onUpdateAlerts}
     />

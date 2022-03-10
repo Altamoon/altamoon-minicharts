@@ -1,6 +1,159 @@
-/* eslint-disable prefer-object-spread */
 import * as d3 from 'd3';
 import * as api from 'altamoon-binance-api';
+
+import {
+  D3Selection, DrawData, Scales, ResizeData,
+} from './types';
+import { ChartType } from '../types';
+import Plot from './Plot';
+
+export default class Volume {
+  #lastCandle?: api.FuturesChartCandle;
+
+  #chartType: ChartType = 'candlestick';
+
+  #resizeData?: ResizeData;
+
+  #scales: Scales;
+
+  #wrapper?: D3Selection<SVGGElement>;
+
+  #candles: api.FuturesChartCandle[] = [];
+
+  #pathUp?: D3Selection<SVGPathElement>;
+
+  #pathDown?: D3Selection<SVGPathElement>;
+
+  #pathLastUp?: D3Selection<SVGPathElement>;
+
+  #pathLastDown?: D3Selection<SVGPathElement>;
+
+  #zoomTransform?: Pick<d3.ZoomTransform, 'k' | 'x' | 'y'>;
+
+  constructor({ scales }: { scales: Scales; }) {
+    this.#scales = scales;
+  }
+
+  public appendTo = (parent: Element): void => {
+    const wrapper = d3.select(parent).append('g')
+      .attr('class', 'volume')
+      .attr('clip-path', 'url(#minichartClipChart)');
+
+    this.#wrapper = wrapper;
+
+    this.#pathUp = wrapper.append('path').attr('class', 'body up');
+    this.#pathDown = wrapper.append('path').attr('class', 'body down');
+
+    this.#pathLastUp = wrapper.append('path').attr('class', 'body up');
+    this.#pathLastDown = wrapper.append('path').attr('class', 'body down');
+  };
+
+  public draw = ({
+    candles: givenCandles, resizeData, zoomTransform, chartType,
+  }: DrawData): void => {
+    if (!givenCandles.length) return;
+
+    let candles: api.FuturesChartCandle[];
+    if (chartType === 'heikin_ashi') {
+      candles = Plot.candlesToHeikinAshi(givenCandles, this.#candles, this.#chartType);
+    } else if (chartType === 'heikin_ashi_actual_price') {
+      candles = Plot.candlesToHeikinAshiWithActualPrice(
+        givenCandles, this.#candles, this.#chartType,
+      );
+    } else {
+      candles = givenCandles;
+    }
+
+    const firstCandles = candles.slice(0, -1);
+    const lastCandle = candles[candles.length - 1];
+
+    // update last candle
+    const upLastCandles = lastCandle?.direction === 'UP' ? [lastCandle] : [];
+    const downLastCandles = lastCandle?.direction === 'DOWN' ? [lastCandle] : [];
+
+    this.#pathLastUp?.attr('d', this.#getBodies(upLastCandles));
+    this.#pathLastDown?.attr('d', this.#getBodies(downLastCandles));
+
+    // update rest if zoom or last candle was changed
+    if (
+      resizeData.width !== this.#resizeData?.width
+      || lastCandle?.time !== this.#lastCandle?.time
+      || lastCandle?.interval !== this.#lastCandle?.interval
+      || lastCandle?.symbol !== this.#lastCandle?.symbol
+      || this.#zoomTransform !== zoomTransform
+      || this.#chartType !== chartType
+    ) {
+      const upCandles = firstCandles.filter((x) => x.direction === 'UP');
+      const downCandles = firstCandles.filter((x) => x.direction === 'DOWN');
+
+      this.#pathUp?.attr('d', this.#getBodies(upCandles));
+      this.#pathDown?.attr('d', this.#getBodies(downCandles));
+    }
+
+    this.#lastCandle = lastCandle;
+    this.#zoomTransform = zoomTransform;
+    this.#chartType = chartType;
+    this.#resizeData = resizeData;
+    this.#candles = candles;
+  };
+
+  public update = (data: { shouldShowVolume?: boolean }) => {
+    if (typeof data.shouldShowVolume !== 'undefined') {
+      this.#wrapper?.style('display', data.shouldShowVolume ? '' : 'none');
+    }
+  };
+
+  #getBodies = (candles: api.FuturesChartCandle[]): string => {
+    const width = this.bodyWidth;
+    let string = '';
+
+    const xDomain = this.#scales.scaledX.domain();
+
+    const filteredCandles = candles.filter((candle) => candle.time >= xDomain[0].getTime());
+
+    const maxVolume = filteredCandles.reduce((vol, { volume }) => Math.max(vol, volume), 0);
+
+    for (const candle of candles) {
+      string += this.#getBodyString(candle, width, maxVolume);
+    }
+
+    return string;
+  };
+
+  #getBodyString = (
+    candle: api.FuturesChartCandle,
+    width: number,
+    maxVolume: number,
+  ): string => {
+    const yDomain = this.#scales.y.domain() as [number, number];
+    const chartHeight = Math.round(this.#scales.y(yDomain[0]));
+    const height = (candle.volume / maxVolume) * chartHeight * 0.2;
+
+    const x = Math.round(this.#scales.scaledX(candle.time)) - width / 2;
+
+    return `M${x},${chartHeight} h${width}v${-height}h${-width}z`;
+  };
+
+  private get bodyWidth() {
+    const scale = this.zoomScale;
+
+    // Clamp width on high zoom out levels
+
+    const width = (scale < 0.3) ? 1 // eslint-disable-line no-nested-ternary
+      : (scale < 0.8) ? 1.5 // eslint-disable-line no-nested-ternary
+        : (scale < 1.5) ? 2 // eslint-disable-line no-nested-ternary
+          : (scale < 3.0) ? 3 // eslint-disable-line no-nested-ternary
+            : scale;
+
+    return width;
+  }
+
+  private get zoomScale() {
+    return this.#wrapper ? d3.zoomTransform(this.#wrapper.node() as Element).k : 1;
+  }
+}
+
+/*
 
 import { isEqual } from 'lodash';
 import {
@@ -70,11 +223,9 @@ export default class Plot {
 
     let candles: api.FuturesChartCandle[];
     if (chartType === 'heikin_ashi') {
-      candles = Plot.candlesToHeikinAshi(givenCandles, this.#candles, this.#chartType);
+      candles = this.candlesToHeikinAshi(givenCandles);
     } else if (chartType === 'heikin_ashi_actual_price') {
-      candles = Plot.candlesToHeikinAshiWithActualPrice(
-        givenCandles, this.#candles, this.#chartType,
-      );
+      candles = this.candlesToHeikinAshiWithActualPrice(givenCandles);
     } else {
       candles = givenCandles;
     }
@@ -131,7 +282,8 @@ export default class Plot {
     return string;
   };
 
-  #getBodyString = (candle: api.FuturesChartCandle, direction: 'UP' | 'DOWN', width: number): string => {
+  #getBodyString = (candle: api.FuturesChartCandle,
+     direction: 'UP' | 'DOWN', width: number): string => {
     const open = Math.round(this.#scales.y(candle.open));
     const close = Math.round(this.#scales.y(candle.close));
     let top;
@@ -191,98 +343,5 @@ export default class Plot {
   private get zoomScale() {
     return this.#wrapper ? d3.zoomTransform(this.#wrapper.node() as Element).k : 1;
   }
-
-  // This is a copy-pasted smoozCandles function from Biduul
-  // see https://github.com/Altamoon/altamoon/blob/65c6b2b5d56462c2e01046efe0ca96c00dc61a20/app/lib/CandlestickChart/items/Plot.ts#L174-L233
-  public static candlesToHeikinAshiWithActualPrice = (
-    candles: api.FuturesChartCandle[],
-    prevCandles: api.FuturesChartCandle[],
-    chartType: ChartType,
-  ): api.FuturesChartCandle[] => {
-    const isExisting = chartType === 'heikin_ashi_actual_price' && candles[0].interval === prevCandles[0]?.interval;
-    const newCandles: api.FuturesChartCandle[] = isExisting ? prevCandles.slice(0, -1) : [];
-
-    const startIndex = isExisting ? newCandles.length - 1 : 0;
-
-    for (let i = startIndex; i < candles.length; i += 1) {
-      const {
-        open, close, high, low,
-      } = candles[i];
-      const previous = newCandles[i - 1] as api.FuturesChartCandle | undefined;
-
-      let newOpen = previous
-        ? (+previous.open + +previous.close) / 2
-        : (+open + +close) / 2;
-      let newClose = (+open + +close + +high + +low) / 4;
-
-      const newDirection = (newOpen <= newClose)
-        ? 'UP' : 'DOWN';
-
-      // Clamp new open to low/high
-      newOpen = (newDirection === 'UP')
-        ? Math.max(newOpen, +low)
-        : Math.min(newOpen, +high);
-
-      // Keep last candle close as vanilla (to visually keep track of price)
-      if (i === candles.length - 1) {
-        newClose = +close;
-      }
-
-      newCandles.push(Object.assign({}, candles[i], {
-        direction: newDirection,
-        open: newOpen,
-        close: newClose,
-      }));
-
-      // Adjust close/open of previous candle, we don't want gaps
-      if (previous) {
-        if (newDirection === previous.direction) {
-          previous.close = (previous.direction === 'UP')
-            ? Math.max(previous.close, newOpen)
-            : Math.min(previous.close, newOpen);
-        } else {
-          previous.open = (previous.direction === 'DOWN')
-            ? Math.max(previous.open, newOpen)
-            : Math.min(previous.open, newOpen);
-        }
-      }
-    }
-
-    return newCandles;
-  };
-
-  public static candlesToHeikinAshi = (
-    candles: api.FuturesChartCandle[],
-    prevCandles: api.FuturesChartCandle[],
-    chartType: ChartType,
-  ) => {
-    const isExisting = chartType === 'heikin_ashi' && candles[0].interval === prevCandles[0]?.interval;
-    const newCandles: api.FuturesChartCandle[] = isExisting ? prevCandles.slice(0, -1) : [];
-
-    const startIndex = isExisting ? newCandles.length - 1 : 0;
-
-    for (let i = startIndex; i < candles.length; i += 1) {
-      const {
-        open, close, high, low,
-      } = candles[i];
-      const previous = newCandles[i - 1] as api.FuturesChartCandle | undefined;
-
-      const newClose = (+open + +close + +high + +low) / 4;
-      const newOpen = previous
-        ? (+previous.open + +previous.close) / 2
-        : (+open + +close) / 2;
-      const newHigh = Math.max(high, newOpen, newClose);
-      const newLow = Math.min(low, newOpen, newClose);
-
-      newCandles[i] = Object.assign({}, candles[i], {
-        close: newClose,
-        open: newOpen,
-        high: newHigh,
-        low: newLow,
-        direction: +newOpen <= +newClose ? 'UP' : 'DOWN',
-      });
-    }
-
-    return newCandles;
-  };
 }
+*/

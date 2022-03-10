@@ -55,6 +55,8 @@ const Settings = (): ReactElement => {
   const [maxChartsLength, setMaxChartsLength] = useChange(ROOT, 'maxChartsLength');
   const [usePerfBooster, setUsePerfBooster] = useChange(ROOT, 'usePerfBooster');
   const [usePercentageScale, setUsePercentageScale] = useChange(ROOT, 'usePercentageScale');
+  const [shouldShowVolume, setShouldShowVolume] = useChange(ROOT, 'shouldShowVolume');
+
   const [isLg, lgRef] = useSizeBreakpoint('lg');
   const [isMd, mdRef] = useSizeBreakpoint('md');
 
@@ -205,6 +207,16 @@ const Settings = (): ReactElement => {
               />
               {' '}
               Use percentage scale
+            </label>
+            <label htmlFor="minichartShouldShowVolume" className="ms-4">
+              <input
+                type="checkbox"
+                id="minichartShouldShowVolume"
+                checked={shouldShowVolume}
+                onChange={({ target }) => setShouldShowVolume(target.checked)}
+              />
+              {' '}
+              Show volume
             </label>
           </Col>
         </Row>

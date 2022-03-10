@@ -56,6 +56,8 @@ export class MinichartsStore {
 
   public usePercentageScale = persistent<boolean>('usePercentageScale', true);
 
+  public shouldShowVolume = persistent<boolean>('shouldShowVolume', false);
+
   public get allCandles() { return this.#allCandles; }
 
   #allCandles: Record<string, api.FuturesChartCandle[]> = {};
@@ -108,6 +110,7 @@ export class MinichartsStore {
       'alertLogLastSeenISO',
       'usePerfBooster',
       'usePercentageScale',
+      'shouldShowVolume',
     ];
 
     keysToListen.forEach((key) => {

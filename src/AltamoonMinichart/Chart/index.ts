@@ -7,6 +7,7 @@ import {
   Scales, StyleMargin, ResizeData, D3Selection, DrawData,
 } from './types';
 import Plot from './Plot';
+import Volume from './Volume';
 import Svg from './Svg';
 import ClipPath from './ClipPath';
 import Axes from './Axes';
@@ -22,6 +23,8 @@ export default class Chart {
   #svg: Svg;
 
   #plot: Plot;
+
+  #volume: Volume;
 
   #clipPath: ClipPath;
 
@@ -74,6 +77,7 @@ export default class Chart {
     this.#svg = new Svg();
     this.#clipPath = new ClipPath();
     this.#plot = new Plot({ scales });
+    this.#volume = new Volume({ scales });
     this.#axes = new Axes({ scales: this.#scales });
     this.#gridLines = new GridLines({ scales });
     this.#lines = new Lines({
@@ -117,6 +121,7 @@ export default class Chart {
     leverage?: number;
     leverageBrackets?: api.FuturesLeverageBracket[];
     usePercentageScale?: boolean;
+    shouldShowVolume?: boolean;
   }): void => {
     if (typeof data.candles !== 'undefined') {
       const isNewSymbol = this.#candles[0]?.symbol !== data.candles[0]?.symbol;
@@ -154,6 +159,10 @@ export default class Chart {
 
     if (typeof data.usePercentageScale !== 'undefined') {
       this.#axes.update({ usePercentageScale: data.usePercentageScale });
+    }
+
+    if (typeof data.shouldShowVolume !== 'undefined') {
+      this.#volume.update({ shouldShowVolume: data.shouldShowVolume });
     }
 
     if (typeof data.chartType !== 'undefined') {
@@ -204,6 +213,7 @@ export default class Chart {
     const svgContainer = this.#svg.appendTo(this.#container, resizeData);
 
     this.#gridLines.appendTo(svgContainer, resizeData);
+    this.#volume.appendTo(svgContainer);
     this.#plot.appendTo(svgContainer);
     this.#axes.appendTo(svgContainer, resizeData);
     this.#clipPath.appendTo(svgContainer, resizeData);
@@ -224,7 +234,8 @@ export default class Chart {
     this.#calcXDomain();
     const yDomain = this.#calcYDomain();
     this.#axes.draw(resizeData);
-    void this.#plot.draw(drawData);
+    this.#plot.draw(drawData);
+    this.#volume.draw(drawData);
     this.#gridLines.draw(resizeData);
 
     // fixes https://trello.com/c/tLjFqdCB/230-chart-order-and-alert-lines-are-not-redrawn-on-price-ath-atl
