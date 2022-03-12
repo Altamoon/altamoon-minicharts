@@ -64,6 +64,7 @@ export default class Volume {
       candles = givenCandles;
     }
 
+    const maxVolume = candles.reduce((vol, { volume }) => Math.max(vol, volume), 0);
     const firstCandles = candles.slice(0, -1);
     const lastCandle = candles[candles.length - 1];
 
@@ -71,8 +72,8 @@ export default class Volume {
     const upLastCandles = lastCandle?.direction === 'UP' ? [lastCandle] : [];
     const downLastCandles = lastCandle?.direction === 'DOWN' ? [lastCandle] : [];
 
-    this.#pathLastUp?.attr('d', this.#getBodies(upLastCandles));
-    this.#pathLastDown?.attr('d', this.#getBodies(downLastCandles));
+    this.#pathLastUp?.attr('d', this.#getBodies(upLastCandles, maxVolume));
+    this.#pathLastDown?.attr('d', this.#getBodies(downLastCandles, maxVolume));
 
     // update rest if zoom or last candle was changed
     if (
@@ -86,8 +87,8 @@ export default class Volume {
       const upCandles = firstCandles.filter((x) => x.direction === 'UP');
       const downCandles = firstCandles.filter((x) => x.direction === 'DOWN');
 
-      this.#pathUp?.attr('d', this.#getBodies(upCandles));
-      this.#pathDown?.attr('d', this.#getBodies(downCandles));
+      this.#pathUp?.attr('d', this.#getBodies(upCandles, maxVolume));
+      this.#pathDown?.attr('d', this.#getBodies(downCandles, maxVolume));
     }
 
     this.#lastCandle = lastCandle;
@@ -103,15 +104,9 @@ export default class Volume {
     }
   };
 
-  #getBodies = (candles: api.FuturesChartCandle[]): string => {
+  #getBodies = (candles: api.FuturesChartCandle[], maxVolume: number): string => {
     const width = this.bodyWidth;
     let string = '';
-
-    const xDomain = this.#scales.scaledX.domain();
-
-    const filteredCandles = candles.filter((candle) => candle.time >= xDomain[0].getTime());
-
-    const maxVolume = filteredCandles.reduce((vol, { volume }) => Math.max(vol, volume), 0);
 
     for (const candle of candles) {
       string += this.#getBodyString(candle, width, maxVolume);
@@ -138,7 +133,6 @@ export default class Volume {
     const scale = this.zoomScale;
 
     // Clamp width on high zoom out levels
-
     const width = (scale < 0.3) ? 1 // eslint-disable-line no-nested-ternary
       : (scale < 0.8) ? 1.5 // eslint-disable-line no-nested-ternary
         : (scale < 1.5) ? 2 // eslint-disable-line no-nested-ternary
