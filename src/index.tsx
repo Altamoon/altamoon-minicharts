@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import $ from 'balajs';
 import { Provider } from 'use-change';
 
@@ -22,7 +22,7 @@ export default function altamoonMinicharts(
 
   if (!element) throw new Error('Element is not found');
 
-  render((
+  createRoot(element).render((
     <Provider value={minichartsStore}>
       <MinichartGrid
         settingsContainer={settingsContainer}
@@ -30,5 +30,5 @@ export default function altamoonMinicharts(
         onSymbolSelect={onSymbolSelect}
       />
     </Provider>
-  ), element);
+  ));
 }
